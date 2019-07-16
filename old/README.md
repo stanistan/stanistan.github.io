@@ -1,3 +1,0 @@
-# stanistan
-
-Personal website.
