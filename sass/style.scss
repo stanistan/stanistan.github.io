@@ -1,0 +1,50 @@
+body {
+    border-top: 5px solid yellow;
+    color: #333;
+    font-family: Cochin, Times, serif;
+    font-size: 1.3em;
+    line-height: 1.5em;
+    margin: 0;
+    padding: 0;
+}
+
+.content {
+    margin: 80px auto 0;
+    max-width: 35rem;
+    padding: 2rem;
+}
+
+hr {
+    border: 0 solid #eee;
+    border-top-width: 1px;
+    height: 0;
+}
+
+.mono {
+    font-family: monospace;
+}
+
+.small {
+    font-size: 75%;
+}
+
+.faded {
+    color: #999;
+}
+
+.center {
+    text-align: center;
+}
+
+a, .link-like {
+    color: darkblue;
+    font-weight: bold;
+    text-decoration: underline;
+
+    &:hover {
+        color: blue;
+    }
+}
+
+
+
