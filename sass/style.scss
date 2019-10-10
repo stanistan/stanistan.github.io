@@ -14,6 +14,10 @@ body {
     padding: 2rem;
 }
 
+.page-title {
+    margin-bottom: 0;
+}
+
 hr {
     border: 0 solid #eee;
     border-top-width: 1px;
@@ -26,6 +30,10 @@ hr {
 
 .small {
     font-size: 75%;
+}
+
+.smaller {
+    font-size: 85%;
 }
 
 .faded {
@@ -45,6 +53,18 @@ a, .link-like {
         color: blue;
     }
 }
+
+ul {
+    list-style-position: outside;
+    margin: 0;
+    padding: 0;
+
+    & > .list-title {
+        margin-bottom: 0;
+    }
+
+}
+
 
 
 

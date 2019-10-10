@@ -1,28 +1,21 @@
-{% include "header.html" %}
-<div class="content">
-    <p>
-        Hi, I'm Stan, sometimes referred to as stanistan. 
-    </p>
-    <p>
-        Formerly at <a href="https://www.etsy.com">Etsy</a>, where I worked
-        on lots of things as a Software Engineer &amp; Product Infrastructure
-        Architect; an alumn of the <a href="https://www.recurse.com">Recurse Center</a>;
-        and a perpetual work in progress.
-    </p>
-    <p>
-        You can find some of my work on <a href="https://github.com/stanistan">github</a>.
-    </p>
-    <hr />
-    <p>
-        If you want to get in touch,
-        I'm on <a href="https://twitter.com/stanistan">twitter</a> (quietly),
-        or you can email me at: 
-        <span class="link-like">
-            <strong>stan</strong> at <strong>stanistan</strong> .com
-        </span>
-    </p>
-    <p class="mono small faded">
-        TODO: add content
-    </p>
-</div>
-{% include "footer.html" %}
+{% extends "base.html" %}
+
+{% block content %}
+    {{ section.content | safe }}
+    {% if section.pages | length > 0 %}
+        <ul class="posts">
+            <p class="list-title mono small faded">
+                <strong>sometimes i write things...</strong>
+            </p>
+            {% for page in section.pages %}
+                <li class="smaller">
+                    <a href="{{page.permalink}}">{{page.title}}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="mono small faded">
+            TODO: add content
+        </p>
+    {% endif %}
+{% endblock content %}
