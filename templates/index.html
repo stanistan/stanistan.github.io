@@ -1,21 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
+
     {{ section.content | safe }}
-    {% if section.pages | length > 0 %}
+
+    <p class="mono small faded">## TODO: add content</p>
+
+    {% set writes = get_section(path="writes/_index.md") %}
+    {% if writes.pages | length > 0 %}
         <ul class="posts">
-            <p class="list-title mono small faded">
-                <strong>sometimes i write things...</strong>
-            </p>
-            {% for page in section.pages %}
+            {% for page in writes.pages %}
                 <li class="smaller">
                     <a href="{{page.permalink}}">{{page.title}}</a>
                 </li>
             {% endfor %}
         </ul>
-    {% else %}
-        <p class="mono small faded">
-            TODO: add content
-        </p>
     {% endif %}
 {% endblock content %}

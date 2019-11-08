@@ -2,11 +2,18 @@
 {% block title %}{{ page.title }} - {{ super() }}{% endblock title %}
 
 {% block content %}
+    <a href="/" class="faded mono small">go /</a>
     <article>
         <h1 class="page-title">{{ page.title }}</h1>
         <div class="small faded">
             Published on {{ page.date | date(format="%B %d, %Y") }}
         </div>
-        {{ page.content | safe }} 
+        <div>{{ page.content | safe }}</div>
+        <hr />
+        <div class="tags">
+            {% for tag in page.taxonomies.tags %}
+            <a href="#" class="tag small">#{{tag}}</a>
+            {% endfor %}
+        </div>
     </article>
 {% endblock content %}

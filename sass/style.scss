@@ -1,6 +1,19 @@
+// Colors
+$background: #fcfcfc;
+$text: #333;
+$text-lighter: lighten($text, 50%);
+
+$highlight-base: #a71d5d;
+$highlight: lighten($highlight-base, 50%);
+$highlight-border: darken($highlight-base, 50%);
+
+$link-color: lighten(darkblue, 5%);
+$link-hover-color: lighten($link-color, 25%);
+
 body {
-    border-top: 5px solid yellow;
-    color: #333;
+    border-top: 5px solid $highlight;
+    background: $background;
+    color: $text;
     font-family: Cochin, Times, serif;
     font-size: 1.3em;
     line-height: 1.55em;
@@ -10,21 +23,31 @@ body {
 
 .content {
     margin: 8rem auto 0;
-    max-width: 35rem;
+    max-width: 42rem;
     padding: 2rem;
 }
 
-.page-title {
-    margin-bottom: 0;
+
+$article-heading-sizes:
+    "h1" 1.5em,
+    "h2" 1.25em,
+    "h3" 1.15em,
+    "h4" 1em;
+
+@each $heading, $font-size in $article-heading-sizes {
+    article #{$heading} {
+        font-size: $font-size;
+        margin-bottom: 0;
+    }
 }
 
 hr {
-    border: 0 solid #eee;
+    border: 0 dotted $highlight;
     border-top-width: 1px;
     height: 0;
 }
 
-.mono {
+pre, .mono, code {
     font-family: monospace;
 }
 
@@ -37,7 +60,7 @@ hr {
 }
 
 .faded {
-    color: #999;
+    color: $text-lighter;
 }
 
 .center {
@@ -45,26 +68,50 @@ hr {
 }
 
 a, .link-like {
-    color: darkblue;
+    color: $link-color;
     font-weight: bold;
     text-decoration: underline;
 
     &:hover {
-        color: blue;
+        color: $link-hover-color;
     }
 }
 
-ul {
+ol, ul {
     list-style-position: outside;
     margin: 0;
     padding: 0;
+}
+
+ul {
+    list-style-type: square;
 
     & > .list-title {
         margin-bottom: 0;
     }
-
 }
 
 
+code {
+    font-size: 0.9em;
+}
 
+pre {
+    font-size: 0.85em;
+    line-height: 1.45em;
+    padding: 1em 2em;
+    margin-left: -2em;
+    margin-right: -2em;
+    overflow-x: scroll;
+    border-bottom: 1px dotted $highlight;
+}
+
+.tag {
+    padding: 0.3em;
+    margin-right: 0.3em;
+    background: #eee;
+    border: 1px solid #eee;
+    border-radius: 3px;
+    color: #333;
+}
 
