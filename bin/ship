@@ -37,8 +37,8 @@ sync_deploy_branch() {
 
     # removes the (local) dest branch, and splits the
     # subtree into it, so it's fresh and beautiful
-    git branch -D "$DEST_BRANCH"
-    git subtree split --prefix "$PUBLIC_DIR" -b "$DEST_BRANCH"
+    git branch -D "$DEST_BRANCH" || true
+    git subtree split --prefix "$DIST_DIR" -b "$DEST_BRANCH"
 
     # we do this dance because the master
     # branch would have changed with the cname
