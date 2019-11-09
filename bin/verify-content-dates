@@ -1,0 +1,114 @@
+#!/bin/bash
+#
+# This script looks for all of the "posts"
+# in the $WRITES_DIR and makes sure they're
+# in the correct place wrt date formats.
+#
+# It also removes all directories that don't have
+# anything but empty/missing sections.
+#
+# The script must be called from the root directory.
+set -e
+
+pushd() {
+    command pushd "$@" > /dev/null
+}
+
+popd() {
+    command popd "$@" > /dev/null
+}
+
+err() {
+    echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@" >&2
+}
+
+WRITES_DIR=content/writes
+DIR_INDEX=_index.md
+
+[ ! -d "$WRITES_DIR" ] &&
+    err "No $WRITES_DIR in current directory" &&
+    exit 1
+
+write_section_file() {
+    cat > "$DIR_INDEX" <<- EOM
++++
+transparent = true
+render = false
++++
+EOM
+}
+
+ensure_directories_exist() {
+    local DATE_PATH
+    DATE_PATH="$1"
+
+    IFS='/'
+    read -ra DIRS <<< "$DATE_PATH"
+
+    for DIR in "${DIRS[@]}"; do
+        if [ ! -d "$DIR" ]; then
+            mkdir "$DIR"
+        fi
+        pushd "$DIR"
+        if [ ! -f "$DIR_INDEX" ]; then
+            write_section_file
+        fi
+    done
+
+    for DIR in "${DIRS[@]}"; do
+        popd
+    done
+}
+
+check_writes_post() {
+    local FILE_PATH             # first input arg
+    local FILE_NAME             # the tail of the path we're going to be receiving
+    local PARSED_DATE           # the parsed out date value from the file, unformatted
+    local PARSED_DATE_FORMATTED # the parsed date value, formatted
+    local NEW_FILE_PATH         # the file we're going to be moving this to
+
+    FILE_PATH="$1"
+    FILE_NAME="${FILE_PATH##*/}"
+    PARSED_DATE=$(awk '/^date = [0-9-]+$/{print $3}' "$FILE_PATH")
+    PARSED_DATE_FORMATTED=${PARSED_DATE//-/"/"}
+    NEW_FILE_PATH="$PARSED_DATE_FORMATTED/$FILE_NAME"
+
+    ensure_directories_exist "$PARSED_DATE_FORMATTED"
+    mv "$FILE_PATH" "$NEW_FILE_PATH"
+}
+
+check_index_file() {
+    local FILE_PATH
+    local DIR
+    FILE_PATH="$1"
+    DIR=$(dirname ${FILE_PATH})
+    pushd "$DIR"
+    if [ -z "$(find . -name "*.md" | grep -v "$DIR_INDEX")" ]; then
+        rm "$DIR_INDEX"
+    fi
+    popd
+}
+
+for_each_writes_post() {
+    while read -r FILE_PATH; do
+        check_writes_post "$FILE_PATH"
+    done
+}
+
+for_each_index_file() {
+    while read -r FILE_PATH; do
+        check_index_file "$FILE_PATH"
+    done
+}
+
+pushd "$WRITES_DIR"
+# Find all the markdown files in the $WRITES_DIR
+# that aren't `_index.md` and make sure they're in
+# the correct directory.
+find ./ -name "*.md" | grep -v "$DIR_INDEX" | for_each_writes_post
+
+# Remove all the _index.md files that have no associated posts.
+find ./ -name "$DIR_INDEX" | for_each_index_file
+
+# Remove all empty directories.
+find ./ -type d -empty -delete

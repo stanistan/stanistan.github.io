@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# ships `public/`
+# based on https://gist.github.com/cobyism/4730490
+#
+set -ex
+
+err() {
+    echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@" >&2
+}
+
+current_git_branch() {
+    git branch | grep \* | awk '{ print $2 }'
+}
+
+sync_deploy_branch() {
+    local DIST_DIR
+    local SOURCE_BRANCH
+    local DEST_BRANCH
+
+    DIST_DIR="$1"
+    SOURCE_BRANCH="$2"
+    DEST_BRANCH="$3"
+
+    [ ! -d "$DIST_DIR" ] &&
+        err "No $DIST_DIR in current directory." &&
+        return 1
+
+    if [ "$(current_git_branch)" != "$SOURCE_BRANCH" ]; then
+        err "Should be running this from $SOURCE_BRANCH"
+        return 1
+    fi
+
+    # make sure everything we care about has already
+    # been pushed upstream
+    git push origin "$SOURCE_BRANCH"
+
+    # removes the (local) dest branch, and splits the
+    # subtree into it, so it's fresh and beautiful
+    git branch -D "$DEST_BRANCH"
+    git subtree split --prefix "$PUBLIC_DIR" -b "$DEST_BRANCH"
+
+    # we do this dance because the master
+    # branch would have changed with the cname
+    # things from having the site up on github
+    # pages, and... we don't really want to squash
+    # that CNAME
+    git checkout "$DEST_BRANCH"
+    git pull origin "$DEST_BRANCH" --rebase
+    git push origin "$DEST_BRANCH"
+
+    # get back to the branch we started at
+    git checkout "$SOURCE_BRANCH"
+}
+
+# do the things
+sync_deploy_branch public the-details master
