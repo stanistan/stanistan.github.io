@@ -96,14 +96,24 @@ code {
     font-size: 0.9em;
 }
 
-pre {
-    font-size: 0.85em;
+pre, blockquote {
+    background: white;
     line-height: 1.45em;
-    padding: 1em 2em;
     margin-left: -2em;
     margin-right: -2em;
-    overflow-x: scroll;
+}
+
+pre {
+    font-size: 0.85em;
     border-bottom: 1px dotted $highlight;
+    padding: 1em 2em;
+    overflow-x: scroll;
+}
+
+blockquote {
+    font-size: 0.9em;
+    padding: 0.5em 2em;
+    border-left: 1px dotted $highlight;
 }
 
 .tag {
@@ -114,4 +124,3 @@ pre {
     border-radius: 3px;
     color: #333;
 }
-
