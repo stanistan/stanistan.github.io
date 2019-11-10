@@ -51,7 +51,7 @@ sync_deploy_branch() {
     # pages, and... we don't really want to squash
     # that CNAME
     git checkout "$DEST_BRANCH"
-    git pull origin "$DEST_BRANCH" --rebase
+    git pull origin "$DEST_BRANCH" --rebase -Xours
     git push origin "$DEST_BRANCH"
 
     # get back to the branch we started at
