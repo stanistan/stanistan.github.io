@@ -10,17 +10,7 @@
 # The script must be called from the root directory.
 set -e
 
-pushd() {
-    command pushd "$@" > /dev/null
-}
-
-popd() {
-    command popd "$@" > /dev/null
-}
-
-err() {
-    echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@" >&2
-}
+source "bin/inc.sh"
 
 WRITES_DIR=content/writes
 DIR_INDEX=_index.md
