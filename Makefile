@@ -24,5 +24,5 @@ unchanged:
 
 deploy: unchanged verify-content-dates build
 	git add content/writes $(DIST_DIR)
-	git commit -m "AUTO: site built..."
+	git commit -m "AUTO: make deploy run on $(date)" --allow-empty
 	bin/ship $(DIST_DIR) the-details master
