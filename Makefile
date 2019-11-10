@@ -4,6 +4,7 @@ SERVE_DIR := public
 DIST_DIR := dist
 DEV_CONFIG := config.dev.toml
 PROD_CONFIG := config.toml
+NOW := $(shell date)
 
 .PHONY: serve-dev serve-prod build deploy verify-content-dates unchanged
 
@@ -24,5 +25,5 @@ unchanged:
 
 deploy: unchanged verify-content-dates build
 	git add content/writes $(DIST_DIR)
-	git commit -m "AUTO: make deploy run on $(date)" --allow-empty
+	git commit -m "AUTO: make deploy run on $(NOW)" --allow-empty
 	bin/ship $(DIST_DIR) the-details master
