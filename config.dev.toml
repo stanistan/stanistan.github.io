@@ -11,4 +11,4 @@ taxonomies = [
 
 [extra]
 show_tags = false # now tags taxonomy just yet
-debug = false
+debug = true
