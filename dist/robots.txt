@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://stanistan.com/sitemap.xml
