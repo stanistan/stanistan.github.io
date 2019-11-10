@@ -19,6 +19,22 @@ DIR_INDEX=_index.md
     err "No $WRITES_DIR in current directory" &&
     exit 1
 
+dir_index_abs_path() {
+    abs_path "$DIR_INDEX"
+}
+
+push_written_index_file() {
+    echo "Added: $(dir_index_abs_path)"
+}
+
+push_removed_index_file() {
+    echo "Removed: $(dir_index_abs_path)"
+}
+
+find_non_index_files() {
+    find . -name "*.md" | grep -v "$DIR_INDEX" || true
+}
+
 write_section_file() {
     cat > "$DIR_INDEX" <<- EOM
 +++
@@ -42,6 +58,7 @@ ensure_directories_exist() {
         pushd "$DIR"
         if [ ! -f "$DIR_INDEX" ]; then
             write_section_file
+            push_written_index_file
         fi
     done
 
@@ -70,10 +87,13 @@ check_writes_post() {
 check_index_file() {
     local FILE_PATH
     local DIR
+    local FOUND
     FILE_PATH="$1"
-    DIR=$(dirname ${FILE_PATH})
+    DIR=$(dirname "${FILE_PATH}")
     pushd "$DIR"
-    if [ -z "$(find . -name "*.md" | grep -v "$DIR_INDEX")" ]; then
+    FOUND="$(find_non_index_files)"
+    if [ -z "$FOUND" ]; then
+        push_removed_index_file
         rm "$DIR_INDEX"
     fi
     popd
