@@ -12,3 +12,10 @@
         {% endif %}
     {% endif %}
 {% endmacro %}
+
+{% macro github_link(config, page) %}
+    {% set url = "https://raw.githubusercontent.com" %}
+    {% set url = url ~ "/" ~ config.extra.repo_content_path %}
+    {% set url = url ~ "/" ~ page.relative_path %}
+    <a href="{{url}}" class="faded">.md</a>
+{% endmacro %}
