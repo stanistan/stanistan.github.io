@@ -6,7 +6,7 @@ DEV_CONFIG := config.dev.toml
 PROD_CONFIG := config.toml
 NOW := $(shell date)
 
-.PHONY: serve-dev serve-prod build deploy verify-content-dates unchanged check
+.PHONY: serve-dev serve-prod build deploy dates-dirs check-unchanged check
 
 serve-prod:
 	zola --config $(PROD_CONFIG) serve --output-dir $(SERVE_DIR)
@@ -17,17 +17,17 @@ serve-dev:
 build:
 	zola --config $(PROD_CONFIG) build --output-dir $(DIST_DIR)
 
-verify-content-dates:
+date-dirs:
 	bin/verify-content-dates
 
-unchanged:
+check-unchanged:
 	bin/check-for-nothing-staged
 
 check:
 	shellcheck bin/*
 	zola check
 
-deploy: check unchanged verify-content-dates build
-	git add content/writes $(DIST_DIR)
+deploy: check check-unchanged build
+	git add $(DIST_DIR)
 	git commit -m "AUTO: make deploy run on $(NOW)" --allow-empty
 	bin/ship $(DIST_DIR) the-details master
