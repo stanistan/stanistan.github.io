@@ -8,7 +8,7 @@
 
     {% set writes = get_section(path="writes/_index.md") %}
     {% if writes.pages | length > 0 %}
-        <ul class="posts">
+        <ul class="outside">
             {% for page in writes.pages %}
                 <li class="smaller">
                     <a href="{{page.permalink}}">{{page.title}}</a>
@@ -16,4 +16,5 @@
             {% endfor %}
         </ul>
     {% endif %}
+
 {% endblock content %}

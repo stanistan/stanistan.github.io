@@ -1,14 +1,17 @@
 // Colors
 $background: #fcfcfc;
 $text: #333;
-$text-lighter: lighten($text, 50%);
+$text-lighter: lighten($text, 60%);
 
 $highlight-base: #a71d5d;
 $highlight: lighten($highlight-base, 50%);
-$highlight-border: darken($highlight-base, 50%);
+$highlight-light: lighten($highlight-base, 54%);
+$highlight-dark: darken($highlight-base, 35%);
 
 $link-color: lighten(darkblue, 5%);
 $link-hover-color: lighten($link-color, 25%);
+
+// Main layout, is single column
 
 body {
     border-top: 5px solid $highlight;
@@ -22,11 +25,12 @@ body {
 }
 
 .content {
-    margin: 8rem auto 0;
-    max-width: 42rem;
-    padding: 2rem;
+    margin: 8em auto 0;
+    max-width: 33em;
+    padding: 2em;
 }
 
+// Heading sizes
 
 $article-heading-sizes:
     "h1" 1.5em,
@@ -35,9 +39,11 @@ $article-heading-sizes:
     "h4" 1em;
 
 @each $heading, $font-size in $article-heading-sizes {
-    article #{$heading} {
+    #{$heading} {
         font-size: $font-size;
-        margin-bottom: 0;
+        font-weight: bold;
+        margin: 0;
+        padding: $font-size 0 0;
     }
 }
 
@@ -69,30 +75,33 @@ pre, .mono, code {
 
 a, .link-like {
     color: $link-color;
-    font-weight: bold;
-    text-decoration: underline;
+    font-weight: bolder;
 
     &:hover {
         color: $link-hover-color;
+        text-decoration: none;
     }
 }
 
 ol, ul {
     list-style-position: outside;
-    margin: 0;
+    margin: 0 0 0 1.6em;
     padding: 0;
-}
 
-ul {
-    list-style-type: square;
+    &.outside {
+        margin: 0;
+    }
 
-    & > .list-title {
-        margin-bottom: 0;
+    li {
+        margin: 0 0 0.1em 0;
+        padding: 0 0 0 0.4em;
     }
 }
 
-
 code {
+    background: lighten($highlight-light, 5%);
+    border-bottom: 1px dotted $highlight;
+    padding: 0.3em;
     font-size: 0.9em;
 }
 
@@ -112,15 +121,30 @@ pre {
 
 blockquote {
     font-size: 0.9em;
+    font-style: italic;
     padding: 0.5em 2em;
     border-left: 1px dotted $highlight;
 }
 
 .tag {
-    padding: 0.3em;
     margin-right: 0.3em;
-    background: #eee;
-    border: 1px solid #eee;
-    border-radius: 3px;
-    color: #333;
+    border-radius: 10px;
+    color: $text;
+    text-decoration: none;
+
+    &:hover {
+        color: #000;
+        text-decoration: underline;
+    }
 }
+
+.toc {
+    padding: 1em 0;
+    margin-top: 1.5em;
+    background: #fff;
+    line-height: 1.45;
+    margin-left: -2em;
+    margin-right: -2em;
+    border-bottom: 1px dotted $highlight;
+}
+
