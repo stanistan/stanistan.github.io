@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="author" content="Stan Rozenraukh" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>How this site works - stanistan</title>
+        <link rel="stylesheet" type="text/css" href="/style.css" />
+    </head>
+    <body>
+        <div class="content">
+            
+    <a href="/" class="faded mono small" title="stanistan /">go /</a>
+    <article>
+        <h1>How this site works</h1>
+        <div class="small faded">
+            
+    
+    
+    
+    <a href="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;the-details&#x2F;content&#x2F;writes&#x2F;2019&#x2F;11&#x2F;10&#x2F;how-this-blog-works.md" class="faded">.md</a>
+ |
+            <a href="https:&#x2F;&#x2F;stanistan.com&#x2F;writes&#x2F;2019&#x2F;11&#x2F;10&#x2F;how-this-blog-works&#x2F;" class="faded">permalink</a> |
+            Published on November 10, 2019
+        </div>
+
+        
+
+        
+
+        <div><p>Like lots of folk on the internet, I have a website that's powered by
+a static site generator and hosted somewhere on the GitHub.</p>
+<p>This post serves two functions:</p>
+<ol>
+<li>
+<p>Actually getting something that's <em>text</em> onto the internet.</p>
+</li>
+<li>
+<p>Some self documentation on how this works, because as I've gone back to this
+over the past few months to add some polish, or just, <em>make any kind of
+changes</em>, I've been surprised by things that I've done for myself in the
+past.</p>
+</li>
+</ol>
+<p>Here are some immediately relevant links:</p>
+<ul>
+<li><a href="https://github.com/stanistan/stanistan.github.io">The repo on github</a></li>
+<li><a href="https://www.getzola.org">Zola</a> - the static site generator I use, which is written in <a href="https://www.rust-lang.org">Rust</a></li>
+</ul>
+<h2 id="branches-or-the-details-vs-master">Branches, or <code>the-details</code> vs <code>master</code></h2>
+<p>Unlike the default github's repo-specific pages, you cannot use a <code>gh-pages</code> branch
+to host a site for a <em>user</em>. You end up having to create a repository called
+<code>&lt;you&gt;.github.io</code>, and whatever is on the <code>master</code> branch will end up getting served
+to the world. (<a href="https://help.github.com/en/github/working-with-github-pages/about-github-pages#publishing-sources-for-github-pages-sites">source</a>)</p>
+<p>Luckily, we can set a <a href="https://help.github.com/en/github/administering-a-repository/setting-the-default-branch">default branch</a> for the actual <em>editing</em> of
+the code and content, and for some reason, I decided to call it <code>the-details</code>.
+Possibly because naming is hard.</p>
+<h3 id="readme-md"><code>README.md</code></h3>
+<p>A consequence here is that the <code>README.md</code> cannot, by default sit in the
+<code>master</code> branch, explaining that you can't edit any content in that branch itself.</p>
+<p>I have a workaround set up that symlinks the file from the <code>static/</code> directory to <code>./</code>,
+which means that it will always get deployed to <code>master</code> (<a href="https://stanistan.com/README.md">and the site</a>) as
+I push changes to it.</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">$ cd static &amp;&amp; ls -l
+lrwxr-xr-x  1 stanistan  staff    12B Nov 10 16:20 README.md@ -&gt; ../README.md
+</span></pre>
+<p>This was something that gave me piece of mind as I set this up, and later
+on was a pleasant surprise... I was worried about keeping the READMEs in sync
+across branches and learned that past Stan had already had that panic.</p>
+<p>A lof of the setup for this static site is so I'm not suprised by things that are
+easy to forget. I expect to change this rarely and would rather it break
+meaningfully and with context on my laptop than suprisingly and live on the
+internet.</p>
+<h2 id="configuration">Configuration</h2>
+<p>There are <em>two</em> config files:</p>
+<ul>
+<li><code>config.toml</code> - the prod config</li>
+<li><code>config.dev.toml</code> - the dev config</li>
+</ul>
+<p>As of now, the only difference between the two is that I print out the
+<code>{{ __tera_context }}</code> at the bottom of each template in dev so that it's
+easy to see what data is currently available while I'm futzing with the
+templates.</p>
+<h3 id="makefile"><code>Makefile</code></h3>
+<p>Besides the configuration difference in the <code>toml</code> files, there is a structural
+difference between <code>dev</code> and <code>prod</code> for this site.</p>
+<p>By default, zola ships both the <code>serve</code> and <code>build</code> to the same <code>public/</code> directory.
+I've over-ridden these in the <code>Makefile</code> so that one does not clobber the other.</p>
+<p><code>public/</code> is in <code>.gitignore</code>, and remains the path for watching live updates.
+These can be triggered by running <code>make serve-{dev,prod}</code>.</p>
+<ul>
+<li><code>make serve-dev</code> - uses the dev config and shows draft posts</li>
+<li><code>make serve-prod</code> - serves <em>exactly</em> what would be built and deployed</li>
+<li><code>make build</code> - runs <code>zola build</code> but all output is in <code>./dist</code> instead of <code>./public</code></li>
+</ul>
+<h3 id="content-structure">Content structure</h3>
+<p>Zola keeps all posts in the <code>./content</code> directory, which allows for arbitrary static
+pages. I figured I didn't want everything to be a blog post (what about projects?),
+and I also don't <em>super</em> like the term blog, even thouth that's what this is.</p>
+<p><code>content/writes</code> is where all of the <em>blog</em>-ish content goes, and all of the posts
+in it should be organized by date, in a <code>writes/&lt;YYYY&gt;/&lt;MM&gt;/&lt;DD&gt;/&lt;slug&gt;/</code> format.</p>
+<p>Zola doesn't have anything to help with autogenerating folder structures, so I made my
+own bash script to help. (<a href="https://stanistan.com/writes/2019/11/10/how-this-blog-works/#the-scripts">see below</a>)</p>
+<p>Everything else (as of now) is a free for all.</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">$ find content -not -type d
+content/writes/2019/11/09/how-this-blog-works.md    &lt;-- THIS POST
+content/writes/2019/11/09/_index.md                 &lt;-- autogenerated
+content/writes/2019/11/_index.md                    &lt;-- autogenerated
+content/writes/2019/_index.md                       &lt;-- autogenerated
+content/writes/_index.md                            &lt;-- redirects to /
+content/_index.md                                   &lt;-- / the home page
+</span></pre>
+<p><em>Note:</em> Something I will probably do later is to symlink the autogenerated
+<code>_index.md</code> files to a source of truth instead of writing them all
+directly, this would make them all <em>much</em> easier to change at once.</p>
+<p><em>Yes, this is all over-engineered, but also, kind of fun.</em></p>
+<h3 id="the-scripts">The Scripts</h3>
+<p>I've already covered <code>make serve-{dev,prod}</code> and <code>make build</code> which are wrappers
+around their respective <a href="https://www.getzola.org/documentation/getting-started/cli-usage/">zola commands</a>. These are a few of the
+<em>other</em> scripts that make (pun somewhat intended), managing this easier.</p>
+<ul>
+<li>
+<p><code>bin/verify-content-dates</code> - (<a href="https://github.com/stanistan/stanistan.github.io/blob/the-details/bin/verify-content-dates">source</a>)</p>
+<p>This script looks for all non <code>_index.md</code> files in <code>content/writes</code> and
+places them in the correct dates subdirectories. It also cleans up
+any directories/files left-over with no posts once that's done.</p>
+<p>It keeps it all neat.</p>
+<p>aka: <code>make date-dirs</code></p>
+</li>
+<li>
+<p><code>bin/ship</code> - (<a href="https://github.com/stanistan/stanistan.github.io/blob/the-details/bin/ship">source</a>)</p>
+<p>This script plublishes the <code>dist</code> directory to the <code>master</code> branch using
+<a href="https://git-memo.readthedocs.io/en/latest/subtree.html"><code>git subtree split</code></a>. There <em>was</em> a bit of a gotcha with
+overriding the <em>entire</em> master branch using this because it has to have
+a <code>CNAME</code> file and record in it to correctly publish to <code>stanistan.com</code>.</p>
+<p>aka: <code>make deploy</code></p>
+</li>
+</ul>
+<p>For all of the scripts in <code>bin/*</code> I'm using <a href="https://www.shellcheck.net"><code>shellcheck</code></a>, which
+is <em>amazing</em>, and helps me get better at writing bash.</p>
+<h2 id="the-theme">The Theme</h2>
+<p>I'm using my own theme, which is being developed JIT, its primary colors come
+from the <a href="https://github.com/getzola/zola/blob/master/sublime_themes/inspired-github.tmTheme"><code>inspired-github</code></a> syntax highlight theme
+included in Zola.</p>
+<ul>
+<li><em>TODO (maybe):</em> Extract into an actual theme.</li>
+</ul>
+<h2 id="domain-hosting">Domain &amp; Hosting</h2>
+<p>The domain is on <a href="https://dreamhost.com">dreamhost</a>, which I've used for a <em>loooong</em> time,
+with DNS records pointed to GitHub as per <a href="https://help.github.com/en/github/working-with-github-pages/managing-a-custom-domain-for-your-github-pages-site">these docs</a>.</p>
+</div>
+
+        
+
+    </article>
+
+            
+        </div>
+    </body>
+</html>
