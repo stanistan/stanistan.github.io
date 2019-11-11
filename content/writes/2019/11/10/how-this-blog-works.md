@@ -159,7 +159,7 @@ included in Zola.
 The domain is on [dreamhost][dreamhost], which I've used for a _loooong_ time,
 with DNS records pointed to GitHub as per [these docs][github-custom-domains].
 
-[README]: /README.md
+[README]: https://stanistan.com/README.md
 [default-branch]: https://help.github.com/en/github/administering-a-repository/setting-the-default-branch
 [dreamhost]: https://dreamhost.com
 [github-custom-domains]: https://help.github.com/en/github/working-with-github-pages/managing-a-custom-domain-for-your-github-pages-site
