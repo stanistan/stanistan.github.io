@@ -28,6 +28,11 @@ body {
     margin: 8em auto 0;
     max-width: 33em;
     padding: 2em;
+    position: relative;
+}
+
+article {
+    position: relative;
 }
 
 // Heading sizes
@@ -139,12 +144,16 @@ blockquote {
 }
 
 .toc {
-    padding: 1em 0;
-    margin-top: 1.5em;
+    width: 15em;
+    font-size: 0.8em;
+    padding: 1em;
     background: #fff;
     line-height: 1.45;
-    margin-left: -2em;
-    margin-right: -2em;
     border-bottom: 1px dotted $highlight;
+
+    a {
+        color: $text;
+        font-weight: normal;
+    }
 }
 
