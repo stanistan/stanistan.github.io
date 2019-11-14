@@ -61,9 +61,12 @@ Possibly because naming is hard.</p>
 <p>I have a workaround set up that symlinks the file from the <code>static/</code> directory to <code>./</code>,
 which means that it will always get deployed to <code>master</code> (<a href="https://stanistan.com/README.md">and the site</a>) as
 I push changes to it.</p>
+<p><em>Update as of November 14th:</em> This is also being used to keep track of the <code>CNAME</code>
+file that GitHub looks for when setting up your own personal hosting.</p>
 <pre style="background-color:#ffffff;">
 <span style="color:#323232;">$ cd static &amp;&amp; ls -l
-lrwxr-xr-x  1 stanistan  staff    12B Nov 10 16:20 README.md@ -&gt; ../README.md
+lrwxr-xr-x   1 stanistan  staff     8B Nov 14 09:33 CNAME@ -&gt; ../CNAME
+lrwxr-xr-x   1 stanistan  staff    12B Nov 14 09:33 README.md@ -&gt; ../README.md
 </span></pre>
 <p>This was something that gave me piece of mind as I set this up, and later
 on was a pleasant surprise... I was worried about keeping the READMEs in sync
@@ -134,7 +137,9 @@ any directories/files left-over with no posts once that's done.</p>
 <p>This script plublishes the <code>dist</code> directory to the <code>master</code> branch using
 <a href="https://git-memo.readthedocs.io/en/latest/subtree.html"><code>git subtree split</code></a>. There <em>was</em> a bit of a gotcha with
 overriding the <em>entire</em> master branch using this because it has to have
-a <code>CNAME</code> file and record in it to correctly publish to <code>stanistan.com</code>.</p>
+a <code>CNAME</code> file and record in it to correctly publish to <code>stanistan.com</code>,
+it is now being symlinked and copied over via the <code>static/</code> directory,
+same as the <code>README.md</code>.</p>
 <p>aka: <code>make deploy</code></p>
 </li>
 </ul>
