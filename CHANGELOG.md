@@ -17,9 +17,15 @@ This should be in reverse chronological order.
 
 #### New
 
-- Adding a `CHANGELOG.md`, which is symlinked and served as `/CHANGELOG`.
+- `Makefile` supports the env var `$BASE_URL`, this is useful if
+  I want to check the site from my phone during development, using
+  [internet sharing on MacOS][internet-sharing].
+
+- Adding a `CHANGELOG.md`, which is symlinked and served as `/changelog`.
 
 #### Updated
+
+- Better sizing/spacing for mobile-web.
 
 - The post [How this site works](@/writes/2019/11/10/how-this-blog-works.md)
   was updated to reflect the fixes in the section below.
@@ -31,3 +37,5 @@ This should be in reverse chronological order.
   the master branch _needs_ to have a `CNAME` file for custom domains
   to work well. Fixed by symlinking it to `static/` the same way that
   the REAMDE is, and this file is.
+
+[internet-sharing]: https://support.apple.com/guide/mac-help/share-internet-connection-mac-network-users-mchlp1540/mac
