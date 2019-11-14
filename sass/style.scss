@@ -88,22 +88,25 @@ a, .link-like {
     }
 }
 
+ol, ul {
+    list-style-position: outside;
+    margin: 0;
+    margin-left: 1.6em;
+    padding: 0;
+
+    li {
+        margin: 0 0 0.1em 0;
+        padding: 0 0 0 0.2em;
+    }
+}
+
 .outside {
     margin-left: -2em;
 }
 
-ol, ul {
-    list-style-position: outside;
-    margin: 0 0 0 1.6em;
-    padding: 0;
-
+ul, ol {
     &.outside {
-        margin: 0;
-    }
-
-    li {
-        margin: 0 0 0.1em 0;
-        padding: 0 0 0 0.4em;
+        margin-left: -0.1em;
     }
 }
 
@@ -161,3 +164,26 @@ blockquote {
     }
 }
 
+@media only screen and (max-width: 500px) {
+
+    body {
+        font-size: 1.15em;
+    }
+
+    .content {
+        padding: 1.8em;
+    }
+
+    .smaller {
+        font-size: 90%;
+    }
+
+    .small {
+        font-size: 83%;
+    }
+
+    .outside {
+        margin-left: inherit;
+    }
+
+}
