@@ -4,7 +4,11 @@
 
     {{ section.content | safe }}
 
-    <p class="mono small faded">## TODO: add content</p>
+    <p class="outside mono small faded">
+        <span>##</span>
+        <span>TODO: add content</span> |
+        <a href="/CHANGELOG" class="faded">CHANGELOG.md</a>
+    </p>
 
     {% set writes = get_section(path="writes/_index.md") %}
     {% if writes.pages | length > 0 %}
@@ -16,5 +20,6 @@
             {% endfor %}
         </ul>
     {% endif %}
+
 
 {% endblock content %}

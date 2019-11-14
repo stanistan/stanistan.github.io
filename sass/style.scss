@@ -88,6 +88,10 @@ a, .link-like {
     }
 }
 
+.outside {
+    margin-left: -2em;
+}
+
 ol, ul {
     list-style-position: outside;
     margin: 0 0 0 1.6em;
