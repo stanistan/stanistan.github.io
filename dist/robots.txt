@@ -1,2 +1,2 @@
 User-agent: *
-Sitemap: https://stanistan.com/sitemap.xml
+Sitemap: https://www.stanistan.com/sitemap.xml
