@@ -1,4 +1,4 @@
-base_url = "https://stanistan.com"
+base_url = "https://www.stanistan.com"
 title = "stanistan"
 
 compile_sass = true
