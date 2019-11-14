@@ -1,5 +1,4 @@
 +++
-draft = false
 title = "How this site works"
 date = 2019-11-10
 

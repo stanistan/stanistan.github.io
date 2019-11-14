@@ -11,7 +11,7 @@
         <ul class="outside">
             {% for page in writes.pages %}
                 <li class="smaller">
-                    <a href="{{page.permalink}}">{{page.title}}</a>
+                    <a href="{{page.permalink | safe}}">{{page.title}}</a>
                 </li>
             {% endfor %}
         </ul>
