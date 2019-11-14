@@ -46,9 +46,13 @@ I have a workaround set up that symlinks the file from the `static/` directory t
 which means that it will always get deployed to `master` ([and the site][README]) as
 I push changes to it.
 
+_Update as of November 14th:_ This is also being used to keep track of the `CNAME`
+file that GitHub looks for when setting up your own personal hosting.
+
 ```
 $ cd static && ls -l
-lrwxr-xr-x  1 stanistan  staff    12B Nov 10 16:20 README.md@ -> ../README.md
+lrwxr-xr-x   1 stanistan  staff     8B Nov 14 09:33 CNAME@ -> ../CNAME
+lrwxr-xr-x   1 stanistan  staff    12B Nov 14 09:33 README.md@ -> ../README.md
 ```
 
 This was something that gave me piece of mind as I set this up, and later
@@ -138,7 +142,9 @@ _other_ scripts that make (pun somewhat intended), managing this easier.
   This script plublishes the `dist` directory to the `master` branch using
   [`git subtree split`][subtree-docs]. There _was_ a bit of a gotcha with
   overriding the _entire_ master branch using this because it has to have
-  a `CNAME` file and record in it to correctly publish to `stanistan.com`.
+  a `CNAME` file and record in it to correctly publish to `stanistan.com`,
+  it is now being symlinked and copied over via the `static/` directory,
+  same as the `README.md`.
 
   aka: `make deploy`
 
