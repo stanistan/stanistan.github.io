@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 #
 # This script looks for all of the "posts"
 # in the $WRITES_DIR and makes sure they're
@@ -8,48 +8,84 @@
 # anything but empty/missing sections.
 #
 # The script must be called from the root directory.
-set -e
 
 source "bin/inc.sh"
 
+# Where all the posts are
 WRITES_DIR=content/writes
+
+# The section index file
 DIR_INDEX=_index.md
-PATH_TO_SECION_INDEX="templates/writes_section"
+
+# The relative path to the template file
+# of the section index. We will be symlinking
+# to this.
+#
+# Note: Using an absolute path here would break builds
+# on a different machine :)
+PATH_TO_SECION_INDEX=templates/writes_section
 
 [ ! -d "$WRITES_DIR" ] &&
     err "No $WRITES_DIR in current directory" &&
     exit 1
 
+
+# Checks for files in a given directory (recursively)
+# that aren't `_index.md`.
 find_non_index_files() {
-    find "$(dirname "$1")" -name "*.md" | grep -v "$DIR_INDEX" || true
+    find "$(dirname "$1")" -name "*.md" | grep -v "$DIR_INDEX" || echo ""
 }
 
+rel_path_to_section_index() {
+    echo "$(dirname "$1" | sed 's/[^\/]*[^\/]/../g')/$PATH_TO_SECION_INDEX"
+}
+
+#
+# Given a relative path some/path/to/some/directory,
+# this makes sure that there is a current and up
+# to date symlink to $PATH_TO_SECION_INDEX from _index.md.
+#
+# This will remove and re-link the file,
+# but only because I was too lazy to implement a `--force-recreate`
+# flag.
+#
+# Argument: path/to/some/directory
 link_section_file() {
-    if [ ! -d "$2" ]; then
-        mkdir "$2"
-    fi
+    local FILE_PATH="$1/$DIR_INDEX"
+    local OPERATION="created"
+    local LINK_PATH
 
-    if [ ! -f "$2/$DIR_INDEX" ]; then
-        ln -s "$1/$PATH_TO_SECION_INDEX" "$2/$DIR_INDEX"
-        echo "Linked file: $2/$DIR_INDEX"
-    fi
+    LINK_PATH="$(rel_path_to_section_index "$FILE_PATH")"
+    [ ! -d "$1" ] && mkdir "$1"
+    [ -f "$FILE_PATH" ] && rm "$FILE_PATH" && OPERATION="reset"
+    ln -s "$LINK_PATH" "$FILE_PATH"
+    printf "[%s link] %s@\n\t-> %s\n" "$OPERATION" "$FILE_PATH" "$LINK_PATH"
 }
 
+#
+# Given a path that looks like `YYYY/MM/DD`,
+# this makes sure that each directory is present
+# in $WRITES_DIR, and that each one of them
+# has an `_index.md` that symlinks to "$PATH_TO_SECION_INDEX"
+#
+# Argument: YYYY/MM/DD
 ensure_directories_exist() {
     local DIR_PATH="$WRITES_DIR"
-    local UP_PATH="../.."
-    local DATE_PATH
-
-    DATE_PATH="$1"
     IFS='/'
-    read -ra DIRS <<< "$DATE_PATH"
+    read -ra DIRS <<< "$1"
     for DIR in "${DIRS[@]}"; do
         DIR_PATH="$DIR_PATH/$DIR"
-        UP_PATH="$UP_PATH/.."
-        link_section_file "$UP_PATH" "$DIR_PATH"
+        link_section_file "$DIR_PATH"
     done
 }
 
+#
+# Extracts the `date` field from the post,
+# and moves it to the correct directory given
+# that date, making sure that the directories
+# are set up along the way using `ensure_directories_exist`
+#
+# Argument: path/to/file
 check_writes_post() {
     local FILE_PATH             # first input arg
     local FILE_NAME             # the tail of the path we're going to be receiving
@@ -64,27 +100,32 @@ check_writes_post() {
     NEW_FILE_PATH="$WRITES_DIR/$PARSED_DATE_FORMATTED/$FILE_NAME"
 
     ensure_directories_exist "$PARSED_DATE_FORMATTED"
-    mv "$FILE_PATH" "$NEW_FILE_PATH"
-}
-
-check_index_file() {
-    local FOUND
-    FOUND="$(find_non_index_files "$1")"
-    if [ -z "$FOUND" ]; then
-        echo "Removed: $1"
-        rm "$1"
+    if [ "$FILE_PATH" != "$NEW_FILE_PATH" ]; then
+        mv "$FILE_PATH" "$NEW_FILE_PATH"
+        echo "[moved post] $FILE_PATH -> $NEW_FILE_PATH"
     fi
 }
 
 for_each_writes_post() {
-    while read -r FILE_PATH; do
-        check_writes_post "$FILE_PATH"
+    while read -r POSTS_PATH; do
+        check_writes_post "$POSTS_PATH"
     done
 }
 
 for_each_index_file() {
-    while read -r FILE_PATH; do
-        check_index_file "$FILE_PATH"
+    while read -r INDEX_PATH; do
+        local FOUND
+        FOUND="$(find_non_index_files "$INDEX_PATH")"
+        if [ -z "$FOUND" ]; then
+            rm "$INDEX_PATH"
+            echo "[deleted file] $INDEX_PATH"
+        fi
+    done
+}
+
+for_each_empty_dir() {
+    while read -r DIR; do
+        rm -r "$DIR" && echo "[deleted dir] $DIR"
     done
 }
 
@@ -97,4 +138,4 @@ find "$WRITES_DIR" -name "*.md" | grep -v "$DIR_INDEX" | for_each_writes_post
 find $WRITES_DIR -name "$DIR_INDEX" | for_each_index_file
 
 # Remove all empty directories.
-find $WRITES_DIR -type d -empty -delete
+find $WRITES_DIR -type d -empty | for_each_empty_dir
