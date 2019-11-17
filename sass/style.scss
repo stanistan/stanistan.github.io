@@ -170,6 +170,14 @@ blockquote {
     text-decoration: none;
 }
 
+article .img-container {
+    margin: 0.2em -2em 0;
+    img {
+        width: 100%;
+        height: auto;
+    }
+}
+
 @media only screen and (max-width: 500px) {
 
     body {
@@ -190,6 +198,10 @@ blockquote {
 
     .outside {
         margin-left: inherit;
+    }
+
+    article .img-container {
+        margin: 0.2em -1em 0;
     }
 
 }
