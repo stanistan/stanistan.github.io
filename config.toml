@@ -12,4 +12,7 @@ taxonomies = [
 [extra]
 repo_content_path = "stanistan/stanistan.github.io/the-details/content"
 show_tags = false # now tags taxonomy just yet
-debug = false
+
+[extra.debug]
+templates = false
+css = false

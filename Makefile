@@ -6,7 +6,7 @@
 
 SERVE_DIR := public
 SERVE_FLAGS = --output-dir $(SERVE_DIR) --interface 0.0.0.0 --base-url $(BASE_URL)
-DIST_DIR := dist
+DIST_DIR := public
 DEV_CONFIG := config.dev.toml
 PROD_CONFIG := config.toml
 NOW := $(shell date)
