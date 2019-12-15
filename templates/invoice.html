@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice{% endblock title %}
+
+{% block content %}
+
+    {% set invoice_url = "http://localhost:3002/?invoice_id=" ~ page.extra.invoice_id %}
+    {% set invoice = load_data(url=invoice_url, format="json") %}
+    {% set invoice_client = invoice.fields.Client %}
+
+    <div class="invoice-heading">
+        <h1>Invoice</h1>
+        <div class="invoice-heading-code"><code>#INV{{ invoice.fields.ID }}</code></div>
+    </div>
+
+    <div class="clear">
+        <dl class="smaller">
+            <dt>From</dt>
+            <dd>
+            Stan Rozenraukh &lt;rozenraukh@gmail.com&gt; <br />
+            404 8th Ave Apt 3C <br />
+            Brooklyn, NY 11215
+            </dd>
+            <dt>For</dt>
+            <dd>
+            {{ invoice_client.fields.ContactName }} &lt;{{ invoice_client.fields.ContactEmail }}&gt;<br />
+            {{ invoice_client.fields.Company }} &lt;{{ invoice_client.fields.Website }}&gt; <br />
+            </dd>
+            <hr class="clear">
+            <dt>Date</dt>
+            <dd>{{ invoice.fields.Date }}</dd>
+            <dt>Due Date</dt>
+            <dd>{{ invoice.fields["Due Date"] }}</dd>
+        </dl>
+    </div>
+
+    <div class="clear">
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.fields["Invoice Item"] %}
+                <tr>
+                    <td>{{ item.fields.Description }}</td>
+                    <td class="right">{{ item.fields.Amount }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>Balance Due</td>
+                    <td class="right">{{ invoice.fields["Total Amount"] }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+{% endblock content %}
