@@ -13,6 +13,12 @@ to keep a log of how the site has changed over time.
 
 This should be in reverse chronological order.
 
+### 2019-12-15
+
+#### New
+
+- Support / styling for the `<details` element.
+
 ### 2019-11-17
 
 #### New
