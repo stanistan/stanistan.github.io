@@ -17,7 +17,8 @@ This should be in reverse chronological order.
 
 #### New
 
-- Support / styling for the `<details` element.
+- Support / styling for the `<details>` element.
+- Support for a `snippet` shortcode to pull in `details` from `static/details`
 
 ### 2019-11-17
 
