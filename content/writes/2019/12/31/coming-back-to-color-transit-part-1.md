@@ -1,7 +1,6 @@
 +++
-draft = true
-title = "Coming back to color-transit"
-date = 2019-11-15
+title = "Coming back to color-transit (part 1)"
+date = 2019-12-31
 +++
 
 _Note:_ I'm writing this as an experiment in coming back to a side-project
@@ -279,13 +278,77 @@ dev:color-transit.core=> (->> @app-state :canvas-sets first :color-sets (map :co
 ```
 
 In our start up we say we want `3` sets, and each one has a `shuffle`-d list of the
-original colors provided.
+original colors provided. **The three sets correspond to three stops in the
+generated gradient,** and the colors that they will be transitioning to.
 
 An initial `color-set` looks like:
 
 ```clj
-{ :colors colors  :color-queue [ ] :current-color: (first colors) }
+{ :colors colors
+  :color-queue [ ]
+  :current-color: (first colors) }
 ```
+
+- `:colors` - are each of the colors in that _one_ gradient step we'll be
+  fading through,
+- `:color-queue` - a queue (FIFO), of colors that we'll be moving through
+  in the fade,
+- `:current-color` - what color are we currently displaying.
+
+Our canvas drawer (in `core`) will only draw the `current-color`, and we
+pre-compute the `queue` up front as infrequently as possible so that we
+do as little work when drawing the gradient as possible.
+
+All of that happens in `color/compute-next-state`.
+
+#### Computing the color transitios
+
+`compute-next-state` has two main branches of logic:
+
+1. the first is when the queue is non-empty, we take the color at
+   the head of the queue, and update `current-color` with it. This runs
+   until the queue is drained.
+
+2. the second is if both the initial state, and happens after the queue
+   is drained... we generate a new one! Given the current color, and the
+   next one in the `colors`, and the number of `steps` we want to be able
+   to take from one color to the next, we compute them.
+
+##### The maths
+
+```clj
+(defn delta [n1 n2 steps] (/ (- n2 n1) steps))
+```
+
+`delta` is simplified version of what the app does, where this operates on
+one number, the app works on the destructured `[r g b]`.
+
+```clj
+(defn +delta [n n+ scalar]
+  (-> (* scalar n+)
+      (+ n)
+      Math/floor))
+```
+
+Similarly, `+delta` increases `n` by the delta we computed earlier, `n+`,
+scaled up by `scalar`, and then rounds it down.
+
+We use these two functions to create the color queue.
+
+Most of _everything_ else in the code is transforming the colors
+into the gradient and canvas, and making sure it's running at a
+specific interval in the browser.
+
+### Wrapping up
+
+Originally, I wasn't sure if I'd want to change _anything_ here, but
+after spending the time with the codebase, I'd like to make the grandient
+drawing _reactive_ to user parameterization in the UI.
+
+So eventually, there'll be a second post, and updates to the app, and a
+write up of the process.
+
+...which will hopefully take less than a couple of months to finish...
 
 [cljs]: https://clojurescript.org
 [boot]: https://boot-clj.com
