@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="author" content="Stan Rozenraukh" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Coming back to color-transit (part 1) - stanistan</title>
+        <link rel="icon" href="data:" />
+        
+            
+            <style type="text/css">body{border-top:5px solid #f6cde0;background:#fcfcfc;color:#333;font-family:Cochin, Times, serif;font-size:1.3em;line-height:1.55em;margin:0;padding:0}.content{margin:8em auto 0;max-width:33em;padding:2em;position:relative}article{position:relative}h1{font-size:1.5em;font-weight:bold;margin:0;padding:1.5em 0 0}h2{font-size:1.25em;font-weight:bold;margin:0;padding:1.25em 0 0}h3{font-size:1.15em;font-weight:bold;margin:0;padding:1.15em 0 0}h4{font-size:1em;font-weight:bold;margin:0;padding:1em 0 0}hr{border:0 dotted #f6cde0;border-top-width:1px;height:0}pre,.mono,code{font-family:monospace}.small{font-size:75%}.smaller{font-size:85%}.faded{color:#999}.center{text-align:center}a,.link-like{color:#0000a5;font-weight:bolder}a:hover,.link-like:hover{color:#2525ff;text-decoration:none}ol,ul{list-style-position:outside;margin:0;margin-left:1.6em;padding:0}ol li,ul li{margin:0 0 0.1em 0;padding:0 0 0 0.2em}.outside{margin-left:-2em}ul.outside,ol.outside{margin-left:-0.1em}code{background:#fdf4f8;border-bottom:1px dotted #f6cde0;padding:0.3em;font-size:0.9em}pre,blockquote{background:white;line-height:1.45em;margin-left:-2em;margin-right:-2em}pre{font-size:0.85em;border-bottom:1px dotted #f6cde0;padding:1em 2em;overflow-x:scroll}blockquote{font-size:0.9em;font-style:italic;padding:0.5em 2em;border-left:1px dotted #f6cde0}.tag{margin-right:0.3em;border-radius:10px;color:#333;text-decoration:none}.tag:hover{color:#000;text-decoration:underline}.toc{width:15em;font-size:0.8em;padding:1em;background:#fff;line-height:1.45;border-bottom:1px dotted #f6cde0}.toc a{color:#333;font-weight:normal}.anchor-link{position:absolute;margin-left:-1em;text-decoration:none}article .img-container{margin:0.2em -2em 0}article .img-container img{width:100%;height:auto}@media only screen and (max-width: 500px){body{font-size:1.15em}.content{padding:1.8em}.smaller{font-size:90%}.small{font-size:83%}.outside{margin-left:inherit}article .img-container{margin:0.2em -1em 0}}dl{margin:1.5em 0}dl dt{clear:left;float:left;text-decoration:underline;text-align:right;width:5.5em}dl dt::after{content:":"}dl dd{display:block;float:left}.clear{clear:both}.invoice-heading{padding:1.5em 0}.invoice-heading h1{float:left;padding:0}.invoice-heading .invoice-heading-code{float:right;font-weight:bold}table{padding-top:1.5em;width:100%}table th,table td{text-align:left}table th.right,table td.right{text-align:right}table tfoot td{font-weight:bold}table tfoot tr:first-child td{border-top:1px dotted #f6cde0;padding-top:0.3em}table tbody tr:last-child td{padding-bottom:0.3em}table tbody tr:first-child td{padding-top:0.3em}table thead tr:last-child th{padding-bottom:0.3em;border-bottom:1px dotted #ccc}details{font-size:85%}details summary{font-weight:bold;color:#0000a5}details summary:hover{color:#2525ff;cursor:pointer}
+</style>
+        
+    </head>
+    <body>
+        <div class="content">
+            
+    <a href="/" class="faded mono small" title="stanistan /">go /</a>
+    <article>
+        <h1>Coming back to color-transit (part 1)</h1>
+        <div class="small faded">
+            
+    
+    
+    
+    <a href="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;the-details&#x2F;content&#x2F;writes&#x2F;2019&#x2F;12&#x2F;31&#x2F;coming-back-to-color-transit-part-1.md" class="faded">.md</a>
+ |
+            <a href="https://www.stanistan.com/writes/2019/12/31/coming-back-to-color-transit-part-1/" class="faded">permalink</a>
+            
+            | Published on December 31, 2019
+            
+        </div>
+
+        
+
+        
+
+        <div><p><em>Note:</em> I'm writing this as an experiment in coming back to a side-project
+that has long been sitting around, and quitetly.</p>
+<p>Looking at it with old eyes and high level questions (of myself) like:</p>
+<ul>
+<li>Does it still work?</li>
+<li>Can I understand it?</li>
+<li>Can I still run it locally?</li>
+<li>Can I make changes to it?</li>
+<li>How long does all of that take?</li>
+</ul>
+<h2 id="background"><a class="anchor-link small faded" href="#background">#</a>
+Background</h2>
+<div class="img-container">
+    <img src="https:&#x2F;&#x2F;www.stanistan.com&#x2F;processed_images&#x2F;9c5adb3537c1966200.png" />
+</div>
+<p>Four-ish years ago, I wanted to try writing a project in <a href="https://clojurescript.org">ClojureScript</a>.</p>
+<p>A few years before that I wrote a bunch of Clojure and had just wanted
+a brief and fun refresher project with the langauge, but trying a different
+runtime.</p>
+<p>I also wanted to play around with the canvas API, because I had never really
+done much <em>drawing</em>. Why limit yourself to one thing a time, right?</p>
+<p><strong>This project was <a href="https://github.com/stanistan/color-transit">color-transit</a>.</strong> It's a single static page that
+cycles through color graidents, and boy does it do that.</p>
+<p>You can see it live <a href="https://www.stanistan.com/color-transit/">here</a>. This link was actually surprising to me:
+<em>it's running on this domain.</em> In hindsight, of course it is, this is all github
+pages... I just didn't immediately realize that any repo that has this <code>gh-pages</code>
+branch would end up on this site. But here we are. Cool. Works as intended, I guess.</p>
+<h2 id="first-look-back-at-the-repo"><a class="anchor-link small faded" href="#first-look-back-at-the-repo">#</a>
+First look back at the repo</h2>
+<p>Wow, there's like no <code>README</code> at all.</p>
+<p>I was definitely not doing this project for any kind of reproducability, just a
+playground.</p>
+<p>It's using <a href="https://leiningen.org"><code>leiningen</code></a>, which was the standard at the time when
+building clj/s projects, I'm not really sure if that's still the thing people
+use. Since then, or maybe even at that time, <a href="https://boot-clj.com"><code>boot</code></a> was a thing that
+started to exist. Both are mentioned in the clojure(script) docs.</p>
+<p>The project uses <a href="https://figwheel.org"><code>lein-figwheel</code></a> for live reloading, which
+is pretty neato.</p>
+<h3 id="commits-timeline"><a class="anchor-link small faded" href="#commits-timeline">#</a>
+Commits &amp; Timeline</h3>
+<p>The first obvious thing I can see is that most of the work happened quickly,
+On the day before Christmas, and then the day after.</p>
+<p>The commits on the days following were cleanup and reorganization, and somehow
+a few weeks later I came back to ship it to a <code>gh-pages</code> branch. I just checked
+to see <em>why</em> I decided to do this, maybe it was when the feature shipped, but
+looking at the <a href="https://guides.github.com/features/pages/">docs</a>, that wasn't it... I did this over two
+years after the <em>last update</em> to that documentation (Dec, 2013 vs Jan, 2016).</p>
+<p>Also looking at the current way to <a href="https://github.com/stanistan/color-transit/blob/a18e9ecdece6cad0678994e1df731e047a8f8400/bin/make-gh-page-branch">ship to the branch</a>, dang this
+is a mess compared to what I'm doing for <em>this specific site</em>. But it worked
+as well as it needed to.</p>
+<h2 id="does-it-still-work"><a class="anchor-link small faded" href="#does-it-still-work">#</a>
+Does it still work?</h2>
+<p>Yep. That's pretty cool- it's just some JS that's been hanging out on a CDN
+for the past few years.</p>
+<h3 id="local-development"><a class="anchor-link small faded" href="#local-development">#</a>
+Local development</h3>
+<p>Instead of installing everything (clojure and lein) locally, I am going to try
+and run all of this in a <a href="https://github.com/Quantisan/docker-clojure">docker container</a>.</p>
+<h4 id="first-attempt"><a class="anchor-link small faded" href="#first-attempt">#</a>
+First attempt</h4>
+<p>The <code>Dockerfile</code>....</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">FROM clojure:slim-buster
+WORKDIR /usr/app
+
+COPY project.clj .
+RUN lein deps
+</span></pre>
+<p>And then running it...</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">docker build -t color-transit .
+docker run --rm -v </span><span style="color:#183691;">&quot;$</span><span style="color:#323232;">PWD</span><span style="color:#183691;">&quot;</span><span style="color:#323232;">:/usr/app color-transit lein figwheel
+</span></pre>
+<p>Looking through the <em>checks notes</em>, hundreds of lines of stack trace, I see
+<code>Caused by: java.lang.ExceptionInInitializerError: null</code>.</p>
+<details>
+<summary>Full stack-trace</summary>
+<pre>Warning: implicit hook found: leiningen.cljsbuild&#x2F;activate
+Hooks are deprecated and will be removed in a future version.
+clojure.lang.Compiler$CompilerException: Syntax error compiling at (cljs&#x2F;tagged_literals.cljc:1:1).
+#:clojure.error{:phase :compile-syntax-check, :line 1, :column 1, :source &quot;cljs&#x2F;tagged_literals.cljc&quot;}
+ at clojure.lang.Compiler.load (Compiler.java:7647)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:805)
+    cljs.analyzer$eval1658$loading__6706__auto____1659.invoke (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invokeStatic (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invoke (analyzer.cljc:9)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    figwheel_sidecar.utils$eval1652$loading__6706__auto____1653.invoke (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invokeStatic (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invoke (utils.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:551)
+    figwheel_sidecar.config$eval1646$loading__6706__auto____1647.invoke (config.clj:1)
+    figwheel_sidecar.config$eval1646.invokeStatic (config.clj:1)
+    figwheel_sidecar.config$eval1646.invoke (config.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    leiningen.figwheel$eval1640$loading__6706__auto____1641.invoke (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invokeStatic (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invoke (figwheel.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:102)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:105)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.main$lookup_task_var.invokeStatic (main.clj:69)
+    leiningen.core.main$lookup_task_var.invoke (main.clj:65)
+    leiningen.core.main$pass_through_help_QMARK_.invokeStatic (main.clj:79)
+    leiningen.core.main$pass_through_help_QMARK_.invoke (main.clj:73)
+    leiningen.core.main$task_args.invokeStatic (main.clj:82)
+    leiningen.core.main$task_args.invoke (main.clj:81)
+    leiningen.core.main$resolve_and_apply.invokeStatic (main.clj:339)
+    leiningen.core.main$resolve_and_apply.invoke (main.clj:336)
+    leiningen.core.main$_main$fn__6681.invoke (main.clj:452)
+    leiningen.core.main$_main.invokeStatic (main.clj:442)
+    leiningen.core.main$_main.doInvoke (main.clj:439)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.core$apply.invokeStatic (core.clj:665)
+    clojure.main$main_opt.invokeStatic (main.clj:491)
+    clojure.main$main_opt.invoke (main.clj:487)
+    clojure.main$main.invokeStatic (main.clj:598)
+    clojure.main$main.doInvoke (main.clj:561)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.main.main (main.java:37)
+Caused by: java.lang.ExceptionInInitializerError: null
+ at java.lang.Class.forName0 (Class.java:-2)
+    java.lang.Class.forName (Class.java:398)
+    clojure.lang.RT.classForName (RT.java:2207)
+    clojure.lang.RT.classForName (RT.java:2216)
+    clojure.lang.RT.loadClassForName (RT.java:2235)
+    clojure.lang.RT.load (RT.java:453)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    cljs.tagged_literals$eval2011$loading__6706__auto____2012.invoke (tagged_literals.cljc:1)
+    cljs.tagged_literals$eval2011.invokeStatic (tagged_literals.cljc:1)
+    cljs.tagged_literals$eval2011.invoke (tagged_literals.cljc:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:805)
+    cljs.analyzer$eval1658$loading__6706__auto____1659.invoke (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invokeStatic (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invoke (analyzer.cljc:9)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    figwheel_sidecar.utils$eval1652$loading__6706__auto____1653.invoke (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invokeStatic (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invoke (utils.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:551)
+    figwheel_sidecar.config$eval1646$loading__6706__auto____1647.invoke (config.clj:1)
+    figwheel_sidecar.config$eval1646.invokeStatic (config.clj:1)
+    figwheel_sidecar.config$eval1646.invoke (config.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    leiningen.figwheel$eval1640$loading__6706__auto____1641.invoke (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invokeStatic (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invoke (figwheel.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:102)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:105)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.main$lookup_task_var.invokeStatic (main.clj:69)
+    leiningen.core.main$lookup_task_var.invoke (main.clj:65)
+    leiningen.core.main$pass_through_help_QMARK_.invokeStatic (main.clj:79)
+    leiningen.core.main$pass_through_help_QMARK_.invoke (main.clj:73)
+    leiningen.core.main$task_args.invokeStatic (main.clj:82)
+    leiningen.core.main$task_args.invoke (main.clj:81)
+    leiningen.core.main$resolve_and_apply.invokeStatic (main.clj:339)
+    leiningen.core.main$resolve_and_apply.invoke (main.clj:336)
+    leiningen.core.main$_main$fn__6681.invoke (main.clj:452)
+    leiningen.core.main$_main.invokeStatic (main.clj:442)
+    leiningen.core.main$_main.doInvoke (main.clj:439)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.core$apply.invokeStatic (core.clj:665)
+    clojure.main$main_opt.invokeStatic (main.clj:491)
+    clojure.main$main_opt.invoke (main.clj:487)
+    clojure.main$main.invokeStatic (main.clj:598)
+    clojure.main$main.doInvoke (main.clj:561)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.main.main (main.java:37)
+Caused by: java.lang.ClassNotFoundException: java&#x2F;sql&#x2F;Timestamp
+ at java.lang.Class.forName0 (Class.java:-2)
+    java.lang.Class.forName (Class.java:398)
+    clojure.lang.RT.classForName (RT.java:2207)
+    clojure.lang.RT.classForNameNonLoading (RT.java:2220)
+    clojure.instant&#x2F;loading__6706__auto__ (instant.clj:9)
+    clojure.instant__init.load (:9)
+    clojure.instant__init.&lt;clinit&gt; (:-1)
+    java.lang.Class.forName0 (Class.java:-2)
+    java.lang.Class.forName (Class.java:398)
+    clojure.lang.RT.classForName (RT.java:2207)
+    clojure.lang.RT.classForName (RT.java:2216)
+    clojure.lang.RT.loadClassForName (RT.java:2235)
+    clojure.lang.RT.load (RT.java:453)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    cljs.tagged_literals$eval2011$loading__6706__auto____2012.invoke (tagged_literals.cljc:1)
+    cljs.tagged_literals$eval2011.invokeStatic (tagged_literals.cljc:1)
+    cljs.tagged_literals$eval2011.invoke (tagged_literals.cljc:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:805)
+    cljs.analyzer$eval1658$loading__6706__auto____1659.invoke (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invokeStatic (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invoke (analyzer.cljc:9)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    figwheel_sidecar.utils$eval1652$loading__6706__auto____1653.invoke (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invokeStatic (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invoke (utils.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:551)
+    figwheel_sidecar.config$eval1646$loading__6706__auto____1647.invoke (config.clj:1)
+    figwheel_sidecar.config$eval1646.invokeStatic (config.clj:1)
+    figwheel_sidecar.config$eval1646.invoke (config.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    leiningen.figwheel$eval1640$loading__6706__auto____1641.invoke (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invokeStatic (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invoke (figwheel.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:102)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:105)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.main$lookup_task_var.invokeStatic (main.clj:69)
+    leiningen.core.main$lookup_task_var.invoke (main.clj:65)
+    leiningen.core.main$pass_through_help_QMARK_.invokeStatic (main.clj:79)
+    leiningen.core.main$pass_through_help_QMARK_.invoke (main.clj:73)
+    leiningen.core.main$task_args.invokeStatic (main.clj:82)
+    leiningen.core.main$task_args.invoke (main.clj:81)
+    leiningen.core.main$resolve_and_apply.invokeStatic (main.clj:339)
+    leiningen.core.main$resolve_and_apply.invoke (main.clj:336)
+    leiningen.core.main$_main$fn__6681.invoke (main.clj:452)
+    leiningen.core.main$_main.invokeStatic (main.clj:442)
+    leiningen.core.main$_main.doInvoke (main.clj:439)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.core$apply.invokeStatic (core.clj:665)
+    clojure.main$main_opt.invokeStatic (main.clj:491)
+    clojure.main$main_opt.invoke (main.clj:487)
+    clojure.main$main.invokeStatic (main.clj:598)
+    clojure.main$main.doInvoke (main.clj:561)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.main.main (main.java:37)
+</pre>
+</details>
+<h4 id="down-to-jdk8"><a class="anchor-link small faded" href="#down-to-jdk8">#</a>
+Down to JDK8</h4>
+<p>Changing the base image to <code>clojure:openjdk-8-slim-buster</code> fixes the initial
+<code>null</code> pointer exception, but now I'm getting another one.</p>
+<details>
+<summary>Second stack-trace</summary>
+<pre>Warning: implicit hook found: leiningen.cljsbuild&#x2F;activate
+Hooks are deprecated and will be removed in a future version.
+Exception in thread &quot;main&quot; java.io.FileNotFoundException: Could not locate clojure&#x2F;tools&#x2F;nrepl&#x2F;middleware&#x2F;interruptible_eval__init.class or clojure&#x2F;tools&#x2F;nrepl&#x2F;middleware&#x2F;interruptible_eval.clj on classpath. Please check that namespaces with dashes use underscores in the Clojure file name., compiling:(figwheel_sidecar&#x2F;repl.clj:1:1)
+	at clojure.lang.Compiler.load(Compiler.java:7239)
+	at clojure.lang.RT.loadResourceScript(RT.java:371)
+	at clojure.lang.RT.loadResourceScript(RT.java:362)
+	at clojure.lang.RT.load(RT.java:446)
+	at clojure.lang.RT.load(RT.java:412)
+	at clojure.core$load$fn__5448.invoke(core.clj:5866)
+	at clojure.core$load.doInvoke(core.clj:5865)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at clojure.core$load_one.invoke(core.clj:5671)
+	at clojure.core$load_lib$fn__5397.invoke(core.clj:5711)
+	at clojure.core$load_lib.doInvoke(core.clj:5710)
+	at clojure.lang.RestFn.applyTo(RestFn.java:142)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$load_libs.doInvoke(core.clj:5749)
+	at clojure.lang.RestFn.applyTo(RestFn.java:137)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$require.doInvoke(core.clj:5832)
+	at clojure.lang.RestFn.invoke(RestFn.java:1289)
+	at figwheel_sidecar.system$eval15$loading__5340__auto____16.invoke(system.clj:1)
+	at figwheel_sidecar.system$eval15.invoke(system.clj:1)
+	at clojure.lang.Compiler.eval(Compiler.java:6782)
+	at clojure.lang.Compiler.eval(Compiler.java:6771)
+	at clojure.lang.Compiler.load(Compiler.java:7227)
+	at clojure.lang.RT.loadResourceScript(RT.java:371)
+	at clojure.lang.RT.loadResourceScript(RT.java:362)
+	at clojure.lang.RT.load(RT.java:446)
+	at clojure.lang.RT.load(RT.java:412)
+	at clojure.core$load$fn__5448.invoke(core.clj:5866)
+	at clojure.core$load.doInvoke(core.clj:5865)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at clojure.core$load_one.invoke(core.clj:5671)
+	at clojure.core$load_lib$fn__5397.invoke(core.clj:5711)
+	at clojure.core$load_lib.doInvoke(core.clj:5710)
+	at clojure.lang.RestFn.applyTo(RestFn.java:142)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$load_libs.doInvoke(core.clj:5749)
+	at clojure.lang.RestFn.applyTo(RestFn.java:137)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$require.doInvoke(core.clj:5832)
+	at clojure.lang.RestFn.invoke(RestFn.java:457)
+	at figwheel_sidecar.repl_api$eval9$loading__5340__auto____10.invoke(repl_api.clj:1)
+	at figwheel_sidecar.repl_api$eval9.invoke(repl_api.clj:1)
+	at clojure.lang.Compiler.eval(Compiler.java:6782)
+	at clojure.lang.Compiler.eval(Compiler.java:6771)
+	at clojure.lang.Compiler.load(Compiler.java:7227)
+	at clojure.lang.RT.loadResourceScript(RT.java:371)
+	at clojure.lang.RT.loadResourceScript(RT.java:362)
+	at clojure.lang.RT.load(RT.java:446)
+	at clojure.lang.RT.load(RT.java:412)
+	at clojure.core$load$fn__5448.invoke(core.clj:5866)
+	at clojure.core$load.doInvoke(core.clj:5865)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at clojure.core$load_one.invoke(core.clj:5671)
+	at clojure.core$load_lib$fn__5397.invoke(core.clj:5711)
+	at clojure.core$load_lib.doInvoke(core.clj:5710)
+	at clojure.lang.RestFn.applyTo(RestFn.java:142)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$load_libs.doInvoke(core.clj:5749)
+	at clojure.lang.RestFn.applyTo(RestFn.java:137)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$require.doInvoke(core.clj:5832)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at user$eval5.invoke(form-init37068904552664761.clj:1)
+	at clojure.lang.Compiler.eval(Compiler.java:6782)
+	at clojure.lang.Compiler.eval(Compiler.java:6771)
+	at clojure.lang.Compiler.load(Compiler.java:7227)
+	at clojure.lang.Compiler.loadFile(Compiler.java:7165)
+	at clojure.main$load_script.invoke(main.clj:275)
+	at clojure.main$init_opt.invoke(main.clj:280)
+	at clojure.main$initialize.invoke(main.clj:308)
+	at clojure.main$null_opt.invoke(main.clj:343)
+	at clojure.main$main.doInvoke(main.clj:421)
+	at clojure.lang.RestFn.invoke(RestFn.java:421)
+	at clojure.lang.Var.invoke(Var.java:383)
+	at clojure.lang.AFn.applyToHelper(AFn.java:156)
+	at clojure.lang.Var.applyTo(Var.java:700)
+	at clojure.main.main(main.java:37)
+Caused by: java.io.FileNotFoundException: Could not locate clojure&#x2F;tools&#x2F;nrepl&#x2F;middleware&#x2F;interruptible_eval__init.class or clojure&#x2F;tools&#x2F;nrepl&#x2F;middleware&#x2F;interruptible_eval.clj on classpath. Please check that namespaces with dashes use underscores in the Clojure file name.
+	at clojure.lang.RT.load(RT.java:449)
+	at clojure.lang.RT.load(RT.java:412)
+	at clojure.core$load$fn__5448.invoke(core.clj:5866)
+	at clojure.core$load.doInvoke(core.clj:5865)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at clojure.core$load_one.invoke(core.clj:5671)
+	at clojure.core$load_lib$fn__5397.invoke(core.clj:5711)
+	at clojure.core$load_lib.doInvoke(core.clj:5710)
+	at clojure.lang.RestFn.applyTo(RestFn.java:142)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$load_libs.doInvoke(core.clj:5749)
+	at clojure.lang.RestFn.applyTo(RestFn.java:137)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$require.doInvoke(core.clj:5832)
+	at clojure.lang.RestFn.invoke(RestFn.java:703)
+	at figwheel_sidecar.repl$eval2185$loading__5340__auto____2186.invoke(repl.clj:1)
+	at figwheel_sidecar.repl$eval2185.invoke(repl.clj:1)
+	at clojure.lang.Compiler.eval(Compiler.java:6782)
+	at clojure.lang.Compiler.eval(Compiler.java:6771)
+	at clojure.lang.Compiler.load(Compiler.java:7227)
+	... 76 more
+Subprocess failed
+</pre>
+</details>
+<p>It's not all bad though, if I run <code>lien cljsbuild once</code> in the container, I get some
+good news...</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">Compiling &quot;resources/public/js/main.js&quot; from [&quot;src&quot;]...
+Successfully compiled &quot;resources/public/js/main.js&quot; in 2.4 seconds.
+</span></pre>
+<p>Nice.</p>
+<h4 id="version-mismatches-figwheel"><a class="anchor-link small faded" href="#version-mismatches-figwheel">#</a>
+Version mismatches &amp; figwheel</h4>
+<p>My assumption here is that I needed to update/specify all of the correct
+versions for Clojure, ClojureScript, and Figwheel. I looked up a working
+example from <a href="https://github.com/bhauman/flappy-bird-demo/blob/master/project.clj">this flappy bird demo</a>.</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">diff --git a/project.clj b/project.clj
+index 644deab..babc3f0 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/project.clj
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/project.clj
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -1,9 +1,8 @@
+</span><span style="color:#323232;"> (defproject color-transit &quot;0.1.0-SNAPSHOT&quot;
+</span><span style="background-color:#ffecec;color:#323232;">-  :dependencies [[org.clojure/clojure &quot;1.7.0&quot;]
+-                 [org.clojure/clojurescript &quot;1.7.170&quot;]]
+-  :plugins [[lein-figwheel &quot;0.5.0-1&quot;]
+-            [lein-cljsbuild &quot;1.1.2&quot;]]
+-  :hooks [leiningen.cljsbuild]
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">  :dependencies [[org.clojure/clojure &quot;1.9.0&quot;]
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">                 [org.clojure/clojurescript &quot;1.10.312&quot;]]
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">  :plugins [[lein-cljsbuild &quot;1.1.4&quot; :exclusions [org.clojure/clojure]]
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">            [lein-figwheel &quot;0.5.16&quot;]]
+</span><span style="color:#323232;">   :clean-targets ^{:protect false} [:target-path &quot;out&quot; &quot;resources/public/js&quot;]
+   :cljsbuild {
+     :builds {
+</span></pre>
+<p>This ended up telling me that the app was running on port <code>3449</code>, so I needed to
+udpate the command...</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">docker run -it --rm -v </span><span style="color:#183691;">&quot;$</span><span style="color:#323232;">PWD</span><span style="color:#183691;">&quot;</span><span style="color:#323232;">:/usr/app -p 3449:3449 color-transit lein figwheel
+</span></pre>
+<p>Though this works, the issue is that it downloads all of the <code>figwheel</code> dependencies
+each time it runs (for the first time).</p>
+<p>The trick is to add this to the <code>Dockerfile</code>.</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">RUN lein figwheel :check-config
+</span></pre>
+<p>I found this looking around the source code looking for
+&quot;Figwheel: Cutting some fruit, just a sec...&quot; and finding that I could run <code>:check-config</code>
+to download all of the dependencies.</p>
+<p><em>Aside:</em> Apparently there's an entirely new version called <code>figwheel-main</code>, but I'm not
+going to go all the way over there just yet.</p>
+<h3 id="how-long-did-all-that-take"><a class="anchor-link small faded" href="#how-long-did-all-that-take">#</a>
+How long did all that take?</h3>
+<p>To answer one of the questions I asked myself in the beginning... getting a dev
+environment up and running for this took about two hours.</p>
+<p>Getting a blog post out and running took another month.</p>
+<ul>
+<li><a href="https://github.com/stanistan/color-transit/commit/b9a5a144f090fb2059d340a809e6f12bd6e23b14">The commit getting it to work</a></li>
+</ul>
+<h2 id="the-gh-pages-script"><a class="anchor-link small faded" href="#the-gh-pages-script">#</a>
+The <code>gh-pages</code> script</h2>
+<p>Looking at this, it's obviously a bunch of stuff that I had copy pasted
+from other places on the internet... all of the whitespace is a mixture
+of tabs and spaces- and it just kind of works well enough.</p>
+<h2 id="clojurescript"><a class="anchor-link small faded" href="#clojurescript">#</a>
+ClojureScript?</h2>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">src/
+└── color-transit
+    ├── canvas.cljs
+    ├── canvas_set.cljs
+    ├── color.cljs
+    ├── core.cljs
+    ├── dims.cljs
+    └── interval.cljs
+</span></pre>
+<p>Most of the effor here was going back to get this running and operational, and
+I also wanted to jump into the <code>cljs</code> a bit to see if I can traverse it at all,
+or if I could make some kind of substantial change and deploy it. But I don't
+really want to be doing that. Let's dig into the meat of the &quot;app.&quot;</p>
+<h3 id="js-wrappers"><a class="anchor-link small faded" href="#js-wrappers">#</a>
+JS Wrappers</h3>
+<p><code>interval</code>, <code>canvas</code>, <code>dims</code>... These are all wrappers around &quot;native&quot; JS methods
+in order to have them appear to be, or operate as immutable values, like clojure
+expects idiomatically.</p>
+<p>For example:</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">fill-rect
+  </span><span style="color:#323232;">[ctx x0 y0 x1 y1]
+  (.fillRect ctx x0 y0 x1 y1)
+  ctx)
+
+(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">ctx
+  </span><span style="color:#183691;">&quot;Apply f to the context of the canvas, return the canvas.
+   This is useful for chaining ctx methods.
+   (-&gt; canvas
+       (ctx fill-style ...)
+       (ctx fill-rect ...))&quot;
+  </span><span style="color:#323232;">[canvas f </span><span style="font-weight:bold;color:#a71d5d;">&amp; </span><span style="color:#323232;">args]
+  (</span><span style="color:#62a35c;">apply </span><span style="color:#323232;">f (</span><span style="font-weight:bold;color:#a71d5d;">:</span><span style="color:#323232;">ctx canvas) args)
+  canvas)
+</span></pre>
+<p>These make it so that it's easier to chain methods, and apply transformations
+to the canvas context in a real clojure-y way.</p>
+<p>Functions that do mutation of global state, (like the window), have <code>!</code> at the
+end. For example <code>full-screen!</code> or <code>start-app!</code>.</p>
+<h3 id="the-fun-part"><a class="anchor-link small faded" href="#the-fun-part">#</a>
+The fun part</h3>
+<p><em>or, how this entire thing actually works.</em></p>
+<p>The app's html is defined in <code>public/index.html</code>, and when the it starts,
+we create the canvas context using <code>query-&gt;Canvas</code>, this is a container that
+holds the <code>2d</code> context of the <code>canvas</code> element in the <code>DOM</code>, as well as the
+actual element, and dimensions, defined as:</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">(</span><span style="color:#62a35c;">defrecord </span><span style="color:#323232;">Canvas [el ctx w h])
+</span></pre>
+<p>The above js wrapping functions, operate on <code>Canvas</code> records.</p>
+<p>When the app starts it creates a <code>CanvasSet</code>, which links the <code>Canvas</code> to the
+<code>color-sets</code> that it will be running through. <strong>The application state operates
+pretty much solely on a <code>CanvasSet</code></strong>.</p>
+<h4 id="startup"><a class="anchor-link small faded" href="#startup">#</a>
+Startup</h4>
+<p>The app starts with a few pre-defined colors:</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">let </span><span style="color:#323232;">[colors [[</span><span style="color:#0086b3;">0 10 0</span><span style="color:#323232;">]
+              [</span><span style="color:#0086b3;">200 155 255</span><span style="color:#323232;">]
+              [</span><span style="color:#0086b3;">40 40 40</span><span style="color:#323232;">]
+              [</span><span style="color:#0086b3;">255 0 0</span><span style="color:#323232;">]
+              [</span><span style="color:#0086b3;">0 255 255</span><span style="color:#323232;">]
+              [</span><span style="color:#0086b3;">100 233 67</span><span style="color:#323232;">]]]
+  </span><span style="font-style:italic;color:#969896;">;; ...
+</span><span style="color:#323232;">)
+</span></pre>
+<p>We take these colors (all <code>[r g b]</code> format), and randomize their order into <code>num-sets</code>.
+This is stored in the <code>app-state</code>, and we can live inspect it using the <code>lein repl</code> that
+get started with <code>figwheel</code> app.</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">dev:cljs.user=&gt; (</span><span style="color:#62a35c;">in-ns </span><span style="color:#0086b3;">&#39;</span><span style="color:#323232;">color-transit</span><span style="font-weight:bold;color:#a71d5d;">.</span><span style="color:#323232;">core)
+dev:color-transit.core=&gt; (</span><span style="font-weight:bold;color:#a71d5d;">-&gt;&gt; @</span><span style="color:#323232;">app-state </span><span style="font-weight:bold;color:#a71d5d;">:</span><span style="color:#323232;">canvas-sets </span><span style="font-weight:bold;color:#a71d5d;">first :</span><span style="color:#323232;">color-sets (</span><span style="font-weight:bold;color:#a71d5d;">map :</span><span style="color:#323232;">colors))
+([[</span><span style="color:#0086b3;">0 10 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">100 233 67</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">255 0 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 255 255</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">40 40 40</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">200 155 255</span><span style="color:#323232;">]]
+ [[</span><span style="color:#0086b3;">200 155 255</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 10 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">40 40 40</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">255 0 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">100 233 67</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 255 255</span><span style="color:#323232;">]]
+ [[</span><span style="color:#0086b3;">40 40 40</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 255 255</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 10 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">200 155 255</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">255 0 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">100 233 67</span><span style="color:#323232;">]])
+</span></pre>
+<p>In our start up we say we want <code>3</code> sets, and each one has a <code>shuffle</code>-d list of the
+original colors provided. <strong>The three sets correspond to three stops in the
+generated gradient,</strong> and the colors that they will be transitioning to.</p>
+<p>An initial <code>color-set</code> looks like:</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">{ :colors colors
+  :color-queue [ ]
+  :current-color: (</span><span style="font-weight:bold;color:#a71d5d;">first </span><span style="color:#323232;">colors) }
+</span></pre>
+<ul>
+<li><code>:colors</code> - are each of the colors in that <em>one</em> gradient step we'll be
+fading through,</li>
+<li><code>:color-queue</code> - a queue (FIFO), of colors that we'll be moving through
+in the fade,</li>
+<li><code>:current-color</code> - what color are we currently displaying.</li>
+</ul>
+<p>Our canvas drawer (in <code>core</code>) will only draw the <code>current-color</code>, and we
+pre-compute the <code>queue</code> up front as infrequently as possible so that we
+do as little work when drawing the gradient as possible.</p>
+<p>All of that happens in <code>color/compute-next-state</code>.</p>
+<h4 id="computing-the-color-transitios"><a class="anchor-link small faded" href="#computing-the-color-transitios">#</a>
+Computing the color transitios</h4>
+<p><code>compute-next-state</code> has two main branches of logic:</p>
+<ol>
+<li>
+<p>the first is when the queue is non-empty, we take the color at
+the head of the queue, and update <code>current-color</code> with it. This runs
+until the queue is drained.</p>
+</li>
+<li>
+<p>the second is if both the initial state, and happens after the queue
+is drained... we generate a new one! Given the current color, and the
+next one in the <code>colors</code>, and the number of <code>steps</code> we want to be able
+to take from one color to the next, we compute them.</p>
+</li>
+</ol>
+<h5 id="the-maths"><a class="anchor-link small faded" href="#the-maths">#</a>
+The maths</h5>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">delta </span><span style="color:#323232;">[n1 n2 steps] (</span><span style="font-weight:bold;color:#a71d5d;">/ </span><span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">- </span><span style="color:#323232;">n2 n1) steps))
+</span></pre>
+<p><code>delta</code> is simplified version of what the app does, where this operates on
+one number, the app works on the destructured <code>[r g b]</code>.</p>
+<pre style="background-color:#ffffff;">
+<span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">+delta </span><span style="color:#323232;">[n n</span><span style="font-weight:bold;color:#a71d5d;">+ </span><span style="color:#323232;">scalar]
+  (</span><span style="font-weight:bold;color:#a71d5d;">-&gt; </span><span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">* </span><span style="color:#323232;">scalar n</span><span style="font-weight:bold;color:#a71d5d;">+</span><span style="color:#323232;">)
+      (</span><span style="font-weight:bold;color:#a71d5d;">+ </span><span style="color:#323232;">n)
+      Math</span><span style="font-weight:bold;color:#a71d5d;">/</span><span style="color:#323232;">floor))
+</span></pre>
+<p>Similarly, <code>+delta</code> increases <code>n</code> by the delta we computed earlier, <code>n+</code>,
+scaled up by <code>scalar</code>, and then rounds it down.</p>
+<p>We use these two functions to create the color queue.</p>
+<p>Most of <em>everything</em> else in the code is transforming the colors
+into the gradient and canvas, and making sure it's running at a
+specific interval in the browser.</p>
+<h3 id="wrapping-up"><a class="anchor-link small faded" href="#wrapping-up">#</a>
+Wrapping up</h3>
+<p>Originally, I wasn't sure if I'd want to change <em>anything</em> here, but
+after spending the time with the codebase, I'd like to make the grandient
+drawing <em>reactive</em> to user parameterization in the UI.</p>
+<p>So eventually, there'll be a second post, and updates to the app, and a
+write up of the process.</p>
+<p>...which will hopefully take less than a couple of months to finish...</p>
+</div>
+
+        
+
+    </article>
+
+            
+        </div>
+    </body>
+</html>

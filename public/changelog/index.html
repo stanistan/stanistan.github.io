@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="author" content="Stan Rozenraukh" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Changelog - stanistan</title>
+        <link rel="icon" href="data:" />
+        
+            
+            <style type="text/css">body{border-top:5px solid #f6cde0;background:#fcfcfc;color:#333;font-family:Cochin, Times, serif;font-size:1.3em;line-height:1.55em;margin:0;padding:0}.content{margin:8em auto 0;max-width:33em;padding:2em;position:relative}article{position:relative}h1{font-size:1.5em;font-weight:bold;margin:0;padding:1.5em 0 0}h2{font-size:1.25em;font-weight:bold;margin:0;padding:1.25em 0 0}h3{font-size:1.15em;font-weight:bold;margin:0;padding:1.15em 0 0}h4{font-size:1em;font-weight:bold;margin:0;padding:1em 0 0}hr{border:0 dotted #f6cde0;border-top-width:1px;height:0}pre,.mono,code{font-family:monospace}.small{font-size:75%}.smaller{font-size:85%}.faded{color:#999}.center{text-align:center}a,.link-like{color:#0000a5;font-weight:bolder}a:hover,.link-like:hover{color:#2525ff;text-decoration:none}ol,ul{list-style-position:outside;margin:0;margin-left:1.6em;padding:0}ol li,ul li{margin:0 0 0.1em 0;padding:0 0 0 0.2em}.outside{margin-left:-2em}ul.outside,ol.outside{margin-left:-0.1em}code{background:#fdf4f8;border-bottom:1px dotted #f6cde0;padding:0.3em;font-size:0.9em}pre,blockquote{background:white;line-height:1.45em;margin-left:-2em;margin-right:-2em}pre{font-size:0.85em;border-bottom:1px dotted #f6cde0;padding:1em 2em;overflow-x:scroll}blockquote{font-size:0.9em;font-style:italic;padding:0.5em 2em;border-left:1px dotted #f6cde0}.tag{margin-right:0.3em;border-radius:10px;color:#333;text-decoration:none}.tag:hover{color:#000;text-decoration:underline}.toc{width:15em;font-size:0.8em;padding:1em;background:#fff;line-height:1.45;border-bottom:1px dotted #f6cde0}.toc a{color:#333;font-weight:normal}.anchor-link{position:absolute;margin-left:-1em;text-decoration:none}article .img-container{margin:0.2em -2em 0}article .img-container img{width:100%;height:auto}@media only screen and (max-width: 500px){body{font-size:1.15em}.content{padding:1.8em}.smaller{font-size:90%}.small{font-size:83%}.outside{margin-left:inherit}article .img-container{margin:0.2em -1em 0}}dl{margin:1.5em 0}dl dt{clear:left;float:left;text-decoration:underline;text-align:right;width:5.5em}dl dt::after{content:":"}dl dd{display:block;float:left}.clear{clear:both}.invoice-heading{padding:1.5em 0}.invoice-heading h1{float:left;padding:0}.invoice-heading .invoice-heading-code{float:right;font-weight:bold}table{padding-top:1.5em;width:100%}table th,table td{text-align:left}table th.right,table td.right{text-align:right}table tfoot td{font-weight:bold}table tfoot tr:first-child td{border-top:1px dotted #f6cde0;padding-top:0.3em}table tbody tr:last-child td{padding-bottom:0.3em}table tbody tr:first-child td{padding-top:0.3em}table thead tr:last-child th{padding-bottom:0.3em;border-bottom:1px dotted #ccc}details{font-size:85%}details summary{font-weight:bold;color:#0000a5}details summary:hover{color:#2525ff;cursor:pointer}
+</style>
+        
+    </head>
+    <body>
+        <div class="content">
+            
+    <a href="/" class="faded mono small" title="stanistan /">go /</a>
+    <article>
+        <h1>Changelog</h1>
+        <div class="small faded">
+            
+    
+    
+    
+    <a href="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;the-details&#x2F;content&#x2F;CHANGELOG.md" class="faded">.md</a>
+ |
+            <a href="https://www.stanistan.com/changelog/" class="faded">permalink</a>
+            
+        </div>
+
+        
+
+        
+
+        <div><p><strong>All notable changes to this project will be documented in this file.</strong></p>
+<p>This is based off of <a href="https://keepachangelog.com/en/1.0.0/">keepachangelog.com</a>.</p>
+<p>There are no real <em>releases</em>, or <em>tags</em> here since this is not a library
+or anything, but I felt like it would be fun (besides just git history)
+to keep a log of how the site has changed over time.</p>
+<p>This should be in reverse chronological order.</p>
+<h3 id="2019-12-15">2019-12-15</h3>
+<h4 id="new">New</h4>
+<ul>
+<li>Support / styling for the <code>&lt;details&gt;</code> element.</li>
+<li>Support for a <code>snippet</code> shortcode to pull in <code>details</code> from <code>static/details</code></li>
+</ul>
+<h3 id="2019-11-17">2019-11-17</h3>
+<h4 id="new-1">New</h4>
+<ul>
+<li>Image resizing support and styling using the <code>image</code> shortcode.</li>
+</ul>
+<h4 id="updated">Updated</h4>
+<ul>
+<li>Only one HTTP request for the page (inlining the CSS, and empty favicon data).
+This made it so that the <code>build</code> and <code>serve</code> commands write to the same
+directory :( Since we don't <em>really</em> know how to inline something from various
+paths. The config doesn't have output path available at runtime.</li>
+</ul>
+<h3 id="2019-11-14">2019-11-14</h3>
+<h4 id="new-2">New</h4>
+<ul>
+<li>Support and styling for <a href="https://www.getzola.org/documentation/content/linking/#anchor-insertion">anchor links</a> on posts.</li>
+<li><code>Makefile</code> supports the env var <code>$BASE_URL</code>, this is useful if
+I want to check the site from my phone during development, using
+<a href="https://support.apple.com/guide/mac-help/share-internet-connection-mac-network-users-mchlp1540/mac">internet sharing on MacOS</a>.</li>
+<li>Adding a <code>CHANGELOG.md</code>, which is symlinked and served as <code>/changelog</code>.</li>
+</ul>
+<h4 id="updated-1">Updated</h4>
+<ul>
+<li><code>bin/verify-content-dates</code> updated to use symlinks for the autogenerated
+section <code>_index.md</code> files.</li>
+<li>Better sizing/spacing for mobile web.</li>
+<li>The post <a href="https://www.stanistan.com/writes/2019/11/10/how-this-blog-works/">How this site works</a>
+was updated to reflect the fixes to the <code>CNAME</code> (bug fixe below) and the
+symlinking dates directories.</li>
+</ul>
+<h4 id="fixed">Fixed</h4>
+<ul>
+<li>No longer have to deal with weird <code>master</code> merge issues because
+<code>bin/ship</code> force pushes master. This was a problem before because
+the master branch <em>needs</em> to have a <code>CNAME</code> file for custom domains
+to work well. Fixed by symlinking it to <code>static/</code> the same way that
+the REAMDE is, and this file is.</li>
+</ul>
+</div>
+
+        
+
+    </article>
+
+            
+        </div>
+    </body>
+</html>

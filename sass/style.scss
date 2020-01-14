@@ -278,3 +278,15 @@ table {
     border-bottom: 1px dotted #ccc;
   }
 }
+
+details {
+  font-size: 85%;
+  summary {
+    font-weight: bold;
+    color: $link-color;
+    &:hover {
+      color: $link-hover-color;
+      cursor: pointer;
+    }
+  }
+}
