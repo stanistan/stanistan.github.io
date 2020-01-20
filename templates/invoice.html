@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Invoice{% endblock title %}
+{% block title %}Invoice{{ page.slug }}{% endblock title %}
 
 {% block content %}
+
 {% if config.extra.invoice.enabled %}
 
-{% set invoice_url = config.extra.invoice.host ~ "/invoice/" ~ page.extra.invoice_id %}
+{% set invoice_url = config.extra.invoice.host ~ "/invoice-by-id/" ~ page.slug %}
 {% set invoice = load_data(url=invoice_url, format="json") %}
 
 <div class="invoice-heading">
@@ -38,13 +39,19 @@
         <thead>
             <tr>
                 <th>Description</th>
-                <th class="right">Amount</th>
+                <th class="right">Qty x Rate</th>
+                <th class="right">Subtotal</th>
             </tr>
         </thead>
         <tbody>
             {% for item in invoice["Invoice Item"] %}
             <tr>
-                <td>{{ item.Description }}</td>
+                <td class="smaller">
+                    <span>{{ item.Description }}</span>
+                </td>
+                <td class="smaller right">
+                    <em>{{ item.Quantity }}</em> <span class="small">x</span> <em>{{ item["Invoice Rate"].Name }}</em>
+                </td>
                 <td class="right">{{ item.Amount }}</td>
             </tr>
             {% endfor %}
@@ -52,11 +59,10 @@
         <tfoot>
             <tr>
                 <td>Balance Due</td>
-                <td class="right">{{ invoice["Total Amount"] }}</td>
+                <td colspan="2" class="right">{{ invoice["Total Amount"] }}</td>
             </tr>
         </tfoot>
     </table>
 </div>
-
 {% endif %}
 {% endblock content %}
