@@ -6,31 +6,31 @@
 
 {% if config.extra.invoice.enabled %}
 
-{% set invoice_url = config.extra.invoice.host ~ "/invoice-by-id/" ~ page.slug %}
+{% set invoice_url = config.extra.invoice.host ~ "/invoice/" ~ page.slug %}
 {% set invoice = load_data(url=invoice_url, format="json") %}
 
 <div class="invoice-heading">
     <h1>Invoice</h1>
-    <div class="invoice-heading-code"><code>#INV{{ invoice.ID }}</code></div>
+    <div class="invoice-heading-code"><code>#INV{{ invoice.id }}</code></div>
 </div>
 
 <div class="clear">
     <dl class="smaller">
         <dt>From</dt>
         <dd>
-        {{ invoice.From.Name }} &lt;{{ invoice.From.Email }}&gt; <br />
-        {{ invoice.From.Address | join(sep="<br />") | safe }}
+        {{ invoice.from.name }} &lt;{{ invoice.from.email }}&gt; <br />
+        {{ invoice.from.address | join(sep="<br />") | safe }}
         </dd>
         <dt>For</dt>
         <dd>
-        {{ invoice.Client.ContactName }} &lt;{{ invoice.Client.ContactEmail }}&gt;<br />
-        {{ invoice.Client.Company }} &lt;{{ invoice.Client.Website }}&gt; <br />
+        {{ invoice.client.contact_name }} &lt;{{ invoice.client.contact_email }}&gt;<br />
+        {{ invoice.client.company }} &lt;{{ invoice.client.website_url }}&gt; <br />
         </dd>
         <hr class="clear">
         <dt>Date</dt>
-        <dd>{{ invoice.Date }}</dd>
+        <dd>{{ invoice.date }}</dd>
         <dt>Due Date</dt>
-        <dd>{{ invoice["Due Date"] }}</dd>
+        <dd>{{ invoice.due_date }}</dd>
     </dl>
 </div>
 
@@ -44,22 +44,22 @@
             </tr>
         </thead>
         <tbody>
-            {% for item in invoice["Invoice Item"] %}
+            {% for item in invoice.items %}
             <tr>
                 <td class="smaller">
-                    <span>{{ item.Description }}</span>
+                    <span>{{ item.description }}</span>
                 </td>
                 <td class="smaller right">
-                    <em>{{ item.Quantity }}</em> <span class="small">x</span> <em>{{ item["Invoice Rate"].Name }}</em>
+                    <em>{{ item.quantity }}</em> <span class="small">x</span> <em>{{ item.rate.name }}</em>
                 </td>
-                <td class="right">{{ item.Amount }}</td>
+                <td class="right">{{ item.amount }}</td>
             </tr>
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
                 <td>Balance Due</td>
-                <td colspan="2" class="right">{{ invoice["Total Amount"] }}</td>
+                <td colspan="2" class="right">{{ invoice.total }}</td>
             </tr>
         </tfoot>
     </table>
