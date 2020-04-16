@@ -4,6 +4,8 @@
 
 Hi, I'm Stan, sometimes referred to as stanistan.
 
+Currently at [Cash app].
+
 Formerly at [Etsy], where I worked on lots of things as a
 Software Engineer & Product Infrastructure Architect; an
 alumn of the [Recurse Center]; and a perpetual work in progress.
@@ -17,6 +19,7 @@ email me at: <span class="link-like">
     <strong>stan</strong> at <strong>stanistan</strong> .com
 </span>
 
+[Cash app]: https://cash.app
 [Etsy]: https://www.etsy.com
 [Recurse Center]: https://recurse.com
 [github]: https://github.com/stanistan
