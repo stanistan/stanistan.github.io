@@ -4,7 +4,7 @@
 
 Hi, I'm Stan, sometimes referred to as stanistan.
 
-Currently at [Cash app].
+Currently at [Cash App].
 
 Formerly at [Etsy], where I worked on lots of things as a
 Software Engineer & Product Infrastructure Architect; an
