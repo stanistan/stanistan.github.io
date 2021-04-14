@@ -14,7 +14,7 @@ repo_content_path = "stanistan/stanistan.github.io/the-details/content"
 show_tags = false # now tags taxonomy just yet
 
 [extra.invoice]
-enabled = true
+enabled = false
 host = "http://localhost:3000"
 
 [extra.debug]
