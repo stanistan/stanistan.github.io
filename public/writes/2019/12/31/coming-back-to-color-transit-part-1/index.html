@@ -69,7 +69,7 @@ First look back at the repo</h2>
 playground.</p>
 <p>It's using <a href="https://leiningen.org"><code>leiningen</code></a>, which was the standard at the time when
 building clj/s projects, I'm not really sure if that's still the thing people
-use. Since then, or maybe even at that time, <a href="https://boot-clj.com"><code>boot</code></a> was a thing that
+use. Since then, or maybe even at that time, <a href="https://boot-clj.github.io"><code>boot</code></a> was a thing that
 started to exist. Both are mentioned in the clojure(script) docs.</p>
 <p>The project uses <a href="https://figwheel.org"><code>lein-figwheel</code></a> for live reloading, which
 is pretty neato.</p>
@@ -97,17 +97,17 @@ and run all of this in a <a href="https://github.com/Quantisan/docker-clojure">d
 First attempt</h4>
 <p>The <code>Dockerfile</code>....</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">FROM clojure:slim-buster
-WORKDIR /usr/app
+<code><span style="font-weight:bold;color:#a71d5d;">FROM</span><span style="color:#323232;"> clojure:slim-buster
+</span><span style="font-weight:bold;color:#a71d5d;">WORKDIR </span><span style="color:#323232;">/usr/app
 
-COPY project.clj .
-RUN lein deps
-</span></pre>
+</span><span style="font-weight:bold;color:#a71d5d;">COPY</span><span style="color:#323232;"> project.clj .
+</span><span style="font-weight:bold;color:#a71d5d;">RUN </span><span style="color:#323232;">lein deps
+</span></code></pre>
 <p>And then running it...</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">docker build -t color-transit .
+<code><span style="color:#323232;">docker build -t color-transit .
 docker run --rm -v </span><span style="color:#183691;">&quot;$</span><span style="color:#323232;">PWD</span><span style="color:#183691;">&quot;</span><span style="color:#323232;">:/usr/app color-transit lein figwheel
-</span></pre>
+</span></code></pre>
 <p>Looking through the <em>checks notes</em>, hundreds of lines of stack trace, I see
 <code>Caused by: java.lang.ExceptionInInitializerError: null</code>.</p>
 <details>
@@ -781,9 +781,9 @@ Subprocess failed
 <p>It's not all bad though, if I run <code>lien cljsbuild once</code> in the container, I get some
 good news...</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">Compiling &quot;resources/public/js/main.js&quot; from [&quot;src&quot;]...
+<code><span style="color:#323232;">Compiling &quot;resources/public/js/main.js&quot; from [&quot;src&quot;]...
 Successfully compiled &quot;resources/public/js/main.js&quot; in 2.4 seconds.
-</span></pre>
+</span></code></pre>
 <p>Nice.</p>
 <h4 id="version-mismatches-figwheel"><a class="anchor-link small faded" href="#version-mismatches-figwheel">#</a>
 Version mismatches &amp; figwheel</h4>
@@ -791,12 +791,12 @@ Version mismatches &amp; figwheel</h4>
 versions for Clojure, ClojureScript, and Figwheel. I looked up a working
 example from <a href="https://github.com/bhauman/flappy-bird-demo/blob/master/project.clj">this flappy bird demo</a>.</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">diff --git a/project.clj b/project.clj
+<code><span style="color:#323232;">diff --git a/project.clj b/project.clj
 index 644deab..babc3f0 100644
 </span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/project.clj
 </span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/project.clj
 </span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -1,9 +1,8 @@
-</span><span style="color:#323232;"> (defproject color-transit &quot;0.1.0-SNAPSHOT&quot;
+ (defproject color-transit &quot;0.1.0-SNAPSHOT&quot;
 </span><span style="background-color:#ffecec;color:#323232;">-  :dependencies [[org.clojure/clojure &quot;1.7.0&quot;]
 -                 [org.clojure/clojurescript &quot;1.7.170&quot;]]
 -  :plugins [[lein-figwheel &quot;0.5.0-1&quot;]
@@ -809,18 +809,18 @@ index 644deab..babc3f0 100644
 </span><span style="color:#323232;">   :clean-targets ^{:protect false} [:target-path &quot;out&quot; &quot;resources/public/js&quot;]
    :cljsbuild {
      :builds {
-</span></pre>
+</span></code></pre>
 <p>This ended up telling me that the app was running on port <code>3449</code>, so I needed to
 udpate the command...</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">docker run -it --rm -v </span><span style="color:#183691;">&quot;$</span><span style="color:#323232;">PWD</span><span style="color:#183691;">&quot;</span><span style="color:#323232;">:/usr/app -p 3449:3449 color-transit lein figwheel
-</span></pre>
+<code><span style="color:#323232;">docker run -it --rm -v </span><span style="color:#183691;">&quot;$</span><span style="color:#323232;">PWD</span><span style="color:#183691;">&quot;</span><span style="color:#323232;">:/usr/app -p 3449:3449 color-transit lein figwheel
+</span></code></pre>
 <p>Though this works, the issue is that it downloads all of the <code>figwheel</code> dependencies
 each time it runs (for the first time).</p>
 <p>The trick is to add this to the <code>Dockerfile</code>.</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">RUN lein figwheel :check-config
-</span></pre>
+<code><span style="color:#323232;">RUN lein figwheel :check-config
+</span></code></pre>
 <p>I found this looking around the source code looking for
 &quot;Figwheel: Cutting some fruit, just a sec...&quot; and finding that I could run <code>:check-config</code>
 to download all of the dependencies.</p>
@@ -842,7 +842,7 @@ of tabs and spaces- and it just kind of works well enough.</p>
 <h2 id="clojurescript"><a class="anchor-link small faded" href="#clojurescript">#</a>
 ClojureScript?</h2>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">src/
+<code><span style="color:#323232;">src/
 └── color-transit
     ├── canvas.cljs
     ├── canvas_set.cljs
@@ -850,7 +850,7 @@ ClojureScript?</h2>
     ├── core.cljs
     ├── dims.cljs
     └── interval.cljs
-</span></pre>
+</span></code></pre>
 <p>Most of the effor here was going back to get this running and operational, and
 I also wanted to jump into the <code>cljs</code> a bit to see if I can traverse it at all,
 or if I could make some kind of substantial change and deploy it. But I don't
@@ -862,7 +862,7 @@ in order to have them appear to be, or operate as immutable values, like clojure
 expects idiomatically.</p>
 <p>For example:</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">fill-rect
+<code><span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">fill-rect
   </span><span style="color:#323232;">[ctx x0 y0 x1 y1]
   (.fillRect ctx x0 y0 x1 y1)
   ctx)
@@ -873,10 +873,10 @@ expects idiomatically.</p>
    (-&gt; canvas
        (ctx fill-style ...)
        (ctx fill-rect ...))&quot;
-  </span><span style="color:#323232;">[canvas f </span><span style="font-weight:bold;color:#a71d5d;">&amp; </span><span style="color:#323232;">args]
-  (</span><span style="color:#62a35c;">apply </span><span style="color:#323232;">f (</span><span style="font-weight:bold;color:#a71d5d;">:</span><span style="color:#323232;">ctx canvas) args)
+  </span><span style="color:#323232;">[canvas f &amp; args]
+  (apply f (</span><span style="color:#0086b3;">:ctx</span><span style="color:#323232;"> canvas) args)
   canvas)
-</span></pre>
+</span></code></pre>
 <p>These make it so that it's easier to chain methods, and apply transformations
 to the canvas context in a real clojure-y way.</p>
 <p>Functions that do mutation of global state, (like the window), have <code>!</code> at the
@@ -889,8 +889,8 @@ we create the canvas context using <code>query-&gt;Canvas</code>, this is a cont
 holds the <code>2d</code> context of the <code>canvas</code> element in the <code>DOM</code>, as well as the
 actual element, and dimensions, defined as:</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">(</span><span style="color:#62a35c;">defrecord </span><span style="color:#323232;">Canvas [el ctx w h])
-</span></pre>
+<code><span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defrecord </span><span style="color:#323232;">Canvas [el ctx w h])
+</span></code></pre>
 <p>The above js wrapping functions, operate on <code>Canvas</code> records.</p>
 <p>When the app starts it creates a <code>CanvasSet</code>, which links the <code>Canvas</code> to the
 <code>color-sets</code> that it will be running through. <strong>The application state operates
@@ -899,34 +899,34 @@ pretty much solely on a <code>CanvasSet</code></strong>.</p>
 Startup</h4>
 <p>The app starts with a few pre-defined colors:</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">let </span><span style="color:#323232;">[colors [[</span><span style="color:#0086b3;">0 10 0</span><span style="color:#323232;">]
+<code><span style="color:#323232;">(let [colors [[</span><span style="color:#0086b3;">0 10 0</span><span style="color:#323232;">]
               [</span><span style="color:#0086b3;">200 155 255</span><span style="color:#323232;">]
               [</span><span style="color:#0086b3;">40 40 40</span><span style="color:#323232;">]
               [</span><span style="color:#0086b3;">255 0 0</span><span style="color:#323232;">]
               [</span><span style="color:#0086b3;">0 255 255</span><span style="color:#323232;">]
               [</span><span style="color:#0086b3;">100 233 67</span><span style="color:#323232;">]]]
   </span><span style="font-style:italic;color:#969896;">;; ...
-</span><span style="color:#323232;">)
-</span></pre>
+)
+</span></code></pre>
 <p>We take these colors (all <code>[r g b]</code> format), and randomize their order into <code>num-sets</code>.
 This is stored in the <code>app-state</code>, and we can live inspect it using the <code>lein repl</code> that
 get started with <code>figwheel</code> app.</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">dev:cljs.user=&gt; (</span><span style="color:#62a35c;">in-ns </span><span style="color:#0086b3;">&#39;</span><span style="color:#323232;">color-transit</span><span style="font-weight:bold;color:#a71d5d;">.</span><span style="color:#323232;">core)
-dev:color-transit.core=&gt; (</span><span style="font-weight:bold;color:#a71d5d;">-&gt;&gt; @</span><span style="color:#323232;">app-state </span><span style="font-weight:bold;color:#a71d5d;">:</span><span style="color:#323232;">canvas-sets </span><span style="font-weight:bold;color:#a71d5d;">first :</span><span style="color:#323232;">color-sets (</span><span style="font-weight:bold;color:#a71d5d;">map :</span><span style="color:#323232;">colors))
+<code><span style="color:#323232;">dev:cljs.user=&gt; (in-ns </span><span style="font-weight:bold;color:#a71d5d;">&#39;</span><span style="color:#323232;">color-transit.core)
+dev:color-transit.core=&gt; (-&gt;&gt; </span><span style="font-weight:bold;color:#a71d5d;">@</span><span style="color:#323232;">app-state </span><span style="color:#0086b3;">:canvas-sets</span><span style="color:#323232;"> first </span><span style="color:#0086b3;">:color-sets </span><span style="color:#323232;">(map </span><span style="color:#0086b3;">:colors</span><span style="color:#323232;">))
 ([[</span><span style="color:#0086b3;">0 10 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">100 233 67</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">255 0 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 255 255</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">40 40 40</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">200 155 255</span><span style="color:#323232;">]]
  [[</span><span style="color:#0086b3;">200 155 255</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 10 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">40 40 40</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">255 0 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">100 233 67</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 255 255</span><span style="color:#323232;">]]
  [[</span><span style="color:#0086b3;">40 40 40</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 255 255</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">0 10 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">200 155 255</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">255 0 0</span><span style="color:#323232;">] [</span><span style="color:#0086b3;">100 233 67</span><span style="color:#323232;">]])
-</span></pre>
+</span></code></pre>
 <p>In our start up we say we want <code>3</code> sets, and each one has a <code>shuffle</code>-d list of the
 original colors provided. <strong>The three sets correspond to three stops in the
 generated gradient,</strong> and the colors that they will be transitioning to.</p>
 <p>An initial <code>color-set</code> looks like:</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">{ :colors colors
-  :color-queue [ ]
-  :current-color: (</span><span style="font-weight:bold;color:#a71d5d;">first </span><span style="color:#323232;">colors) }
-</span></pre>
+<code><span style="color:#323232;">{ </span><span style="color:#0086b3;">:colors</span><span style="color:#323232;"> colors
+  </span><span style="color:#0086b3;">:color-queue </span><span style="color:#323232;">[ ]
+  </span><span style="color:#0086b3;">:current-color: </span><span style="color:#323232;">(first colors) }
+</span></code></pre>
 <ul>
 <li><code>:colors</code> - are each of the colors in that <em>one</em> gradient step we'll be
 fading through,</li>
@@ -957,16 +957,16 @@ to take from one color to the next, we compute them.</p>
 <h5 id="the-maths"><a class="anchor-link small faded" href="#the-maths">#</a>
 The maths</h5>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">delta </span><span style="color:#323232;">[n1 n2 steps] (</span><span style="font-weight:bold;color:#a71d5d;">/ </span><span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">- </span><span style="color:#323232;">n2 n1) steps))
-</span></pre>
+<code><span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">delta </span><span style="color:#323232;">[n1 n2 steps] (/ (- n2 n1) steps))
+</span></code></pre>
 <p><code>delta</code> is simplified version of what the app does, where this operates on
 one number, the app works on the destructured <code>[r g b]</code>.</p>
 <pre style="background-color:#ffffff;">
-<span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">+delta </span><span style="color:#323232;">[n n</span><span style="font-weight:bold;color:#a71d5d;">+ </span><span style="color:#323232;">scalar]
-  (</span><span style="font-weight:bold;color:#a71d5d;">-&gt; </span><span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">* </span><span style="color:#323232;">scalar n</span><span style="font-weight:bold;color:#a71d5d;">+</span><span style="color:#323232;">)
-      (</span><span style="font-weight:bold;color:#a71d5d;">+ </span><span style="color:#323232;">n)
-      Math</span><span style="font-weight:bold;color:#a71d5d;">/</span><span style="color:#323232;">floor))
-</span></pre>
+<code><span style="color:#323232;">(</span><span style="font-weight:bold;color:#a71d5d;">defn </span><span style="font-weight:bold;color:#795da3;">+delta </span><span style="color:#323232;">[n n+ scalar]
+  (-&gt; (* scalar n+)
+      (+ n)
+      Math/floor))
+</span></code></pre>
 <p>Similarly, <code>+delta</code> increases <code>n</code> by the delta we computed earlier, <code>n+</code>,
 scaled up by <code>scalar</code>, and then rounds it down.</p>
 <p>We use these two functions to create the color queue.</p>
