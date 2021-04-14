@@ -351,7 +351,7 @@ write up of the process.
 ...which will hopefully take less than a couple of months to finish...
 
 [cljs]: https://clojurescript.org
-[boot]: https://boot-clj.com
+[boot]: https://boot-clj.github.io
 [clojure-docker]: https://github.com/Quantisan/docker-clojure
 [flappy-bird-demo]: https://github.com/bhauman/flappy-bird-demo/blob/master/project.clj
 [github-pages-docs]: https://guides.github.com/features/pages/
