@@ -1,0 +1,1167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>stanistan</title>
+        <link>https://www.stanistan.com</link>
+        <description></description>
+        <generator>Zola</generator>
+        <language>en</language>
+        <atom:link href="https://www.stanistan.com/rss.xml" rel="self" type="application/rss+xml"/>
+        <lastBuildDate>Tue, 13 Apr 2021 00:00:00 +0000</lastBuildDate>
+        <item>
+            <title>Introducing: (pr)esent me</title>
+            <pubDate>Tue, 13 Apr 2021 00:00:00 +0000</pubDate>
+            <link>https://www.stanistan.com/writes/2021/04/13/present-me/</link>
+            <guid>https://www.stanistan.com/writes/2021/04/13/present-me/</guid>
+            <description>&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;present-me.stanistan.dev&quot;&gt;(pr)esent-me&lt;&#x2F;a&gt; &lt;strong&gt;is an experiment&lt;&#x2F;strong&gt; to try to give the author of a Pull Request
+a better way to convey why a changeset looks the way that it does, and how the
+folks reading and reviewing it should approach it.&lt;&#x2F;p&gt;
+&lt;div class=&quot;img-container&quot;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;ff953c906abf247000.png&quot; &#x2F;&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;why&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#why&quot;&gt;#&lt;&#x2F;a&gt;
+Why?&lt;&#x2F;h2&gt;
+&lt;p&gt;For small Pull Requests, the one line title, and description
+are enough to convey context and intent for a change. They
+can get reviewed quickly, merged seamlessly, everything is obvious.
+This is great, ya done.&lt;&#x2F;p&gt;
+&lt;p&gt;But when PRs get large, they start to fail as a means of review and communication.
+Ya not done :(&lt;&#x2F;p&gt;
+&lt;p&gt;When I look at a PR, I&#x27;ll look at the title, then the patch, then sometimes
+go back and read through the description after mentally accumulating some questions
+before commenting to make sure I have all the context, but then I&#x27;ve lost my place.&lt;&#x2F;p&gt;
+&lt;p&gt;I imagine that when I&#x27;ve submitted large PRs for folks to review the same kind of thing
+happens. The fact that the changeset is just a changeset, ordered by file,
+very much doesn&#x27;t help the situation.&lt;&#x2F;p&gt;
+&lt;p&gt;Even when I leave comments on the PR to provide context to specific parts of a change
+and why it&#x27;s important, they are ordered in the same way, some file happens to be
+first. Then I have to rely on people not just to understand the context of the PR,
+but also how I want to present it by annotating the comments themselves.&lt;&#x2F;p&gt;
+&lt;p&gt;This is an entirely bad way to conveying information with too many implicit assumptions,
+and too many ways for it to &lt;em&gt;not work&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;what&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#what&quot;&gt;#&lt;&#x2F;a&gt;
+What&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;present-me.stanistan.dev&quot;&gt;Present me&lt;&#x2F;a&gt; leverages the &lt;strong&gt;Review&lt;&#x2F;strong&gt; feature on Github, allowing the grouping of
+multiple comments to create an ordered presentation of annotated changes.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;How?&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;div class=&quot;img-container&quot;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;dc99e909960ac60400.png&quot; &#x2F;&gt;
+&lt;&#x2F;div&gt;
+&lt;ol&gt;
+&lt;li&gt;Create a PR as regular&lt;&#x2F;li&gt;
+&lt;li&gt;Start a review of your own PR&lt;&#x2F;li&gt;
+&lt;li&gt;Leave comments on your PR as part of the review.
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;Comments prefixed with a number will be ordered that way&lt;&#x2F;em&gt;.&lt;&#x2F;li&gt;
+&lt;li&gt;Submit your review: &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;invoice-proxy&#x2F;pull&#x2F;3#pullrequestreview-625362746&quot;&gt;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;invoice-proxy&#x2F;pull&#x2F;3#pullrequestreview-625362746&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;Go to &lt;a href=&quot;https:&#x2F;&#x2F;present-me.stanistan.dev&quot;&gt;the website&lt;&#x2F;a&gt;, you can put in the URL in the form above (including pullrequestreview),
+or if you put in the PR url (no fragment), it&#x27;ll try to find the first review
+written by the author of the PR.
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;present-me.stanistan.dev&#x2F;stanistan&#x2F;invoice-proxy&#x2F;pull&#x2F;3&#x2F;625362746&#x2F;post&quot;&gt;generated post&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;present-me.stanistan.dev&#x2F;stanistan&#x2F;invoice-proxy&#x2F;pull&#x2F;3&#x2F;625362746&#x2F;slides&quot;&gt;generated slides&lt;&#x2F;a&gt; using &lt;a href=&quot;https:&#x2F;&#x2F;revealjs.com&quot;&gt;https:&#x2F;&#x2F;revealjs.com&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;present-me.stanistan.dev&#x2F;stanistan&#x2F;invoice-proxy&#x2F;pull&#x2F;3&#x2F;625362746&#x2F;md&quot;&gt;generated md&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+</description>
+        </item>
+        <item>
+            <title>Coming back to color-transit (part 1)</title>
+            <pubDate>Tue, 31 Dec 2019 00:00:00 +0000</pubDate>
+            <link>https://www.stanistan.com/writes/2019/12/31/coming-back-to-color-transit-part-1/</link>
+            <guid>https://www.stanistan.com/writes/2019/12/31/coming-back-to-color-transit-part-1/</guid>
+            <description>&lt;p&gt;&lt;em&gt;Note:&lt;&#x2F;em&gt; I&#x27;m writing this as an experiment in coming back to a side-project
+that has long been sitting around, and quitetly.&lt;&#x2F;p&gt;
+&lt;p&gt;Looking at it with old eyes and high level questions (of myself) like:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Does it still work?&lt;&#x2F;li&gt;
+&lt;li&gt;Can I understand it?&lt;&#x2F;li&gt;
+&lt;li&gt;Can I still run it locally?&lt;&#x2F;li&gt;
+&lt;li&gt;Can I make changes to it?&lt;&#x2F;li&gt;
+&lt;li&gt;How long does all of that take?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;background&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#background&quot;&gt;#&lt;&#x2F;a&gt;
+Background&lt;&#x2F;h2&gt;
+&lt;div class=&quot;img-container&quot;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;9c5adb3537c1966200.png&quot; &#x2F;&gt;
+&lt;&#x2F;div&gt;
+&lt;p&gt;Four-ish years ago, I wanted to try writing a project in &lt;a href=&quot;https:&#x2F;&#x2F;clojurescript.org&quot;&gt;ClojureScript&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;A few years before that I wrote a bunch of Clojure and had just wanted
+a brief and fun refresher project with the langauge, but trying a different
+runtime.&lt;&#x2F;p&gt;
+&lt;p&gt;I also wanted to play around with the canvas API, because I had never really
+done much &lt;em&gt;drawing&lt;&#x2F;em&gt;. Why limit yourself to one thing a time, right?&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;This project was &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;color-transit&quot;&gt;color-transit&lt;&#x2F;a&gt;.&lt;&#x2F;strong&gt; It&#x27;s a single static page that
+cycles through color graidents, and boy does it do that.&lt;&#x2F;p&gt;
+&lt;p&gt;You can see it live &lt;a href=&quot;https:&#x2F;&#x2F;www.stanistan.com&#x2F;color-transit&#x2F;&quot;&gt;here&lt;&#x2F;a&gt;. This link was actually surprising to me:
+&lt;em&gt;it&#x27;s running on this domain.&lt;&#x2F;em&gt; In hindsight, of course it is, this is all github
+pages... I just didn&#x27;t immediately realize that any repo that has this &lt;code&gt;gh-pages&lt;&#x2F;code&gt;
+branch would end up on this site. But here we are. Cool. Works as intended, I guess.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;first-look-back-at-the-repo&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#first-look-back-at-the-repo&quot;&gt;#&lt;&#x2F;a&gt;
+First look back at the repo&lt;&#x2F;h2&gt;
+&lt;p&gt;Wow, there&#x27;s like no &lt;code&gt;README&lt;&#x2F;code&gt; at all.&lt;&#x2F;p&gt;
+&lt;p&gt;I was definitely not doing this project for any kind of reproducability, just a
+playground.&lt;&#x2F;p&gt;
+&lt;p&gt;It&#x27;s using &lt;a href=&quot;https:&#x2F;&#x2F;leiningen.org&quot;&gt;&lt;code&gt;leiningen&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;, which was the standard at the time when
+building clj&#x2F;s projects, I&#x27;m not really sure if that&#x27;s still the thing people
+use. Since then, or maybe even at that time, &lt;a href=&quot;https:&#x2F;&#x2F;boot-clj.github.io&quot;&gt;&lt;code&gt;boot&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; was a thing that
+started to exist. Both are mentioned in the clojure(script) docs.&lt;&#x2F;p&gt;
+&lt;p&gt;The project uses &lt;a href=&quot;https:&#x2F;&#x2F;figwheel.org&quot;&gt;&lt;code&gt;lein-figwheel&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; for live reloading, which
+is pretty neato.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;commits-timeline&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#commits-timeline&quot;&gt;#&lt;&#x2F;a&gt;
+Commits &amp;amp; Timeline&lt;&#x2F;h3&gt;
+&lt;p&gt;The first obvious thing I can see is that most of the work happened quickly,
+On the day before Christmas, and then the day after.&lt;&#x2F;p&gt;
+&lt;p&gt;The commits on the days following were cleanup and reorganization, and somehow
+a few weeks later I came back to ship it to a &lt;code&gt;gh-pages&lt;&#x2F;code&gt; branch. I just checked
+to see &lt;em&gt;why&lt;&#x2F;em&gt; I decided to do this, maybe it was when the feature shipped, but
+looking at the &lt;a href=&quot;https:&#x2F;&#x2F;guides.github.com&#x2F;features&#x2F;pages&#x2F;&quot;&gt;docs&lt;&#x2F;a&gt;, that wasn&#x27;t it... I did this over two
+years after the &lt;em&gt;last update&lt;&#x2F;em&gt; to that documentation (Dec, 2013 vs Jan, 2016).&lt;&#x2F;p&gt;
+&lt;p&gt;Also looking at the current way to &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;color-transit&#x2F;blob&#x2F;a18e9ecdece6cad0678994e1df731e047a8f8400&#x2F;bin&#x2F;make-gh-page-branch&quot;&gt;ship to the branch&lt;&#x2F;a&gt;, dang this
+is a mess compared to what I&#x27;m doing for &lt;em&gt;this specific site&lt;&#x2F;em&gt;. But it worked
+as well as it needed to.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;does-it-still-work&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#does-it-still-work&quot;&gt;#&lt;&#x2F;a&gt;
+Does it still work?&lt;&#x2F;h2&gt;
+&lt;p&gt;Yep. That&#x27;s pretty cool- it&#x27;s just some JS that&#x27;s been hanging out on a CDN
+for the past few years.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;local-development&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#local-development&quot;&gt;#&lt;&#x2F;a&gt;
+Local development&lt;&#x2F;h3&gt;
+&lt;p&gt;Instead of installing everything (clojure and lein) locally, I am going to try
+and run all of this in a &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;Quantisan&#x2F;docker-clojure&quot;&gt;docker container&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;first-attempt&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#first-attempt&quot;&gt;#&lt;&#x2F;a&gt;
+First attempt&lt;&#x2F;h4&gt;
+&lt;p&gt;The &lt;code&gt;Dockerfile&lt;&#x2F;code&gt;....&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;FROM&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt; clojure:slim-buster
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;WORKDIR &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;&#x2F;usr&#x2F;app
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;COPY&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt; project.clj .
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;RUN &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;lein deps
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And then running it...&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;docker build -t color-transit .
+docker run --rm -v &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;PWD&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;:&#x2F;usr&#x2F;app color-transit lein figwheel
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Looking through the &lt;em&gt;checks notes&lt;&#x2F;em&gt;, hundreds of lines of stack trace, I see
+&lt;code&gt;Caused by: java.lang.ExceptionInInitializerError: null&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;details&gt;
+&lt;summary&gt;Full stack-trace&lt;&#x2F;summary&gt;
+&lt;pre&gt;Warning: implicit hook found: leiningen.cljsbuild&amp;#x2F;activate
+Hooks are deprecated and will be removed in a future version.
+clojure.lang.Compiler$CompilerException: Syntax error compiling at (cljs&amp;#x2F;tagged_literals.cljc:1:1).
+#:clojure.error{:phase :compile-syntax-check, :line 1, :column 1, :source &amp;quot;cljs&amp;#x2F;tagged_literals.cljc&amp;quot;}
+ at clojure.lang.Compiler.load (Compiler.java:7647)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:805)
+    cljs.analyzer$eval1658$loading__6706__auto____1659.invoke (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invokeStatic (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invoke (analyzer.cljc:9)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    figwheel_sidecar.utils$eval1652$loading__6706__auto____1653.invoke (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invokeStatic (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invoke (utils.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:551)
+    figwheel_sidecar.config$eval1646$loading__6706__auto____1647.invoke (config.clj:1)
+    figwheel_sidecar.config$eval1646.invokeStatic (config.clj:1)
+    figwheel_sidecar.config$eval1646.invoke (config.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    leiningen.figwheel$eval1640$loading__6706__auto____1641.invoke (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invokeStatic (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invoke (figwheel.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:102)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:105)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.main$lookup_task_var.invokeStatic (main.clj:69)
+    leiningen.core.main$lookup_task_var.invoke (main.clj:65)
+    leiningen.core.main$pass_through_help_QMARK_.invokeStatic (main.clj:79)
+    leiningen.core.main$pass_through_help_QMARK_.invoke (main.clj:73)
+    leiningen.core.main$task_args.invokeStatic (main.clj:82)
+    leiningen.core.main$task_args.invoke (main.clj:81)
+    leiningen.core.main$resolve_and_apply.invokeStatic (main.clj:339)
+    leiningen.core.main$resolve_and_apply.invoke (main.clj:336)
+    leiningen.core.main$_main$fn__6681.invoke (main.clj:452)
+    leiningen.core.main$_main.invokeStatic (main.clj:442)
+    leiningen.core.main$_main.doInvoke (main.clj:439)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.core$apply.invokeStatic (core.clj:665)
+    clojure.main$main_opt.invokeStatic (main.clj:491)
+    clojure.main$main_opt.invoke (main.clj:487)
+    clojure.main$main.invokeStatic (main.clj:598)
+    clojure.main$main.doInvoke (main.clj:561)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.main.main (main.java:37)
+Caused by: java.lang.ExceptionInInitializerError: null
+ at java.lang.Class.forName0 (Class.java:-2)
+    java.lang.Class.forName (Class.java:398)
+    clojure.lang.RT.classForName (RT.java:2207)
+    clojure.lang.RT.classForName (RT.java:2216)
+    clojure.lang.RT.loadClassForName (RT.java:2235)
+    clojure.lang.RT.load (RT.java:453)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    cljs.tagged_literals$eval2011$loading__6706__auto____2012.invoke (tagged_literals.cljc:1)
+    cljs.tagged_literals$eval2011.invokeStatic (tagged_literals.cljc:1)
+    cljs.tagged_literals$eval2011.invoke (tagged_literals.cljc:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:805)
+    cljs.analyzer$eval1658$loading__6706__auto____1659.invoke (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invokeStatic (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invoke (analyzer.cljc:9)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    figwheel_sidecar.utils$eval1652$loading__6706__auto____1653.invoke (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invokeStatic (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invoke (utils.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:551)
+    figwheel_sidecar.config$eval1646$loading__6706__auto____1647.invoke (config.clj:1)
+    figwheel_sidecar.config$eval1646.invokeStatic (config.clj:1)
+    figwheel_sidecar.config$eval1646.invoke (config.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    leiningen.figwheel$eval1640$loading__6706__auto____1641.invoke (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invokeStatic (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invoke (figwheel.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:102)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:105)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.main$lookup_task_var.invokeStatic (main.clj:69)
+    leiningen.core.main$lookup_task_var.invoke (main.clj:65)
+    leiningen.core.main$pass_through_help_QMARK_.invokeStatic (main.clj:79)
+    leiningen.core.main$pass_through_help_QMARK_.invoke (main.clj:73)
+    leiningen.core.main$task_args.invokeStatic (main.clj:82)
+    leiningen.core.main$task_args.invoke (main.clj:81)
+    leiningen.core.main$resolve_and_apply.invokeStatic (main.clj:339)
+    leiningen.core.main$resolve_and_apply.invoke (main.clj:336)
+    leiningen.core.main$_main$fn__6681.invoke (main.clj:452)
+    leiningen.core.main$_main.invokeStatic (main.clj:442)
+    leiningen.core.main$_main.doInvoke (main.clj:439)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.core$apply.invokeStatic (core.clj:665)
+    clojure.main$main_opt.invokeStatic (main.clj:491)
+    clojure.main$main_opt.invoke (main.clj:487)
+    clojure.main$main.invokeStatic (main.clj:598)
+    clojure.main$main.doInvoke (main.clj:561)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.main.main (main.java:37)
+Caused by: java.lang.ClassNotFoundException: java&amp;#x2F;sql&amp;#x2F;Timestamp
+ at java.lang.Class.forName0 (Class.java:-2)
+    java.lang.Class.forName (Class.java:398)
+    clojure.lang.RT.classForName (RT.java:2207)
+    clojure.lang.RT.classForNameNonLoading (RT.java:2220)
+    clojure.instant&amp;#x2F;loading__6706__auto__ (instant.clj:9)
+    clojure.instant__init.load (:9)
+    clojure.instant__init.&amp;lt;clinit&amp;gt; (:-1)
+    java.lang.Class.forName0 (Class.java:-2)
+    java.lang.Class.forName (Class.java:398)
+    clojure.lang.RT.classForName (RT.java:2207)
+    clojure.lang.RT.classForName (RT.java:2216)
+    clojure.lang.RT.loadClassForName (RT.java:2235)
+    clojure.lang.RT.load (RT.java:453)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    cljs.tagged_literals$eval2011$loading__6706__auto____2012.invoke (tagged_literals.cljc:1)
+    cljs.tagged_literals$eval2011.invokeStatic (tagged_literals.cljc:1)
+    cljs.tagged_literals$eval2011.invoke (tagged_literals.cljc:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:805)
+    cljs.analyzer$eval1658$loading__6706__auto____1659.invoke (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invokeStatic (analyzer.cljc:9)
+    cljs.analyzer$eval1658.invoke (analyzer.cljc:9)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    figwheel_sidecar.utils$eval1652$loading__6706__auto____1653.invoke (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invokeStatic (utils.clj:1)
+    figwheel_sidecar.utils$eval1652.invoke (utils.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:551)
+    figwheel_sidecar.config$eval1646$loading__6706__auto____1647.invoke (config.clj:1)
+    figwheel_sidecar.config$eval1646.invokeStatic (config.clj:1)
+    figwheel_sidecar.config$eval1646.invoke (config.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:457)
+    leiningen.figwheel$eval1640$loading__6706__auto____1641.invoke (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invokeStatic (figwheel.clj:1)
+    leiningen.figwheel$eval1640.invoke (figwheel.clj:1)
+    clojure.lang.Compiler.eval (Compiler.java:7176)
+    clojure.lang.Compiler.eval (Compiler.java:7165)
+    clojure.lang.Compiler.load (Compiler.java:7635)
+    clojure.lang.RT.loadResourceScript (RT.java:381)
+    clojure.lang.RT.loadResourceScript (RT.java:372)
+    clojure.lang.RT.load (RT.java:463)
+    clojure.lang.RT.load (RT.java:428)
+    clojure.core$load$fn__6824.invoke (core.clj:6126)
+    clojure.core$load.invokeStatic (core.clj:6125)
+    clojure.core$load.doInvoke (core.clj:6109)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    clojure.core$load_one.invokeStatic (core.clj:5908)
+    clojure.core$load_one.invoke (core.clj:5903)
+    clojure.core$load_lib$fn__6765.invoke (core.clj:5948)
+    clojure.core$load_lib.invokeStatic (core.clj:5947)
+    clojure.core$load_lib.doInvoke (core.clj:5928)
+    clojure.lang.RestFn.applyTo (RestFn.java:142)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$load_libs.invokeStatic (core.clj:5985)
+    clojure.core$load_libs.doInvoke (core.clj:5969)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.core$apply.invokeStatic (core.clj:667)
+    clojure.core$require.invokeStatic (core.clj:6007)
+    clojure.core$require.doInvoke (core.clj:6007)
+    clojure.lang.RestFn.invoke (RestFn.java:408)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:102)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.utils$require_resolve.invokeStatic (utils.clj:105)
+    leiningen.core.utils$require_resolve.invoke (utils.clj:95)
+    leiningen.core.main$lookup_task_var.invokeStatic (main.clj:69)
+    leiningen.core.main$lookup_task_var.invoke (main.clj:65)
+    leiningen.core.main$pass_through_help_QMARK_.invokeStatic (main.clj:79)
+    leiningen.core.main$pass_through_help_QMARK_.invoke (main.clj:73)
+    leiningen.core.main$task_args.invokeStatic (main.clj:82)
+    leiningen.core.main$task_args.invoke (main.clj:81)
+    leiningen.core.main$resolve_and_apply.invokeStatic (main.clj:339)
+    leiningen.core.main$resolve_and_apply.invoke (main.clj:336)
+    leiningen.core.main$_main$fn__6681.invoke (main.clj:452)
+    leiningen.core.main$_main.invokeStatic (main.clj:442)
+    leiningen.core.main$_main.doInvoke (main.clj:439)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.core$apply.invokeStatic (core.clj:665)
+    clojure.main$main_opt.invokeStatic (main.clj:491)
+    clojure.main$main_opt.invoke (main.clj:487)
+    clojure.main$main.invokeStatic (main.clj:598)
+    clojure.main$main.doInvoke (main.clj:561)
+    clojure.lang.RestFn.applyTo (RestFn.java:137)
+    clojure.lang.Var.applyTo (Var.java:705)
+    clojure.main.main (main.java:37)
+&lt;&#x2F;pre&gt;
+&lt;&#x2F;details&gt;
+&lt;h4 id=&quot;down-to-jdk8&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#down-to-jdk8&quot;&gt;#&lt;&#x2F;a&gt;
+Down to JDK8&lt;&#x2F;h4&gt;
+&lt;p&gt;Changing the base image to &lt;code&gt;clojure:openjdk-8-slim-buster&lt;&#x2F;code&gt; fixes the initial
+&lt;code&gt;null&lt;&#x2F;code&gt; pointer exception, but now I&#x27;m getting another one.&lt;&#x2F;p&gt;
+&lt;details&gt;
+&lt;summary&gt;Second stack-trace&lt;&#x2F;summary&gt;
+&lt;pre&gt;Warning: implicit hook found: leiningen.cljsbuild&amp;#x2F;activate
+Hooks are deprecated and will be removed in a future version.
+Exception in thread &amp;quot;main&amp;quot; java.io.FileNotFoundException: Could not locate clojure&amp;#x2F;tools&amp;#x2F;nrepl&amp;#x2F;middleware&amp;#x2F;interruptible_eval__init.class or clojure&amp;#x2F;tools&amp;#x2F;nrepl&amp;#x2F;middleware&amp;#x2F;interruptible_eval.clj on classpath. Please check that namespaces with dashes use underscores in the Clojure file name., compiling:(figwheel_sidecar&amp;#x2F;repl.clj:1:1)
+	at clojure.lang.Compiler.load(Compiler.java:7239)
+	at clojure.lang.RT.loadResourceScript(RT.java:371)
+	at clojure.lang.RT.loadResourceScript(RT.java:362)
+	at clojure.lang.RT.load(RT.java:446)
+	at clojure.lang.RT.load(RT.java:412)
+	at clojure.core$load$fn__5448.invoke(core.clj:5866)
+	at clojure.core$load.doInvoke(core.clj:5865)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at clojure.core$load_one.invoke(core.clj:5671)
+	at clojure.core$load_lib$fn__5397.invoke(core.clj:5711)
+	at clojure.core$load_lib.doInvoke(core.clj:5710)
+	at clojure.lang.RestFn.applyTo(RestFn.java:142)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$load_libs.doInvoke(core.clj:5749)
+	at clojure.lang.RestFn.applyTo(RestFn.java:137)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$require.doInvoke(core.clj:5832)
+	at clojure.lang.RestFn.invoke(RestFn.java:1289)
+	at figwheel_sidecar.system$eval15$loading__5340__auto____16.invoke(system.clj:1)
+	at figwheel_sidecar.system$eval15.invoke(system.clj:1)
+	at clojure.lang.Compiler.eval(Compiler.java:6782)
+	at clojure.lang.Compiler.eval(Compiler.java:6771)
+	at clojure.lang.Compiler.load(Compiler.java:7227)
+	at clojure.lang.RT.loadResourceScript(RT.java:371)
+	at clojure.lang.RT.loadResourceScript(RT.java:362)
+	at clojure.lang.RT.load(RT.java:446)
+	at clojure.lang.RT.load(RT.java:412)
+	at clojure.core$load$fn__5448.invoke(core.clj:5866)
+	at clojure.core$load.doInvoke(core.clj:5865)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at clojure.core$load_one.invoke(core.clj:5671)
+	at clojure.core$load_lib$fn__5397.invoke(core.clj:5711)
+	at clojure.core$load_lib.doInvoke(core.clj:5710)
+	at clojure.lang.RestFn.applyTo(RestFn.java:142)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$load_libs.doInvoke(core.clj:5749)
+	at clojure.lang.RestFn.applyTo(RestFn.java:137)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$require.doInvoke(core.clj:5832)
+	at clojure.lang.RestFn.invoke(RestFn.java:457)
+	at figwheel_sidecar.repl_api$eval9$loading__5340__auto____10.invoke(repl_api.clj:1)
+	at figwheel_sidecar.repl_api$eval9.invoke(repl_api.clj:1)
+	at clojure.lang.Compiler.eval(Compiler.java:6782)
+	at clojure.lang.Compiler.eval(Compiler.java:6771)
+	at clojure.lang.Compiler.load(Compiler.java:7227)
+	at clojure.lang.RT.loadResourceScript(RT.java:371)
+	at clojure.lang.RT.loadResourceScript(RT.java:362)
+	at clojure.lang.RT.load(RT.java:446)
+	at clojure.lang.RT.load(RT.java:412)
+	at clojure.core$load$fn__5448.invoke(core.clj:5866)
+	at clojure.core$load.doInvoke(core.clj:5865)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at clojure.core$load_one.invoke(core.clj:5671)
+	at clojure.core$load_lib$fn__5397.invoke(core.clj:5711)
+	at clojure.core$load_lib.doInvoke(core.clj:5710)
+	at clojure.lang.RestFn.applyTo(RestFn.java:142)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$load_libs.doInvoke(core.clj:5749)
+	at clojure.lang.RestFn.applyTo(RestFn.java:137)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$require.doInvoke(core.clj:5832)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at user$eval5.invoke(form-init37068904552664761.clj:1)
+	at clojure.lang.Compiler.eval(Compiler.java:6782)
+	at clojure.lang.Compiler.eval(Compiler.java:6771)
+	at clojure.lang.Compiler.load(Compiler.java:7227)
+	at clojure.lang.Compiler.loadFile(Compiler.java:7165)
+	at clojure.main$load_script.invoke(main.clj:275)
+	at clojure.main$init_opt.invoke(main.clj:280)
+	at clojure.main$initialize.invoke(main.clj:308)
+	at clojure.main$null_opt.invoke(main.clj:343)
+	at clojure.main$main.doInvoke(main.clj:421)
+	at clojure.lang.RestFn.invoke(RestFn.java:421)
+	at clojure.lang.Var.invoke(Var.java:383)
+	at clojure.lang.AFn.applyToHelper(AFn.java:156)
+	at clojure.lang.Var.applyTo(Var.java:700)
+	at clojure.main.main(main.java:37)
+Caused by: java.io.FileNotFoundException: Could not locate clojure&amp;#x2F;tools&amp;#x2F;nrepl&amp;#x2F;middleware&amp;#x2F;interruptible_eval__init.class or clojure&amp;#x2F;tools&amp;#x2F;nrepl&amp;#x2F;middleware&amp;#x2F;interruptible_eval.clj on classpath. Please check that namespaces with dashes use underscores in the Clojure file name.
+	at clojure.lang.RT.load(RT.java:449)
+	at clojure.lang.RT.load(RT.java:412)
+	at clojure.core$load$fn__5448.invoke(core.clj:5866)
+	at clojure.core$load.doInvoke(core.clj:5865)
+	at clojure.lang.RestFn.invoke(RestFn.java:408)
+	at clojure.core$load_one.invoke(core.clj:5671)
+	at clojure.core$load_lib$fn__5397.invoke(core.clj:5711)
+	at clojure.core$load_lib.doInvoke(core.clj:5710)
+	at clojure.lang.RestFn.applyTo(RestFn.java:142)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$load_libs.doInvoke(core.clj:5749)
+	at clojure.lang.RestFn.applyTo(RestFn.java:137)
+	at clojure.core$apply.invoke(core.clj:632)
+	at clojure.core$require.doInvoke(core.clj:5832)
+	at clojure.lang.RestFn.invoke(RestFn.java:703)
+	at figwheel_sidecar.repl$eval2185$loading__5340__auto____2186.invoke(repl.clj:1)
+	at figwheel_sidecar.repl$eval2185.invoke(repl.clj:1)
+	at clojure.lang.Compiler.eval(Compiler.java:6782)
+	at clojure.lang.Compiler.eval(Compiler.java:6771)
+	at clojure.lang.Compiler.load(Compiler.java:7227)
+	... 76 more
+Subprocess failed
+&lt;&#x2F;pre&gt;
+&lt;&#x2F;details&gt;
+&lt;p&gt;It&#x27;s not all bad though, if I run &lt;code&gt;lien cljsbuild once&lt;&#x2F;code&gt; in the container, I get some
+good news...&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;Compiling &amp;quot;resources&#x2F;public&#x2F;js&#x2F;main.js&amp;quot; from [&amp;quot;src&amp;quot;]...
+Successfully compiled &amp;quot;resources&#x2F;public&#x2F;js&#x2F;main.js&amp;quot; in 2.4 seconds.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Nice.&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;version-mismatches-figwheel&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#version-mismatches-figwheel&quot;&gt;#&lt;&#x2F;a&gt;
+Version mismatches &amp;amp; figwheel&lt;&#x2F;h4&gt;
+&lt;p&gt;My assumption here is that I needed to update&#x2F;specify all of the correct
+versions for Clojure, ClojureScript, and Figwheel. I looked up a working
+example from &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;bhauman&#x2F;flappy-bird-demo&#x2F;blob&#x2F;master&#x2F;project.clj&quot;&gt;this flappy bird demo&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;diff --git a&#x2F;project.clj b&#x2F;project.clj
+index 644deab..babc3f0 100644
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;project.clj
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;project.clj
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -1,9 +1,8 @@
+ (defproject color-transit &amp;quot;0.1.0-SNAPSHOT&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-  :dependencies [[org.clojure&#x2F;clojure &amp;quot;1.7.0&amp;quot;]
+-                 [org.clojure&#x2F;clojurescript &amp;quot;1.7.170&amp;quot;]]
+-  :plugins [[lein-figwheel &amp;quot;0.5.0-1&amp;quot;]
+-            [lein-cljsbuild &amp;quot;1.1.2&amp;quot;]]
+-  :hooks [leiningen.cljsbuild]
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;  :dependencies [[org.clojure&#x2F;clojure &amp;quot;1.9.0&amp;quot;]
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;                 [org.clojure&#x2F;clojurescript &amp;quot;1.10.312&amp;quot;]]
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;  :plugins [[lein-cljsbuild &amp;quot;1.1.4&amp;quot; :exclusions [org.clojure&#x2F;clojure]]
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;            [lein-figwheel &amp;quot;0.5.16&amp;quot;]]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;   :clean-targets ^{:protect false} [:target-path &amp;quot;out&amp;quot; &amp;quot;resources&#x2F;public&#x2F;js&amp;quot;]
+   :cljsbuild {
+     :builds {
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This ended up telling me that the app was running on port &lt;code&gt;3449&lt;&#x2F;code&gt;, so I needed to
+udpate the command...&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;docker run -it --rm -v &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;PWD&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;:&#x2F;usr&#x2F;app -p 3449:3449 color-transit lein figwheel
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Though this works, the issue is that it downloads all of the &lt;code&gt;figwheel&lt;&#x2F;code&gt; dependencies
+each time it runs (for the first time).&lt;&#x2F;p&gt;
+&lt;p&gt;The trick is to add this to the &lt;code&gt;Dockerfile&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;RUN lein figwheel :check-config
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I found this looking around the source code looking for
+&amp;quot;Figwheel: Cutting some fruit, just a sec...&amp;quot; and finding that I could run &lt;code&gt;:check-config&lt;&#x2F;code&gt;
+to download all of the dependencies.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;Aside:&lt;&#x2F;em&gt; Apparently there&#x27;s an entirely new version called &lt;code&gt;figwheel-main&lt;&#x2F;code&gt;, but I&#x27;m not
+going to go all the way over there just yet.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;how-long-did-all-that-take&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#how-long-did-all-that-take&quot;&gt;#&lt;&#x2F;a&gt;
+How long did all that take?&lt;&#x2F;h3&gt;
+&lt;p&gt;To answer one of the questions I asked myself in the beginning... getting a dev
+environment up and running for this took about two hours.&lt;&#x2F;p&gt;
+&lt;p&gt;Getting a blog post out and running took another month.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;color-transit&#x2F;commit&#x2F;b9a5a144f090fb2059d340a809e6f12bd6e23b14&quot;&gt;The commit getting it to work&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;the-gh-pages-script&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#the-gh-pages-script&quot;&gt;#&lt;&#x2F;a&gt;
+The &lt;code&gt;gh-pages&lt;&#x2F;code&gt; script&lt;&#x2F;h2&gt;
+&lt;p&gt;Looking at this, it&#x27;s obviously a bunch of stuff that I had copy pasted
+from other places on the internet... all of the whitespace is a mixture
+of tabs and spaces- and it just kind of works well enough.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;clojurescript&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#clojurescript&quot;&gt;#&lt;&#x2F;a&gt;
+ClojureScript?&lt;&#x2F;h2&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;src&#x2F;
+└── color-transit
+    ├── canvas.cljs
+    ├── canvas_set.cljs
+    ├── color.cljs
+    ├── core.cljs
+    ├── dims.cljs
+    └── interval.cljs
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Most of the effor here was going back to get this running and operational, and
+I also wanted to jump into the &lt;code&gt;cljs&lt;&#x2F;code&gt; a bit to see if I can traverse it at all,
+or if I could make some kind of substantial change and deploy it. But I don&#x27;t
+really want to be doing that. Let&#x27;s dig into the meat of the &amp;quot;app.&amp;quot;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;js-wrappers&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#js-wrappers&quot;&gt;#&lt;&#x2F;a&gt;
+JS Wrappers&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;code&gt;interval&lt;&#x2F;code&gt;, &lt;code&gt;canvas&lt;&#x2F;code&gt;, &lt;code&gt;dims&lt;&#x2F;code&gt;... These are all wrappers around &amp;quot;native&amp;quot; JS methods
+in order to have them appear to be, or operate as immutable values, like clojure
+expects idiomatically.&lt;&#x2F;p&gt;
+&lt;p&gt;For example:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;defn &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;fill-rect
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;[ctx x0 y0 x1 y1]
+  (.fillRect ctx x0 y0 x1 y1)
+  ctx)
+
+(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;defn &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;ctx
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;Apply f to the context of the canvas, return the canvas.
+   This is useful for chaining ctx methods.
+   (-&amp;gt; canvas
+       (ctx fill-style ...)
+       (ctx fill-rect ...))&amp;quot;
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;[canvas f &amp;amp; args]
+  (apply f (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;:ctx&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt; canvas) args)
+  canvas)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;These make it so that it&#x27;s easier to chain methods, and apply transformations
+to the canvas context in a real clojure-y way.&lt;&#x2F;p&gt;
+&lt;p&gt;Functions that do mutation of global state, (like the window), have &lt;code&gt;!&lt;&#x2F;code&gt; at the
+end. For example &lt;code&gt;full-screen!&lt;&#x2F;code&gt; or &lt;code&gt;start-app!&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;the-fun-part&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#the-fun-part&quot;&gt;#&lt;&#x2F;a&gt;
+The fun part&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;em&gt;or, how this entire thing actually works.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The app&#x27;s html is defined in &lt;code&gt;public&#x2F;index.html&lt;&#x2F;code&gt;, and when the it starts,
+we create the canvas context using &lt;code&gt;query-&amp;gt;Canvas&lt;&#x2F;code&gt;, this is a container that
+holds the &lt;code&gt;2d&lt;&#x2F;code&gt; context of the &lt;code&gt;canvas&lt;&#x2F;code&gt; element in the &lt;code&gt;DOM&lt;&#x2F;code&gt;, as well as the
+actual element, and dimensions, defined as:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;defrecord &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;Canvas [el ctx w h])
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The above js wrapping functions, operate on &lt;code&gt;Canvas&lt;&#x2F;code&gt; records.&lt;&#x2F;p&gt;
+&lt;p&gt;When the app starts it creates a &lt;code&gt;CanvasSet&lt;&#x2F;code&gt;, which links the &lt;code&gt;Canvas&lt;&#x2F;code&gt; to the
+&lt;code&gt;color-sets&lt;&#x2F;code&gt; that it will be running through. &lt;strong&gt;The application state operates
+pretty much solely on a &lt;code&gt;CanvasSet&lt;&#x2F;code&gt;&lt;&#x2F;strong&gt;.&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;startup&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#startup&quot;&gt;#&lt;&#x2F;a&gt;
+Startup&lt;&#x2F;h4&gt;
+&lt;p&gt;The app starts with a few pre-defined colors:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;(let [colors [[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 10 0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;]
+              [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;200 155 255&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;]
+              [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;40 40 40&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;]
+              [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;255 0 0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;]
+              [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 255 255&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;]
+              [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;100 233 67&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;]]]
+  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;;; ...
+)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We take these colors (all &lt;code&gt;[r g b]&lt;&#x2F;code&gt; format), and randomize their order into &lt;code&gt;num-sets&lt;&#x2F;code&gt;.
+This is stored in the &lt;code&gt;app-state&lt;&#x2F;code&gt;, and we can live inspect it using the &lt;code&gt;lein repl&lt;&#x2F;code&gt; that
+get started with &lt;code&gt;figwheel&lt;&#x2F;code&gt; app.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;dev:cljs.user=&amp;gt; (in-ns &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;color-transit.core)
+dev:color-transit.core=&amp;gt; (-&amp;gt;&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;@&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;app-state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;:canvas-sets&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt; first &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;:color-sets &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;(map &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;:colors&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;))
+([[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 10 0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;100 233 67&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;255 0 0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 255 255&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;40 40 40&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;200 155 255&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;]]
+ [[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;200 155 255&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 10 0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;40 40 40&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;255 0 0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;100 233 67&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 255 255&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;]]
+ [[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;40 40 40&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 255 255&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 10 0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;200 155 255&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;255 0 0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;] [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;100 233 67&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;]])
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In our start up we say we want &lt;code&gt;3&lt;&#x2F;code&gt; sets, and each one has a &lt;code&gt;shuffle&lt;&#x2F;code&gt;-d list of the
+original colors provided. &lt;strong&gt;The three sets correspond to three stops in the
+generated gradient,&lt;&#x2F;strong&gt; and the colors that they will be transitioning to.&lt;&#x2F;p&gt;
+&lt;p&gt;An initial &lt;code&gt;color-set&lt;&#x2F;code&gt; looks like:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;:colors&lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt; colors
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;:color-queue &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;[ ]
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;:current-color: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;(first colors) }
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;:colors&lt;&#x2F;code&gt; - are each of the colors in that &lt;em&gt;one&lt;&#x2F;em&gt; gradient step we&#x27;ll be
+fading through,&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;:color-queue&lt;&#x2F;code&gt; - a queue (FIFO), of colors that we&#x27;ll be moving through
+in the fade,&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;:current-color&lt;&#x2F;code&gt; - what color are we currently displaying.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Our canvas drawer (in &lt;code&gt;core&lt;&#x2F;code&gt;) will only draw the &lt;code&gt;current-color&lt;&#x2F;code&gt;, and we
+pre-compute the &lt;code&gt;queue&lt;&#x2F;code&gt; up front as infrequently as possible so that we
+do as little work when drawing the gradient as possible.&lt;&#x2F;p&gt;
+&lt;p&gt;All of that happens in &lt;code&gt;color&#x2F;compute-next-state&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;computing-the-color-transitios&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#computing-the-color-transitios&quot;&gt;#&lt;&#x2F;a&gt;
+Computing the color transitios&lt;&#x2F;h4&gt;
+&lt;p&gt;&lt;code&gt;compute-next-state&lt;&#x2F;code&gt; has two main branches of logic:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;the first is when the queue is non-empty, we take the color at
+the head of the queue, and update &lt;code&gt;current-color&lt;&#x2F;code&gt; with it. This runs
+until the queue is drained.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;the second is if both the initial state, and happens after the queue
+is drained... we generate a new one! Given the current color, and the
+next one in the &lt;code&gt;colors&lt;&#x2F;code&gt;, and the number of &lt;code&gt;steps&lt;&#x2F;code&gt; we want to be able
+to take from one color to the next, we compute them.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h5 id=&quot;the-maths&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#the-maths&quot;&gt;#&lt;&#x2F;a&gt;
+The maths&lt;&#x2F;h5&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;defn &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;delta &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;[n1 n2 steps] (&#x2F; (- n2 n1) steps))
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;delta&lt;&#x2F;code&gt; is simplified version of what the app does, where this operates on
+one number, the app works on the destructured &lt;code&gt;[r g b]&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;defn &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;+delta &lt;&#x2F;span&gt;&lt;span style=&quot;color:#323232;&quot;&gt;[n n+ scalar]
+  (-&amp;gt; (* scalar n+)
+      (+ n)
+      Math&#x2F;floor))
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Similarly, &lt;code&gt;+delta&lt;&#x2F;code&gt; increases &lt;code&gt;n&lt;&#x2F;code&gt; by the delta we computed earlier, &lt;code&gt;n+&lt;&#x2F;code&gt;,
+scaled up by &lt;code&gt;scalar&lt;&#x2F;code&gt;, and then rounds it down.&lt;&#x2F;p&gt;
+&lt;p&gt;We use these two functions to create the color queue.&lt;&#x2F;p&gt;
+&lt;p&gt;Most of &lt;em&gt;everything&lt;&#x2F;em&gt; else in the code is transforming the colors
+into the gradient and canvas, and making sure it&#x27;s running at a
+specific interval in the browser.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;wrapping-up&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#wrapping-up&quot;&gt;#&lt;&#x2F;a&gt;
+Wrapping up&lt;&#x2F;h3&gt;
+&lt;p&gt;Originally, I wasn&#x27;t sure if I&#x27;d want to change &lt;em&gt;anything&lt;&#x2F;em&gt; here, but
+after spending the time with the codebase, I&#x27;d like to make the grandient
+drawing &lt;em&gt;reactive&lt;&#x2F;em&gt; to user parameterization in the UI.&lt;&#x2F;p&gt;
+&lt;p&gt;So eventually, there&#x27;ll be a second post, and updates to the app, and a
+write up of the process.&lt;&#x2F;p&gt;
+&lt;p&gt;...which will hopefully take less than a couple of months to finish...&lt;&#x2F;p&gt;
+</description>
+        </item>
+        <item>
+            <title>How this site works</title>
+            <pubDate>Sun, 10 Nov 2019 00:00:00 +0000</pubDate>
+            <link>https://www.stanistan.com/writes/2019/11/10/how-this-blog-works/</link>
+            <guid>https://www.stanistan.com/writes/2019/11/10/how-this-blog-works/</guid>
+            <description>&lt;p&gt;Like lots of folk on the internet, I have a website that&#x27;s powered by
+a static site generator and hosted somewhere on the GitHub.&lt;&#x2F;p&gt;
+&lt;p&gt;This post serves two functions:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Actually getting something that&#x27;s &lt;em&gt;text&lt;&#x2F;em&gt; onto the internet.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Some self documentation on how this works, because as I&#x27;ve gone back to this
+over the past few months to add some polish, or just, &lt;em&gt;make any kind of
+changes&lt;&#x2F;em&gt;, I&#x27;ve been surprised by things that I&#x27;ve done for myself in the
+past.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;Here are some immediately relevant links:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;stanistan.github.io&quot;&gt;The repo on github&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&quot;&gt;Zola&lt;&#x2F;a&gt; - the static site generator I use, which is written in &lt;a href=&quot;https:&#x2F;&#x2F;www.rust-lang.org&quot;&gt;Rust&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;branches-or-the-details-vs-master&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#branches-or-the-details-vs-master&quot;&gt;#&lt;&#x2F;a&gt;
+Branches, or &lt;code&gt;the-details&lt;&#x2F;code&gt; vs &lt;code&gt;master&lt;&#x2F;code&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;Unlike the default github&#x27;s repo-specific pages, you cannot use a &lt;code&gt;gh-pages&lt;&#x2F;code&gt; branch
+to host a site for a &lt;em&gt;user&lt;&#x2F;em&gt;. You end up having to create a repository called
+&lt;code&gt;&amp;lt;you&amp;gt;.github.io&lt;&#x2F;code&gt;, and whatever is on the &lt;code&gt;master&lt;&#x2F;code&gt; branch will end up getting served
+to the world. (&lt;a href=&quot;https:&#x2F;&#x2F;help.github.com&#x2F;en&#x2F;github&#x2F;working-with-github-pages&#x2F;about-github-pages#publishing-sources-for-github-pages-sites&quot;&gt;source&lt;&#x2F;a&gt;)&lt;&#x2F;p&gt;
+&lt;p&gt;Luckily, we can set a &lt;a href=&quot;https:&#x2F;&#x2F;help.github.com&#x2F;en&#x2F;github&#x2F;administering-a-repository&#x2F;setting-the-default-branch&quot;&gt;default branch&lt;&#x2F;a&gt; for the actual &lt;em&gt;editing&lt;&#x2F;em&gt; of
+the code and content, and for some reason, I decided to call it &lt;code&gt;the-details&lt;&#x2F;code&gt;.
+Possibly because naming is hard.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;readme-md&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#readme-md&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;code&gt;README.md&lt;&#x2F;code&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;A consequence here is that the &lt;code&gt;README.md&lt;&#x2F;code&gt; cannot, by default sit in the
+&lt;code&gt;master&lt;&#x2F;code&gt; branch, explaining that you can&#x27;t edit any content in that branch itself.&lt;&#x2F;p&gt;
+&lt;p&gt;I have a workaround set up that symlinks the file from the &lt;code&gt;static&#x2F;&lt;&#x2F;code&gt; directory to &lt;code&gt;.&#x2F;&lt;&#x2F;code&gt;,
+which means that it will always get deployed to &lt;code&gt;master&lt;&#x2F;code&gt; (&lt;a href=&quot;https:&#x2F;&#x2F;www.stanistan.com&#x2F;README.md&quot;&gt;and the site&lt;&#x2F;a&gt;) as
+I push changes to it.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;Update as of November 14th:&lt;&#x2F;em&gt; This is also being used to keep track of the &lt;code&gt;CNAME&lt;&#x2F;code&gt;
+file that GitHub looks for when setting up your own personal hosting.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;$ cd static &amp;amp;&amp;amp; ls -l
+lrwxr-xr-x   1 stanistan  staff     8B Nov 14 09:33 CNAME@ -&amp;gt; ..&#x2F;CNAME
+lrwxr-xr-x   1 stanistan  staff    12B Nov 14 09:33 README.md@ -&amp;gt; ..&#x2F;README.md
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This was something that gave me piece of mind as I set this up, and later
+on was a pleasant surprise... I was worried about keeping the READMEs in sync
+across branches and learned that past Stan had already had that panic.&lt;&#x2F;p&gt;
+&lt;p&gt;A lof of the setup for this static site is so I&#x27;m not suprised by things that are
+easy to forget. I expect to change this rarely and would rather it break
+meaningfully and with context on my laptop than suprisingly and live on the
+internet.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;configuration&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#configuration&quot;&gt;#&lt;&#x2F;a&gt;
+Configuration&lt;&#x2F;h2&gt;
+&lt;p&gt;There are &lt;em&gt;two&lt;&#x2F;em&gt; config files:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;config.toml&lt;&#x2F;code&gt; - the prod config&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;config.dev.toml&lt;&#x2F;code&gt; - the dev config&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;As of now, the only difference between the two is that I print out the
+&lt;code&gt;{{ __tera_context }}&lt;&#x2F;code&gt; at the bottom of each template in dev so that it&#x27;s
+easy to see what data is currently available while I&#x27;m futzing with the
+templates.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;makefile&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#makefile&quot;&gt;#&lt;&#x2F;a&gt;
+&lt;code&gt;Makefile&lt;&#x2F;code&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Besides the configuration difference in the &lt;code&gt;toml&lt;&#x2F;code&gt; files, there is a structural
+difference between &lt;code&gt;dev&lt;&#x2F;code&gt; and &lt;code&gt;prod&lt;&#x2F;code&gt; for this site.&lt;&#x2F;p&gt;
+&lt;p&gt;By default, zola ships both the &lt;code&gt;serve&lt;&#x2F;code&gt; and &lt;code&gt;build&lt;&#x2F;code&gt; to the same &lt;code&gt;public&#x2F;&lt;&#x2F;code&gt; directory.
+I&#x27;ve over-ridden these in the &lt;code&gt;Makefile&lt;&#x2F;code&gt; so that one does not clobber the other.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;public&#x2F;&lt;&#x2F;code&gt; is in &lt;code&gt;.gitignore&lt;&#x2F;code&gt;, and remains the path for watching live updates.
+These can be triggered by running &lt;code&gt;make serve-{dev,prod}&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;make serve-dev&lt;&#x2F;code&gt; - uses the dev config and shows draft posts&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;make serve-prod&lt;&#x2F;code&gt; - serves &lt;em&gt;exactly&lt;&#x2F;em&gt; what would be built and deployed&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;make build&lt;&#x2F;code&gt; - runs &lt;code&gt;zola build&lt;&#x2F;code&gt; but all output is in &lt;code&gt;.&#x2F;dist&lt;&#x2F;code&gt; instead of &lt;code&gt;.&#x2F;public&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;content-structure&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#content-structure&quot;&gt;#&lt;&#x2F;a&gt;
+Content structure&lt;&#x2F;h3&gt;
+&lt;p&gt;Zola keeps all posts in the &lt;code&gt;.&#x2F;content&lt;&#x2F;code&gt; directory, which allows for arbitrary static
+pages. I figured I didn&#x27;t want everything to be a blog post (what about projects?),
+and I also don&#x27;t &lt;em&gt;super&lt;&#x2F;em&gt; like the term blog, even thouth that&#x27;s what this is.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;content&#x2F;writes&lt;&#x2F;code&gt; is where all of the &lt;em&gt;blog&lt;&#x2F;em&gt;-ish content goes, and all of the posts
+in it should be organized by date, in a &lt;code&gt;writes&#x2F;&amp;lt;YYYY&amp;gt;&#x2F;&amp;lt;MM&amp;gt;&#x2F;&amp;lt;DD&amp;gt;&#x2F;&amp;lt;slug&amp;gt;&#x2F;&lt;&#x2F;code&gt; format.&lt;&#x2F;p&gt;
+&lt;p&gt;Zola doesn&#x27;t have anything to help with autogenerating folder structures, so I made my
+own bash script to help. (&lt;a href=&quot;https:&#x2F;&#x2F;www.stanistan.com&#x2F;writes&#x2F;2019&#x2F;11&#x2F;10&#x2F;how-this-blog-works&#x2F;#the-scripts&quot;&gt;see below&lt;&#x2F;a&gt;)&lt;&#x2F;p&gt;
+&lt;p&gt;Everything else (as of now) is a free for all.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#ffffff;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#323232;&quot;&gt;$ find content -not -type d
+content&#x2F;writes&#x2F;2019&#x2F;11&#x2F;09&#x2F;how-this-blog-works.md    &amp;lt;-- THIS POST
+content&#x2F;writes&#x2F;2019&#x2F;11&#x2F;09&#x2F;_index.md                 &amp;lt;-- autogenerated
+content&#x2F;writes&#x2F;2019&#x2F;11&#x2F;_index.md                    &amp;lt;-- autogenerated
+content&#x2F;writes&#x2F;2019&#x2F;_index.md                       &amp;lt;-- autogenerated
+content&#x2F;writes&#x2F;_index.md                            &amp;lt;-- redirects to &#x2F;
+content&#x2F;_index.md                                   &amp;lt;-- &#x2F; the home page
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Each of these autogenerated &lt;code&gt;_index.md&lt;&#x2F;code&gt; files are linked to symlinked
+from &lt;code&gt;templates&#x2F;writes_section&lt;&#x2F;code&gt;, so that when I want to change &#x27;em, I
+can do so easily.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;Yes, this is all over-engineered, but also, kind of fun.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;the-scripts&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#the-scripts&quot;&gt;#&lt;&#x2F;a&gt;
+The Scripts&lt;&#x2F;h3&gt;
+&lt;p&gt;I&#x27;ve already covered &lt;code&gt;make serve-{dev,prod}&lt;&#x2F;code&gt; and &lt;code&gt;make build&lt;&#x2F;code&gt; which are wrappers
+around their respective &lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;cli-usage&#x2F;&quot;&gt;zola commands&lt;&#x2F;a&gt;. These are a few of the
+&lt;em&gt;other&lt;&#x2F;em&gt; scripts that make (pun somewhat intended), managing this easier.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;bin&#x2F;verify-content-dates&lt;&#x2F;code&gt; - (&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;blob&#x2F;the-details&#x2F;bin&#x2F;verify-content-dates&quot;&gt;source&lt;&#x2F;a&gt;)&lt;&#x2F;p&gt;
+&lt;p&gt;This script looks for all non &lt;code&gt;_index.md&lt;&#x2F;code&gt; files in &lt;code&gt;content&#x2F;writes&lt;&#x2F;code&gt; and
+places them in the correct dates subdirectories. It also cleans up
+any directories&#x2F;files left-over with no posts once that&#x27;s done.&lt;&#x2F;p&gt;
+&lt;p&gt;It keeps it all neat.&lt;&#x2F;p&gt;
+&lt;p&gt;aka: &lt;code&gt;make date-dirs&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;bin&#x2F;ship&lt;&#x2F;code&gt; - (&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;blob&#x2F;the-details&#x2F;bin&#x2F;ship&quot;&gt;source&lt;&#x2F;a&gt;)&lt;&#x2F;p&gt;
+&lt;p&gt;This script plublishes the &lt;code&gt;dist&lt;&#x2F;code&gt; directory to the &lt;code&gt;master&lt;&#x2F;code&gt; branch using
+&lt;a href=&quot;https:&#x2F;&#x2F;git-memo.readthedocs.io&#x2F;en&#x2F;latest&#x2F;subtree.html&quot;&gt;&lt;code&gt;git subtree split&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;. There &lt;em&gt;was&lt;&#x2F;em&gt; a bit of a gotcha with
+overriding the &lt;em&gt;entire&lt;&#x2F;em&gt; master branch using this because it has to have
+a &lt;code&gt;CNAME&lt;&#x2F;code&gt; file and record in it to correctly publish to &lt;code&gt;stanistan.com&lt;&#x2F;code&gt;,
+it is now being symlinked and copied over via the &lt;code&gt;static&#x2F;&lt;&#x2F;code&gt; directory,
+same as the &lt;code&gt;README.md&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;aka: &lt;code&gt;make deploy&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;For all of the scripts in &lt;code&gt;bin&#x2F;*&lt;&#x2F;code&gt; I&#x27;m using &lt;a href=&quot;https:&#x2F;&#x2F;www.shellcheck.net&quot;&gt;&lt;code&gt;shellcheck&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;, which
+is &lt;em&gt;amazing&lt;&#x2F;em&gt;, and helps me get better at writing bash.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;the-theme&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#the-theme&quot;&gt;#&lt;&#x2F;a&gt;
+The Theme&lt;&#x2F;h2&gt;
+&lt;p&gt;I&#x27;m using my own theme, which is being developed JIT, its primary colors come
+from the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;getzola&#x2F;zola&#x2F;blob&#x2F;master&#x2F;sublime&#x2F;themes&#x2F;inspired-github.tmTheme&quot;&gt;&lt;code&gt;inspired-github&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; syntax highlight theme
+included in Zola.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;TODO (maybe):&lt;&#x2F;em&gt; Extract into an actual theme.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;domain-hosting&quot;&gt;&lt;a class=&quot;anchor-link small faded&quot; href=&quot;#domain-hosting&quot;&gt;#&lt;&#x2F;a&gt;
+Domain &amp;amp; Hosting&lt;&#x2F;h2&gt;
+&lt;p&gt;The domain is on &lt;a href=&quot;https:&#x2F;&#x2F;dreamhost.com&quot;&gt;dreamhost&lt;&#x2F;a&gt;, which I&#x27;ve used for a &lt;em&gt;loooong&lt;&#x2F;em&gt; time,
+with DNS records pointed to GitHub as per &lt;a href=&quot;https:&#x2F;&#x2F;help.github.com&#x2F;en&#x2F;github&#x2F;working-with-github-pages&#x2F;managing-a-custom-domain-for-your-github-pages-site&quot;&gt;these docs&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+</description>
+        </item>
+    </channel>
+</rss>
