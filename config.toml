@@ -5,6 +5,8 @@ compile_sass = true
 highlight_code = true
 highlight_theme = "inspired-github"
 build_search_index = false
+generate_feed = true
+feed_filename = "rss.xml"
 taxonomies = [
 #    { name = "tags" },
 ]
