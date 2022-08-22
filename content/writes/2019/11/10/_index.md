@@ -1,1 +1,0 @@
-../../../../../templates/writes_section
