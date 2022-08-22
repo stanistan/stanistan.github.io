@@ -2,9 +2,6 @@
 title = "How this site works"
 date = 2019-11-10
 
-[taxonomies]
-tags = ["meta"]
-
 [extra]
 include_toc = false
 +++

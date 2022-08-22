@@ -5,7 +5,7 @@
 #
 
 SERVE_DIR := public
-SERVE_FLAGS = --output-dir $(SERVE_DIR) --interface 0.0.0.0 --base-url $(BASE_URL)
+SERVE_FLAGS = --output-dir $(SERVE_DIR) --interface 0.0.0.0
 DIST_DIR := public
 DEV_CONFIG := config.dev.toml
 PROD_CONFIG := config.toml

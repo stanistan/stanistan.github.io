@@ -2,9 +2,6 @@
 draft = true
 title = "Typed-ish Regex Capture in Swift"
 date = 2019-11-14
-
-[taxonomies]
-tags = ["swift", "regex"]
 +++
 
 Over the past couple of months, I've been playing around with [swift], and trying

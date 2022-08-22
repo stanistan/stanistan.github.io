@@ -54,9 +54,7 @@ hr {
   height: 0;
 }
 
-pre,
-.mono,
-code {
+pre, .mono, code {
   font-family: monospace;
 }
 
@@ -168,9 +166,11 @@ blockquote {
 
 .anchor-link {
   position: absolute;
-  margin-left: -1em;
+  margin-left: -0.9em;
   text-decoration: none;
+  font-weight: normal;
 }
+
 
 article .img-container {
   margin: 0.2em -2em 0;

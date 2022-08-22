@@ -13,6 +13,23 @@ to keep a log of how the site has changed over time.
 
 This should be in reverse chronological order.
 
+### 2021-12-31
+
+#### New
+
+- Zola is now managed with [`hermit`](https://cashapp.github.io/hermit/usage/shell/).
+
+#### Updated
+
+- Updated to using [`zola 0.15.2`](https://github.com/getzola/zola/releases/tag/v0.15.2).
+  Pretty sure I was running a custom build before.
+
+#### Fixed
+
+- The `image` shortcode needed to be fixed to work with the
+  [`resize_image` functionality](https://www.getzola.org/documentation/content/image-processing/).
+- Reverse chronological post order on the homepage.
+
 ### 2019-12-15
 
 #### New

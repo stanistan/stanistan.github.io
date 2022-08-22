@@ -14,7 +14,7 @@
     {% set writes = get_section(path="writes/_index.md") %}
     {% if writes.pages | length > 0 %}
     <ul class="outside">
-        {% for page in writes.pages | reverse %}
+        {% for page in writes.pages %}
         <li class="smaller">
             <a href="{{page.permalink | safe}}">{{page.title}}</a>
             {% if page.date %}
