@@ -29,7 +29,6 @@ check-unchanged:
 	bin/check-for-nothing-staged
 
 check:
-	shellcheck bin/*
 	zola check
 
 deploy: check check-unchanged build
