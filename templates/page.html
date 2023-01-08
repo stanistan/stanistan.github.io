@@ -1,4 +1,8 @@
 {% extends "base.html" %}
++++
+title = "Changelog"
+
+toc = false
 {% block title %}{{ page.title }} - {{ super() }}{% endblock title %}
 
 {% block content %}
@@ -13,15 +17,36 @@
             {% endif %}
         </div>
 
+        {% if page.description %}
+        <section class="description">
         {{ page.description }}
-
-        {% if page.extra.include_toc %}
-            <div class="toc">
-                {{ macros::render_toc(toc=toc) }}
-            </div>
+        </section>
         {% endif %}
 
-        <div>{{ page.content | safe }}</div>
+        {% if page.toc and page.extra.toc %}
+        <section class="toc">
+            <ul>
+                {% for h1 in page.toc %}
+                <li>
+                    <a href="{{ h1.permalink | safe }}">{{ h1.title }}</a>
+                    {% if h1.children %}
+                    <ul>
+                        {% for h2 in h1.children %}
+                        <li>
+                            <a href="{{ h2.permalink | safe }}">{{ h2.title }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        <section class="post">
+            {{ page.content | safe }}
+        </section>
 
         {% if config.extra.show_tags %}
         <hr />

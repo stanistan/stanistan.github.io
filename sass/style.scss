@@ -11,6 +11,8 @@ $highlight-dark: darken($highlight-base, 35%);
 $link-color: lighten(darkblue, 5%);
 $link-hover-color: lighten($link-color, 25%);
 
+$mono: monospace;
+
 // Main layout, is single column
 
 body {
@@ -37,15 +39,22 @@ article {
 
 // Heading sizes
 
-$article-heading-sizes: "h1" 1.5em, "h2" 1.25em, "h3" 1.15em, "h4" 1em;
+$article-heading-sizes: "h1" 1.4em, "h2" 1.2em, "h3" 1.12em, "h4" 1em;
 
 @each $heading, $font-size in $article-heading-sizes {
   #{$heading} {
     font-size: $font-size;
-    font-weight: bold;
+    font-weight: 800;
+    color: darken($text, 5%);
+    font-family: $mono;
     margin: 0;
     padding: $font-size 0 0;
+
+    &+p {
+      margin-top: 0;
+    }
   }
+
 }
 
 hr {
@@ -55,7 +64,7 @@ hr {
 }
 
 pre, .mono, code {
-  font-family: monospace;
+  font-family: $mono;
 }
 
 .small {
@@ -158,10 +167,9 @@ blockquote {
 }
 
 .toc {
-  width: 15em;
-  font-size: 0.8em;
-  padding: 1em;
-  background: #fff;
+  margin: 0.2em -2em 0;
+  padding: 2em;
+  font-size: 0.7em;
   line-height: 1.45;
   border-bottom: 1px dotted $highlight;
 
@@ -169,6 +177,17 @@ blockquote {
     color: $text;
     font-weight: normal;
   }
+
+  ul {
+    list-style: none;
+    margin-left: 0em;
+
+    ul {
+      margin-left: 1em;
+    }
+
+  }
+
 }
 
 .anchor-link {
