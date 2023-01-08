@@ -176,6 +176,6 @@ with DNS records pointed to GitHub as per [these docs][github-custom-domains].
 [site-repo]: https://github.com/stanistan/stanistan.github.io
 [subtree-docs]: https://git-memo.readthedocs.io/en/latest/subtree.html
 [theme-inspired-github]: https://github.com/getzola/zola/blob/master/sublime/themes/inspired-github.tmTheme
-[verify-content-dates-src]: https://github.com/stanistan/stanistan.github.io/blob/the-details/bin/verify-content-dates
+[verify-content-dates-src]: https://github.com/stanistan/stanistan.github.io/blob/1bc79baab400644f46c89ae625ffa9744070b192/bin/verify-content-dates
 [zola-cli-usage]: https://www.getzola.org/documentation/getting-started/cli-usage/
 [zola]: https://www.getzola.org
