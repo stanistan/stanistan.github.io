@@ -13,6 +13,29 @@ to keep a log of how the site has changed over time.
 
 This should be in reverse chronological order.
 
+### 2023-01-08
+
+#### New
+
+- `hermit` manages `make` as well.
+- have some minimal support for a table of contents.
+
+### 2022-08-23
+
+#### New
+
+- Support `hcl` syntax highlighting ([source][hcl]).
+
+#### Updated
+
+- Zola is now `0.61.1`.
+
+#### Fixed
+
+- With the updated version of zola (not sure when), code blocks were rendered
+  differently than prior versions, which would break the highlighting/formatting
+  of the blocks. This is now fixed.
+
 ### 2021-12-31
 
 #### New
@@ -79,3 +102,4 @@ This should be in reverse chronological order.
 
 [anchor-links]: https://www.getzola.org/documentation/content/linking/#anchor-insertion
 [internet-sharing]: https://support.apple.com/guide/mac-help/share-internet-connection-mac-network-users-mchlp1540/mac
+[hcl]: https://github.com/alexlouden/Terraform.tmLanguage
