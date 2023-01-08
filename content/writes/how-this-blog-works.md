@@ -1,6 +1,10 @@
 +++
 title = "How this site works"
 date = 2019-11-10
+aliases = [
+    "/writes/2019/11/10/how-this-blog-works"
+]
+
 
 [extra]
 include_toc = false

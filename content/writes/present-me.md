@@ -1,6 +1,9 @@
 +++
 title = "Introducing: (pr)esent me"
 date = 2021-04-13
+aliases = [
+    "/writes/2021/04/13/present-me"
+]
 +++
 
 [(pr)esent-me][1] **is an experiment** to try to give the author of a Pull Request

@@ -1,6 +1,9 @@
 +++
 title = "Coming back to color-transit (part 1)"
 date = 2019-12-31
+aliases = [
+    "/writes/2019/12/31/coming-back-to-color-transit-part-1"
+]
 +++
 
 _Note:_ I'm writing this as an experiment in coming back to a side-project

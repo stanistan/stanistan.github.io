@@ -22,9 +22,6 @@ serve-dev:
 build:
 	zola --config $(PROD_CONFIG) build --output-dir $(DIST_DIR)
 
-date-dirs:
-	bin/verify-content-dates
-
 check-unchanged:
 	bin/check-for-nothing-staged
 
