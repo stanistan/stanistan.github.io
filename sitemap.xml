@@ -10,15 +10,15 @@
         <loc>https://www.stanistan.com/writes/</loc>
     </url>
     <url>
-        <loc>https://www.stanistan.com/writes/2019/11/10/how-this-blog-works/</loc>
-        <lastmod>2019-11-10</lastmod>
-    </url>
-    <url>
-        <loc>https://www.stanistan.com/writes/2019/12/31/coming-back-to-color-transit-part-1/</loc>
+        <loc>https://www.stanistan.com/writes/coming-back-to-color-transit-part-1/</loc>
         <lastmod>2019-12-31</lastmod>
     </url>
     <url>
-        <loc>https://www.stanistan.com/writes/2021/04/13/present-me/</loc>
+        <loc>https://www.stanistan.com/writes/how-this-blog-works/</loc>
+        <lastmod>2019-11-10</lastmod>
+    </url>
+    <url>
+        <loc>https://www.stanistan.com/writes/present-me/</loc>
         <lastmod>2021-04-13</lastmod>
     </url>
 </urlset>
