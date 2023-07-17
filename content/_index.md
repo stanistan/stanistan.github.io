@@ -16,7 +16,7 @@ You can find some of my work on [github].
 
 If you want to get in touch, I'm on 
 <a href="https://hackyderm.io/@stanistan" rel="me" target="_blank">hachyderm</a>, 
-and used to be on [twitter], or you can email me at: <span class="link-like">
+and used to be on twitter, or you can email me at: <span class="link-like">
     <strong>stan</strong> at <strong>stanistan</strong> .com
 </span>
 
@@ -24,5 +24,4 @@ and used to be on [twitter], or you can email me at: <span class="link-like">
 [Etsy]: https://www.etsy.com
 [Recurse Center]: https://recurse.com
 [github]: https://github.com/stanistan
-[twitter]: https://twitter.com/stanistan
 [hachyderm]: https://hachyderm.io/@stanistan
