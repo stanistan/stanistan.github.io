@@ -2,23 +2,284 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
       <title>stanistan</title>
-        <link>https://www.stanistan.com</link>
-        <description></description>
-        <generator>Zola</generator>
-        <language>en</language>
-        <atom:link href="https://www.stanistan.com/rss.xml" rel="self" type="application/rss+xml"/>
-        <lastBuildDate>Tue, 13 Apr 2021 00:00:00 +0000</lastBuildDate>
-        <item>
-            <title>Introducing: (pr)esent me</title>
-            <pubDate>Tue, 13 Apr 2021 00:00:00 +0000</pubDate>
-            <link>https://www.stanistan.com/writes/present-me/</link>
-            <guid>https://www.stanistan.com/writes/present-me/</guid>
-            <description>&lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;present-me.stanistan.dev&quot;&gt;(pr)esent-me&lt;&#x2F;a&gt; &lt;strong&gt;is an experiment&lt;&#x2F;strong&gt; to try to give the author of a Pull Request
+      <link>https://www.stanistan.com</link>
+      <description></description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://www.stanistan.com/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Mon, 17 Jul 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Reverse engineering github diffs</title>
+          <pubDate>Mon, 17 Jul 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/reverse-engineering-github-diffs/</link>
+          <guid>https://www.stanistan.com/writes/reverse-engineering-github-diffs/</guid>
+          <description>&lt;p&gt;Getting the right diff lines to show up in &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;present-me&lt;&#x2F;a&gt; was 
+&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;present-me&#x2F;issues&#x2F;46&quot;&gt;actually very confusing&lt;&#x2F;a&gt;, and very interesting. &lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;m still not exactly sure I have it working correctly 100% of the time, but it&#x27;s 
+much better than it used to be, and I have somewhat of an understanding of how it works.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;The following overview uses &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&#x2F;stanistan&#x2F;present-me&#x2F;pull&#x2F;56&#x2F;review-1419621494&quot;&gt;this&lt;&#x2F;a&gt; as an example and &lt;code&gt;gh api&lt;&#x2F;code&gt; to illustrate. 
+The actual implementation in present-me uses the go-github client.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;the-api&quot;&gt;The API&lt;&#x2F;h2&gt;
+&lt;p&gt;First things first, we need to have a record of what we&#x27;re getting from the API.
+Present-me uses PR Reviews, which have attached comments to generate the page itself.
+Once we have a &lt;code&gt;REVIEW_ID&lt;&#x2F;code&gt;, we have the required parameters to get all of the comments:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span&gt;gh api repos&#x2F;stanistan&#x2F;present-me&#x2F;pulls&#x2F;56&#x2F;reviews&#x2F;1419621494&#x2F;comments &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;| &lt;&#x2F;span&gt;&lt;span&gt;jq &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;#39;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;    .[0] 
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;    | del(.user, .diff_hunk, .body, ._links, .reactions)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;#39;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;details&gt;
+    &lt;summary&gt;output&lt;&#x2F;summary&gt;
+&lt;pre data-lang=&quot;json&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-json &quot;&gt;&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;id&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;1189251393&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;node_id&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;PRRC_kwDOFP2I5M5G4olB&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;url&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;https:&#x2F;&#x2F;api.github.com&#x2F;repos&#x2F;stanistan&#x2F;present-me&#x2F;pulls&#x2F;comments&#x2F;1189251393&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;pull_request_review_id&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;1419621494&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;path&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;frontend&#x2F;pages&#x2F;[org]&#x2F;[repo]&#x2F;pull&#x2F;[pull]&#x2F;review-[review].vue&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;position&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;43&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;original_position&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;43&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;commit_id&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;e91d383fab97c1ca02d01806ff05d7a4a0dc6a8a&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;created_at&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;2023-05-10T00:49:04Z&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;updated_at&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;2023-05-10T01:03:55Z&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;html_url&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;present-me&#x2F;pull&#x2F;56#discussion_r1189251393&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;pull_request_url&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;https:&#x2F;&#x2F;api.github.com&#x2F;repos&#x2F;stanistan&#x2F;present-me&#x2F;pulls&#x2F;56&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;author_association&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;OWNER&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;original_commit_id&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;e91d383fab97c1ca02d01806ff05d7a4a0dc6a8a&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;details&gt;
+&lt;p&gt;The &lt;code&gt;.body&lt;&#x2F;code&gt; is the text of the comment, and can be markdown. For present-me, if you have a 
+number prefix, you can order the output of the display.&lt;&#x2F;p&gt;
+&lt;details&gt;
+    &lt;summary&gt;body&lt;&#x2F;summary&gt;
+&lt;pre style=&quot;background-color:#ffffff;color:#323232;&quot;&gt;&lt;code&gt;&lt;span&gt;1.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;First things first, this makes it so that we don&amp;#39;t immediately block render when loading the review page and gets us the `pending` state.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;details&gt;
+&lt;h2 id=&quot;diff-hunk&quot;&gt;Diff Hunk&lt;&#x2F;h2&gt;
+&lt;p&gt;The &lt;code&gt;.diff_hunk&lt;&#x2F;code&gt; field is part of the raw diff that you&#x27;d get from 
+running &lt;code&gt;git show&lt;&#x2F;code&gt; on the commit. In this case, it&#x27;s pretty close to what we show,
+but it&#x27;s a little off, we&#x27;d ideally only show the last 3 lines.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;diff&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-diff &quot;&gt;&lt;code class=&quot;language-diff&quot; data-lang=&quot;diff&quot;&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -34,8 +28,10 @@
+&lt;&#x2F;span&gt;&lt;span&gt; useHead({
+&lt;&#x2F;span&gt;&lt;span&gt;   title: &amp;#39;present-me&amp;#39;,
+&lt;&#x2F;span&gt;&lt;span&gt; });
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span&gt; const route = useRoute();
+&lt;&#x2F;span&gt;&lt;span&gt; const { pending, data, error } = await useFetch(&amp;#39;&#x2F;api&#x2F;review&amp;#39;, {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;  lazy: true,
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The heading of the hunk (&lt;code&gt;@@ -34,8 +28,10 @@&lt;&#x2F;code&gt;) describes the 
+start line and number of lines of the prior version of the file, 
+and the start line and number of lines of the new version of the file.
+In this case:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;the old version of the file started on line &lt;code&gt;34&lt;&#x2F;code&gt; and ended at &lt;code&gt;42&lt;&#x2F;code&gt;,&lt;&#x2F;li&gt;
+&lt;li&gt;and the new version starts at &lt;code&gt;28&lt;&#x2F;code&gt; and ends at &lt;code&gt;38&lt;&#x2F;code&gt;. &lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;It&#x27;s easy to forget that the file will change in multiple places!&lt;&#x2F;p&gt;
+&lt;p&gt;If we look at our API response, the only information that looks like it may
+be somewhat relevant is &lt;code&gt;&amp;quot;position&amp;quot;: 43&lt;&#x2F;code&gt;, but that&#x27;s fully out of the range 
+that we&#x27;re in. &lt;em&gt;What the heck.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;back-to-the-api&quot;&gt;Back to the API&lt;&#x2F;h2&gt;
+&lt;p&gt;It turns out that there isn&#x27;t actually enough information in the review comment
+to choose the desired output lines. If you use a different API once you have
+the comments themselves, you can get &lt;code&gt;line&lt;&#x2F;code&gt; numbers on the comment.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;# output snipped to the relevant fields
+&lt;&#x2F;span&gt;&lt;span&gt;gh api repos&#x2F;stanistan&#x2F;present-me&#x2F;pulls&#x2F;comments&#x2F;1189251393 
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;# {
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;#  &amp;quot;start_line&amp;quot;: null,
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;#  &amp;quot;original_start_line&amp;quot;: null,
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;#  &amp;quot;line&amp;quot;: 34,
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;#  &amp;quot;original_line&amp;quot;: 34,
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;#  &amp;quot;side&amp;quot;: &amp;quot;RIGHT&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;# }
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;strong&gt;These&lt;&#x2F;strong&gt; are useful!&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;what-s-in-a-diff-hunk&quot;&gt;What&#x27;s in a Diff Hunk?&lt;&#x2F;h2&gt;
+&lt;p&gt;We described the metadata of the diff hunk before, but what&#x27;s actually going on here?&lt;&#x2F;p&gt;
+
+&lt;div class=&quot;img-container&quot;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;present-me-2023-annotated-hunk.9ec1e680430bc3bb.png&quot; &#x2F;&gt;
+&lt;&#x2F;div&gt;
+&lt;ul&gt;
+&lt;li&gt;We have &lt;code&gt;Context&lt;&#x2F;code&gt;, which is not an addition or removal in the diff&lt;&#x2F;li&gt;
+&lt;li&gt;An &lt;code&gt;Addition&lt;&#x2F;code&gt; of one empty line&lt;&#x2F;li&gt;
+&lt;li&gt;More &lt;code&gt;Context&lt;&#x2F;code&gt; of lines that aren&#x27;t changing&lt;&#x2F;li&gt;
+&lt;li&gt;And an &lt;code&gt;Addition&lt;&#x2F;code&gt; at the end&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;I think of these as individual chunks in the diff if you go line by line.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;picking-lines&quot;&gt;Picking Lines&lt;&#x2F;h2&gt;
+&lt;p&gt;The beginning (or the end):&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;We use the &lt;code&gt;side=RIGHT&lt;&#x2F;code&gt; from the API to know that the lines the API response refers to 
+are the &lt;em&gt;right&lt;&#x2F;em&gt; side of the diff, the &lt;em&gt;after&lt;&#x2F;em&gt; file. &lt;&#x2F;li&gt;
+&lt;li&gt;This corresponds to a line range of &lt;code&gt;28-38&lt;&#x2F;code&gt; per the thunk metadata.&lt;&#x2F;li&gt;
+&lt;li&gt;We &lt;em&gt;only&lt;&#x2F;em&gt; count lines in the version of the file that we&#x27;re looking at! So we
+skip any lines that would be deletions. There are none in this sample.&lt;&#x2F;li&gt;
+&lt;li&gt;Given we&#x27;re going to line &lt;code&gt;34&lt;&#x2F;code&gt;-- that is the last line: &lt;code&gt;lazy: true&lt;&#x2F;code&gt;. &lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;hr &#x2F;&gt;
+
+&lt;div class=&quot;img-container&quot;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;present-me-2023-gh-comment.8e518febf65d56b3.png&quot; &#x2F;&gt;
+&lt;&#x2F;div&gt;
+&lt;p&gt;We now have the end line of the diff that we&#x27;re looking at (and want tho show), 
+and we know that the top three lines are not included (when looking at github 
+vs the diff hunk).&lt;&#x2F;p&gt;
+&lt;p&gt;There are two cases here:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;Where the comment specifies a &lt;code&gt;start_line&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;Where the start line is implicit&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;We&#x27;re going to cover (2), which is way more interesting.&lt;&#x2F;p&gt;
+&lt;p&gt;It looks like GitHub tries to show you 3 or 4 lines of context on the
+comment around the line it was placed, depending on what it deems to be &lt;em&gt;useful.&lt;&#x2F;em&gt;
+This is definitely a heuristic method. &lt;&#x2F;p&gt;
+&lt;p&gt;We can hardcode this patch to 3 lines, but then other ones would be wrong (where
+it is clearly 4). &lt;&#x2F;p&gt;
+&lt;h3 id=&quot;chunking&quot;&gt;Chunking!&lt;&#x2F;h3&gt;
+&lt;p&gt;First thing we do is group the raw lines coming in from the diff into chunks based
+on what the diff perfix is. It&#x27;s either an empty space (&lt;code&gt; &lt;&#x2F;code&gt;), plus (&lt;code&gt;+&lt;&#x2F;code&gt;), or minus 
+(&lt;code&gt;-&lt;&#x2F;code&gt;).&lt;&#x2F;p&gt;
+&lt;p&gt;For the example above we have &lt;em&gt;4 chunks&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;counting&quot;&gt;Counting&lt;&#x2F;h3&gt;
+&lt;p&gt;We &lt;em&gt;only&lt;&#x2F;em&gt; count lines when they are relevant for the version of the file we&#x27;re looking
+at. So if we&#x27;re looking at the right side, we count additions, and don&#x27;t count deletions
+since the metadata tells us the range of lines the hunk is for.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;idx, line &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= range &lt;&#x2F;span&gt;&lt;span&gt;lines {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; N.B. we skip the first one since it&amp;#39;s where the metadata is
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;idx &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;continue
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; sometimes in testing lines are fully trimmed out -- we assume
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; in this case that it&amp;#39;s an &amp;quot;empty context line&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span style=&quot;color:#62a35c;&quot;&gt;len&lt;&#x2F;span&gt;&lt;span&gt;(line) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        line &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot; &amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    prefix &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;line[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;]
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;lineNo &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;gt;= &lt;&#x2F;span&gt;&lt;span&gt;p.start &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span&gt;lineNo &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;lt;= &lt;&#x2F;span&gt;&lt;span&gt;p.end {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;prefix &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span&gt;lastPrefix {
+&lt;&#x2F;span&gt;&lt;span&gt;            pushChunk()
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;        chunk &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#62a35c;&quot;&gt;append&lt;&#x2F;span&gt;&lt;span&gt;(chunk, line)
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; track if we&amp;#39;re changing prefixes
+&lt;&#x2F;span&gt;&lt;span&gt;    lastPrefix &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;prefix
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; track if we&amp;#39;re moving forward to the desired place
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if !&lt;&#x2F;span&gt;&lt;span&gt;strings.HasPrefix(line, p.hunkRange.IgnorePrefix) {
+&lt;&#x2F;span&gt;&lt;span&gt;        lineNo&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;++
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;pushChunk()
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;picking-chunks&quot;&gt;Picking Chunks&lt;&#x2F;h2&gt;
+&lt;p&gt;Yes this is a two pass process! Once we have our chunks, we go through them to see if they
+would be useful, filtering out extra lines by their chunk (what a phrase).&lt;&#x2F;p&gt;
+&lt;p&gt;We do this entire operation as a stack! We know that the line (last line we&#x27;ve accumulated) 
+is where the comment was placed, so we go through the chunks we found in reverse order to
+see if we want to add more information to display.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;A useful chunk is non empty and is part of the counting scheme.&lt;&#x2F;li&gt;
+&lt;li&gt;And if we have gotten do a diff that is larger than 3 lines (auto-selected) we can stop
+accumulating changes once we&#x27;ve gotten to the first non-useful chunk. &lt;&#x2F;li&gt;
+&lt;li&gt;Otherwise we keep accumulating them.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;var &lt;&#x2F;span&gt;&lt;span&gt;(
+&lt;&#x2F;span&gt;&lt;span&gt;    out       []&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string
+&lt;&#x2F;span&gt;&lt;span&gt;    numChunks &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#62a35c;&quot;&gt;len&lt;&#x2F;span&gt;&lt;span&gt;(chunks)
+&lt;&#x2F;span&gt;&lt;span&gt;    chunkIdx  &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;numChunks &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;- &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;1
+&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;chunkIdx &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;0 &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    chunk &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;chunks[chunkIdx]
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;auto &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#62a35c;&quot;&gt;len&lt;&#x2F;span&gt;&lt;span&gt;(out) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;3 &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;amp;&amp;amp; !&lt;&#x2F;span&gt;&lt;span&gt;chunk.isUseful(p.hunkRange.IgnorePrefix) {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;break
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    out &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#62a35c;&quot;&gt;append&lt;&#x2F;span&gt;&lt;span&gt;(chunk.lines, out&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;...&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    chunkIdx&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;--
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</description>
+      </item>
+      <item>
+          <title>State of present-me [July 2023]</title>
+          <pubDate>Sun, 16 Jul 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/present-me-part-2/</link>
+          <guid>https://www.stanistan.com/writes/present-me-part-2/</guid>
+          <description>&lt;p&gt;Earlier this year I started working on a new version of &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;present-me&lt;&#x2F;a&gt;. &lt;&#x2F;p&gt;
+&lt;p&gt;After shipping the &lt;a href=&quot;&#x2F;writes&#x2F;present-me&quot;&gt;first version&lt;&#x2F;a&gt;, it was time to test it out. I convinced 
+some very patient folks on my team to give it a shot for some large PRs and we hit
+some roadblocks... quickly.&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;The diffs were actually wrong &lt;&#x2F;li&gt;
+&lt;li&gt;It was easy to fully break the page&#x2F;UI &lt;&#x2F;li&gt;
+&lt;li&gt;The post presentation format wasn&#x27;t useful in practice &lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;There were unrelated things that I wanted to change (a full frontend rewrite)
+and try (nuxt with a go backend) that got me much further along into being able 
+to actually fix the issues laid out above.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;this-is-a-full-rewrite&quot;&gt;This is a full rewrite!&lt;&#x2F;h3&gt;
+
+&lt;div class=&quot;img-container&quot;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;present-me-2023-01.76f5bf138aeb0f15.png&quot; &#x2F;&gt;
+&lt;&#x2F;div&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;What used to be a static website is now a SPA using &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;nuxtjs.com&quot;&gt;Nuxt&lt;&#x2F;a&gt;. This may change in the 
+future, but I wanted to write components in a component friendly framework. Also, I 
+wanted a frontend framework. &lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;For styling, now using &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;http:&#x2F;&#x2F;tailwindcss.com&quot;&gt;tailwindcss&lt;&#x2F;a&gt; for utilities.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Diff and syntax highlighting is now using &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prismjs.com&quot;&gt;prismjs on the client&lt;&#x2F;a&gt;. It used to be
+goldmark rendering on the server. Prism has a syntax highlihting package that can do
+diffs + syntax highlighting so you get richer formatting.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Diff rendering now matches what GitHub does for their PRs instead of rendering the full
+&lt;code&gt;diff_hunk&lt;&#x2F;code&gt; that the API returns. &lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Now using a components to render the UI instead of plain markdown formatting. This fixed 
+a pretty eggregious issue where if you had a diff embedded in your diff the markdown would
+break in spectacular ways.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;New bespoke slides (&lt;code&gt;v0&lt;&#x2F;code&gt; really). Raw markdown formatting currently removed. Not sure if 
+it needs to exist at all.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;The website is minimally responsive. And the design is more familiar to what gh does.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
+      <item>
+          <title>Introducing: [pr]esent me</title>
+          <pubDate>Tue, 13 Apr 2021 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/present-me/</link>
+          <guid>https://www.stanistan.com/writes/present-me/</guid>
+          <description>&lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;(pr)esent-me&lt;&#x2F;a&gt; &lt;strong&gt;is an experiment&lt;&#x2F;strong&gt; to try to give the author of a Pull Request
 a better way to convey why a changeset looks the way that it does, and how the
 folks reading and reviewing it should approach it.&lt;&#x2F;p&gt;
 
 &lt;div class=&quot;img-container&quot;&gt;
-    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;1dedbc803319415600.png&quot; &#x2F;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;present-me-01.b96c9203c3c4e6dc.png&quot; &#x2F;&gt;
 &lt;&#x2F;div&gt;
 &lt;h2 id=&quot;why&quot;&gt;Why?&lt;&#x2F;h2&gt;
 &lt;p&gt;For small Pull Requests, the one line title, and description
@@ -40,12 +301,12 @@ but also how I want to present it by annotating the comments themselves.&lt;&#x2
 &lt;p&gt;This is an entirely bad way to conveying information with too many implicit assumptions,
 and too many ways for it to &lt;em&gt;not work&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;what&quot;&gt;What&lt;&#x2F;h2&gt;
-&lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;present-me.stanistan.dev&quot;&gt;Present me&lt;&#x2F;a&gt; leverages the &lt;strong&gt;Review&lt;&#x2F;strong&gt; feature on Github, allowing the grouping of
+&lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;Present me&lt;&#x2F;a&gt; leverages the &lt;strong&gt;Review&lt;&#x2F;strong&gt; feature on Github, allowing the grouping of
 multiple comments to create an ordered presentation of annotated changes.&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;strong&gt;How?&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
 
 &lt;div class=&quot;img-container&quot;&gt;
-    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;c5190e3e36ad4e9300.png&quot; &#x2F;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;present-me-02.1e553bbbebe2e219.png&quot; &#x2F;&gt;
 &lt;&#x2F;div&gt;
 &lt;ol&gt;
 &lt;li&gt;Create a PR as regular&lt;&#x2F;li&gt;
@@ -56,7 +317,7 @@ multiple comments to create an ordered presentation of annotated changes.&lt;&#x
 &lt;li&gt;Submit your review: &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;invoice-proxy&#x2F;pull&#x2F;3#pullrequestreview-625362746&quot;&gt;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;invoice-proxy&#x2F;pull&#x2F;3#pullrequestreview-625362746&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 &lt;&#x2F;li&gt;
-&lt;li&gt;Go to &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;present-me.stanistan.dev&quot;&gt;the website&lt;&#x2F;a&gt;, you can put in the URL in the form above (including pullrequestreview),
+&lt;li&gt;Go to &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;the website&lt;&#x2F;a&gt;, you can put in the URL in the form above (including pullrequestreview),
 or if you put in the PR url (no fragment), it&#x27;ll try to find the first review
 written by the author of the PR.
 &lt;ul&gt;
@@ -67,13 +328,14 @@ written by the author of the PR.
 &lt;&#x2F;li&gt;
 &lt;&#x2F;ol&gt;
 </description>
-        </item>
-        <item>
-            <title>Coming back to color-transit (part 1)</title>
-            <pubDate>Tue, 31 Dec 2019 00:00:00 +0000</pubDate>
-            <link>https://www.stanistan.com/writes/coming-back-to-color-transit-part-1/</link>
-            <guid>https://www.stanistan.com/writes/coming-back-to-color-transit-part-1/</guid>
-            <description>&lt;p&gt;&lt;em&gt;Note:&lt;&#x2F;em&gt; I&#x27;m writing this as an experiment in coming back to a side-project
+      </item>
+      <item>
+          <title>Coming back to color-transit (part 1)</title>
+          <pubDate>Tue, 31 Dec 2019 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/coming-back-to-color-transit-part-1/</link>
+          <guid>https://www.stanistan.com/writes/coming-back-to-color-transit-part-1/</guid>
+          <description>&lt;p&gt;&lt;em&gt;Note:&lt;&#x2F;em&gt; I&#x27;m writing this as an experiment in coming back to a side-project
 that has long been sitting around, and quitetly.&lt;&#x2F;p&gt;
 &lt;p&gt;Looking at it with old eyes and high level questions (of myself) like:&lt;&#x2F;p&gt;
 &lt;ul&gt;
@@ -86,7 +348,7 @@ that has long been sitting around, and quitetly.&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;background&quot;&gt;Background&lt;&#x2F;h2&gt;
 
 &lt;div class=&quot;img-container&quot;&gt;
-    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;eb45f168c2fd749a00.png&quot; &#x2F;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;color-transit-screenshot.cc5f75fa81d7d337.png&quot; &#x2F;&gt;
 &lt;&#x2F;div&gt;
 &lt;p&gt;Four-ish years ago, I wanted to try writing a project in &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;clojurescript.org&quot;&gt;ClojureScript&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
 &lt;p&gt;A few years before that I wrote a bunch of Clojure and had just wanted
@@ -994,13 +1256,14 @@ drawing &lt;em&gt;reactive&lt;&#x2F;em&gt; to user parameterization in the UI.&l
 write up of the process.&lt;&#x2F;p&gt;
 &lt;p&gt;...which will hopefully take less than a couple of months to finish...&lt;&#x2F;p&gt;
 </description>
-        </item>
-        <item>
-            <title>How this site works</title>
-            <pubDate>Sun, 10 Nov 2019 00:00:00 +0000</pubDate>
-            <link>https://www.stanistan.com/writes/how-this-blog-works/</link>
-            <guid>https://www.stanistan.com/writes/how-this-blog-works/</guid>
-            <description>&lt;p&gt;Like lots of folk on the internet, I have a website that&#x27;s powered by
+      </item>
+      <item>
+          <title>How this site works</title>
+          <pubDate>Sun, 10 Nov 2019 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/how-this-blog-works/</link>
+          <guid>https://www.stanistan.com/writes/how-this-blog-works/</guid>
+          <description>&lt;p&gt;Like lots of folk on the internet, I have a website that&#x27;s powered by
 a static site generator and hosted somewhere on the GitHub.&lt;&#x2F;p&gt;
 &lt;p&gt;This post serves two functions:&lt;&#x2F;p&gt;
 &lt;ol&gt;
@@ -1126,6 +1389,6 @@ included in Zola.&lt;&#x2F;p&gt;
 &lt;p&gt;The domain is on &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;dreamhost.com&quot;&gt;dreamhost&lt;&#x2F;a&gt;, which I&#x27;ve used for a &lt;em&gt;loooong&lt;&#x2F;em&gt; time,
 with DNS records pointed to GitHub as per &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;help.github.com&#x2F;en&#x2F;github&#x2F;working-with-github-pages&#x2F;managing-a-custom-domain-for-your-github-pages-site&quot;&gt;these docs&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
 </description>
-        </item>
+      </item>
     </channel>
 </rss>
