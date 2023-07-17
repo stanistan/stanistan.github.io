@@ -1,5 +1,5 @@
 +++
-title = "Introducing: (pr)esent me"
+title = "Introducing: [pr]esent me"
 date = 2021-04-13
 aliases = [
     "/writes/2021/04/13/present-me"
@@ -59,4 +59,4 @@ __How?__
    - [generated slides](https://present-me.stanistan.dev/stanistan/invoice-proxy/pull/3/625362746/slides) using <https://revealjs.com>
    - [generated md](https://present-me.stanistan.dev/stanistan/invoice-proxy/pull/3/625362746/md)
 
-[1]: https://present-me.stanistan.dev
+[1]: https://prme.stanistan.com
