@@ -20,7 +20,7 @@ serve-dev:
 	zola --config $(DEV_CONFIG) serve --drafts $(SERVE_FLAGS)
 
 build:
-	zola --config $(PROD_CONFIG) build --output-dir $(DIST_DIR)
+	zola --config $(PROD_CONFIG) build --output-dir $(DIST_DIR) --force
 
 check-unchanged:
 	bin/check-for-nothing-staged
