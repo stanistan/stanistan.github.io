@@ -4,7 +4,7 @@
         <meta name="author" content="Stan Rozenraukh" />
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>stanistan</title>
+        <title>State of present-me [July 2023] - stanistan</title>
         
             <link rel="alternate" type="application/rss+xml" title="RSS" href="https://www.stanistan.com/rss.xml">
         
@@ -17,82 +17,81 @@
     <body>
         <div class="content">
             
-
-<main>
-    <p>Hi, I'm Stan, sometimes referred to as stanistan.</p>
-<p>Currently Lead the Traffic Team at <a rel="nofollow noreferrer" href="https://cash.app">Cash App</a>.</p>
-<p>Formerly at <a rel="nofollow noreferrer" href="https://www.etsy.com">Etsy</a>, where I worked on lots of things as a
-Software Engineer &amp; Product Infrastructure Architect; an
-alumn of the <a rel="nofollow noreferrer" href="https://recurse.com">Recurse Center</a>; and a perpetual work in progress.</p>
-<p>You can find some of my work on <a rel="nofollow noreferrer" href="https://github.com/stanistan">github</a>.</p>
-<hr />
-<p>If you want to get in touch, I'm on 
-<a href="https://hackyderm.io/@stanistan" rel="me" target="_blank">hachyderm</a>, 
-and used to be on twitter, or you can email me at: <span class="link-like">
-<strong>stan</strong> at <strong>stanistan</strong> .com
-</span></p>
-
-
-    <p class="outside mono small faded">
-    <span>##</span>
-    <span>TODO: add content</span> |
-    <a href="https://www.stanistan.com/changelog/" class="faded">CHANGELOG.md</a>
-    </p>
-
+    <a href="/" class="faded mono small" title="stanistan /">go /</a>
+    <article>
+        <h1>State of present-me [July 2023]</h1>
+        <div class="small faded">
+            
     
     
-    <ul class="outside">
-        
-        <li class="smaller">
-            <a href="https://www.stanistan.com/writes/reverse-engineering-github-diffs/">Reverse engineering github diffs</a>
-            
-            <div class="faded smaller">
-                (July, 17, 2023)
-            </div >
-            
-        </li>
-        
-        <li class="smaller">
-            <a href="https://www.stanistan.com/writes/present-me-part-2/">State of present-me [July 2023]</a>
-            
-            <div class="faded smaller">
-                (July, 16, 2023)
-            </div >
-            
-        </li>
-        
-        <li class="smaller">
-            <a href="https://www.stanistan.com/writes/present-me/">Introducing: [pr]esent me</a>
-            
-            <div class="faded smaller">
-                (April, 13, 2021)
-            </div >
-            
-        </li>
-        
-        <li class="smaller">
-            <a href="https://www.stanistan.com/writes/coming-back-to-color-transit-part-1/">Coming back to color-transit (part 1)</a>
-            
-            <div class="faded smaller">
-                (December, 31, 2019)
-            </div >
-            
-        </li>
-        
-        <li class="smaller">
-            <a href="https://www.stanistan.com/writes/how-this-blog-works/">How this site works</a>
-            
-            <div class="faded smaller">
-                (November, 10, 2019)
-            </div >
-            
-        </li>
-        
-    </ul>
     
-</main>
+    <a href="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;the-details&#x2F;content&#x2F;writes&#x2F;present-me-part-2.md" class="faded">.md</a>
+ |
+            <a href="https://www.stanistan.com/writes/present-me-part-2/" class="faded">permalink</a>
+            
+            | Published on July 16, 2023
+            
+        </div>
 
+        
 
+        
+
+        <section class="post">
+            <p>Earlier this year I started working on a new version of <a rel="nofollow noreferrer" href="https://prme.stanistan.com">present-me</a>. </p>
+<p>After shipping the <a href="/writes/present-me">first version</a>, it was time to test it out. I convinced 
+some very patient folks on my team to give it a shot for some large PRs and we hit
+some roadblocks... quickly.</p>
+<ol>
+<li>The diffs were actually wrong </li>
+<li>It was easy to fully break the page/UI </li>
+<li>The post presentation format wasn't useful in practice </li>
+</ol>
+<p>There were unrelated things that I wanted to change (a full frontend rewrite)
+and try (nuxt with a go backend) that got me much further along into being able 
+to actually fix the issues laid out above.</p>
+<h3 id="this-is-a-full-rewrite">This is a full rewrite!</h3>
+
+<div class="img-container">
+    <img src="https:&#x2F;&#x2F;www.stanistan.com&#x2F;processed_images&#x2F;present-me-2023-01.76f5bf138aeb0f15.png" />
+</div>
+<ul>
+<li>
+<p>What used to be a static website is now a SPA using <a rel="nofollow noreferrer" href="https://nuxtjs.com">Nuxt</a>. This may change in the 
+future, but I wanted to write components in a component friendly framework. Also, I 
+wanted a frontend framework. </p>
+</li>
+<li>
+<p>For styling, now using <a rel="nofollow noreferrer" href="http://tailwindcss.com">tailwindcss</a> for utilities.</p>
+</li>
+<li>
+<p>Diff and syntax highlighting is now using <a rel="nofollow noreferrer" href="https://prismjs.com">prismjs on the client</a>. It used to be
+goldmark rendering on the server. Prism has a syntax highlihting package that can do
+diffs + syntax highlighting so you get richer formatting.</p>
+</li>
+<li>
+<p>Diff rendering now matches what GitHub does for their PRs instead of rendering the full
+<code>diff_hunk</code> that the API returns. </p>
+</li>
+<li>
+<p>Now using a components to render the UI instead of plain markdown formatting. This fixed 
+a pretty eggregious issue where if you had a diff embedded in your diff the markdown would
+break in spectacular ways.</p>
+</li>
+<li>
+<p>New bespoke slides (<code>v0</code> really). Raw markdown formatting currently removed. Not sure if 
+it needs to exist at all.</p>
+</li>
+<li>
+<p>The website is minimally responsive. And the design is more familiar to what gh does.</p>
+</li>
+</ul>
+
+        </section>
+
+        
+
+    </article>
 
             
         </div>
