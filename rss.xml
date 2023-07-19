@@ -128,7 +128,7 @@ skip any lines that would be deletions. There are none in this sample.&lt;&#x2F;
 &lt;div class=&quot;img-container&quot;&gt;
     &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;present-me-2023-gh-comment.8e518febf65d56b3.png&quot; &#x2F;&gt;
 &lt;&#x2F;div&gt;
-&lt;p&gt;We now have the end line of the diff that we&#x27;re looking at (and want tho show), 
+&lt;p&gt;We now have the end line of the diff that we&#x27;re looking at (and want to show), 
 and we know that the top three lines are not included (when looking at github 
 vs the diff hunk).&lt;&#x2F;p&gt;
 &lt;p&gt;There are two cases here:&lt;&#x2F;p&gt;
@@ -136,7 +136,7 @@ vs the diff hunk).&lt;&#x2F;p&gt;
 &lt;li&gt;Where the comment specifies a &lt;code&gt;start_line&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;Where the start line is implicit&lt;&#x2F;li&gt;
 &lt;&#x2F;ol&gt;
-&lt;p&gt;We&#x27;re going to cover (2), which is way more interesting.&lt;&#x2F;p&gt;
+&lt;p&gt;We&#x27;re going to cover (2) because it is more interesting.&lt;&#x2F;p&gt;
 &lt;p&gt;It looks like GitHub tries to show you 3 or 4 lines of context on the
 comment around the line it was placed, depending on what it deems to be &lt;em&gt;useful.&lt;&#x2F;em&gt;
 This is definitely a heuristic method. &lt;&#x2F;p&gt;
