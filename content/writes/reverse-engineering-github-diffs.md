@@ -148,7 +148,7 @@ The beginning (or the end):
 
 {{ image(path="../static/images/present-me-2023-gh-comment.png") }}
 
-We now have the end line of the diff that we're looking at (and want tho show), 
+We now have the end line of the diff that we're looking at (and want to show), 
 and we know that the top three lines are not included (when looking at github 
 vs the diff hunk).
 
@@ -157,7 +157,7 @@ There are two cases here:
 1. Where the comment specifies a `start_line`
 2. Where the start line is implicit
 
-We're going to cover (2), which is way more interesting.
+We're going to cover (2) because it is more interesting.
 
 It looks like GitHub tries to show you 3 or 4 lines of context on the
 comment around the line it was placed, depending on what it deems to be _useful._
