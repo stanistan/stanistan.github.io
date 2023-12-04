@@ -1,0 +1,110 @@
+745d3ae0d69260b83c0ae50491b7bacd3f37dafe with initial view.go and test
+diff --git a/render_container_as_view_test.go b/render_container_as_view_test.go
+new file mode 100644
+index 0000000..7123b23
+--- /dev/null
++++ b/render_container_as_view_test.go
+@@ -0,0 +1,26 @@
++package veun_test
++
++import (
++	"html/template"
++	"testing"
++
++	"github.com/alecthomas/assert/v2"
++
++	. "github.com/stanistan/veun"
++)
++
++func TestRenderContainerAsView(t *testing.T) {
++	html, err := Render(View{
++		Tpl: containerViewTpl,
++		Slots: map[string]Renderable{
++			"heading": ChildView1{},
++			"body":    ChildView2{},
++		},
++	})
++	assert.NoError(t, err)
++	assert.Equal(t, template.HTML(`<div>
++	<div class="heading">HEADING</div>
++	<div class="body">BODY</div>
++</div>`), html)
++
++}
+diff --git a/render_container_test.go b/render_container_test.go
+index c372d45..4bc829c 100644
+--- a/render_container_test.go
++++ b/render_container_test.go
+@@ -9,24 +9,12 @@ import (
+ 	. "github.com/stanistan/veun"
+ )
+ 
+-func slotFuncStub(name string) (template.HTML, error) {
+-	return template.HTML(""), nil
+-}
+-
+ type ContainerView struct {
+ 	Heading Renderable
+ 	Body    Renderable
+ }
+ 
+-func mustParseTemplate(name, contents string) *template.Template {
+-	return template.Must(
+-		template.New(name).
+-			Funcs(template.FuncMap{"slot": slotFuncStub}).
+-			Parse(contents),
+-	)
+-}
+-
+-var containerViewTpl = mustParseTemplate("containerView", `<div>
++var containerViewTpl = MustParseTemplate("containerView", `<div>
+ 	<div class="heading">{{ slot "heading" }}</div>
+ 	<div class="body">{{ slot "body" }}</div>
+ </div>`)
+diff --git a/view.go b/view.go
+new file mode 100644
+index 0000000..ee54469
+--- /dev/null
++++ b/view.go
+@@ -0,0 +1,41 @@
++package veun
++
++import "html/template"
++
++type View struct {
++	Tpl   *template.Template
++	Slots map[string]Renderable
++	Data  any
++}
++
++func (v View) Template() (*template.Template, error) {
++	return tplWithRealSlotFunc(v.Tpl, v.Slots), nil
++}
++
++func (v View) TemplateData() (any, error) {
++	return v.Data, nil
++}
++
++func tplWithRealSlotFunc(tpl *template.Template, slots map[string]Renderable) *template.Template {
++	return tpl.Funcs(template.FuncMap{
++		"slot": func(name string) (template.HTML, error) {
++			slot, ok := slots[name]
++			if ok {
++				return Render(slot)
++			}
++			return template.HTML(""), nil
++		},
++	})
++}
++
++func slotFuncStub(name string) (template.HTML, error) {
++	return template.HTML(""), nil
++}
++
++func MustParseTemplate(name, contents string) *template.Template {
++	return template.Must(
++		template.New(name).
++			Funcs(template.FuncMap{"slot": slotFuncStub}).
++			Parse(contents),
++	)
++}
