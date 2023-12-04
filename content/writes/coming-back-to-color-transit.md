@@ -1,8 +1,9 @@
 +++
-title = "Coming back to color-transit (part 1)"
+title = "Coming back to color-transit"
 date = 2019-12-31
 aliases = [
-    "/writes/2019/12/31/coming-back-to-color-transit-part-1"
+    "/writes/2019/12/31/coming-back-to-color-transit-part-1",
+    "/writes/coming-back-to-color-transit-part-1"
 ]
 +++
 
@@ -352,6 +353,10 @@ So eventually, there'll be a second post, and updates to the app, and a
 write up of the process.
 
 ...which will hopefully take less than a couple of months to finish...
+
+## Update
+
+As of 2023, I have not come back to this, and I don't think I will.
 
 [cljs]: https://clojurescript.org
 [boot]: https://boot-clj.github.io
