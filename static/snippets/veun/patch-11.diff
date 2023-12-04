@@ -1,0 +1,418 @@
+81d7c2ded337aacda74d66120e3fd0668fd364d7 Adding context.Context to all interface methods
+diff --git a/error_renderable.go b/error_renderable.go
+index 63159e8..0dcab6c 100644
+--- a/error_renderable.go
++++ b/error_renderable.go
+@@ -1,6 +1,9 @@
+ package veun
+ 
+-import "html/template"
++import (
++	"context"
++	"html/template"
++)
+ 
+ type ErrorRenderable interface {
+ 	// ErrorRenderable can return bubble the error
+@@ -11,10 +14,10 @@ type ErrorRenderable interface {
+ 	// which will ignore the error entirely.
+ 	//
+ 	// Otherwise we will attempt to render next one.
+-	ErrorRenderable(err error) (AsRenderable, error)
++	ErrorRenderable(ctx context.Context, err error) (AsRenderable, error)
+ }
+ 
+-func handleRenderError(err error, with any) (template.HTML, error) {
++func handleRenderError(ctx context.Context, err error, with any) (template.HTML, error) {
+ 	var empty template.HTML
+ 
+ 	if with == nil {
+@@ -26,7 +29,7 @@ func handleRenderError(err error, with any) (template.HTML, error) {
+ 		return empty, err
+ 	}
+ 
+-	r, err := errRenderable.ErrorRenderable(err)
++	r, err := errRenderable.ErrorRenderable(ctx, err)
+ 	if err != nil {
+ 		return empty, err
+ 	}
+@@ -35,5 +38,5 @@ func handleRenderError(err error, with any) (template.HTML, error) {
+ 		return empty, nil
+ 	}
+ 
+-	return Render(r)
++	return Render(ctx, r)
+ }
+diff --git a/render_container_as_view_test.go b/render_container_as_view_test.go
+index 9af1ad0..b83ff1a 100644
+--- a/render_container_as_view_test.go
++++ b/render_container_as_view_test.go
+@@ -1,6 +1,7 @@
+ package veun_test
+ 
+ import (
++	"context"
+ 	"html/template"
+ 	"testing"
+ 
+@@ -14,7 +15,7 @@ type ContainerView2 struct {
+ 	Body    AsRenderable
+ }
+ 
+-func (v ContainerView2) Renderable() (Renderable, error) {
++func (v ContainerView2) Renderable(ctx context.Context) (Renderable, error) {
+ 	return View{
+ 		Tpl:   containerViewTpl,
+ 		Slots: Slots{"heading": v.Heading, "body": v.Body},
+@@ -22,7 +23,7 @@ func (v ContainerView2) Renderable() (Renderable, error) {
+ }
+ 
+ func TestRenderContainerAsView(t *testing.T) {
+-	html, err := Render(ContainerView2{
++	html, err := Render(context.Background(), ContainerView2{
+ 		Heading: ChildView1{},
+ 		Body:    ChildView2{},
+ 	})
+diff --git a/render_container_error_test.go b/render_container_error_test.go
+index 8052a8d..abedcca 100644
+--- a/render_container_error_test.go
++++ b/render_container_error_test.go
+@@ -1,6 +1,7 @@
+ package veun_test
+ 
+ import (
++	"context"
+ 	"errors"
+ 	"fmt"
+ 	"html/template"
+@@ -15,7 +16,7 @@ type FailingView struct {
+ 	Err error
+ }
+ 
+-func (v FailingView) Renderable() (Renderable, error) {
++func (v FailingView) Renderable(_ context.Context) (Renderable, error) {
+ 	return nil, fmt.Errorf("FailingView.Renderable(): %w", v.Err)
+ }
+ 
+@@ -24,11 +25,11 @@ type FallibleView struct {
+ 	Child       AsRenderable
+ }
+ 
+-func (v FallibleView) Renderable() (Renderable, error) {
+-	return v.Child.Renderable()
++func (v FallibleView) Renderable(ctx context.Context) (Renderable, error) {
++	return v.Child.Renderable(ctx)
+ }
+ 
+-func (v FallibleView) ErrorRenderable(err error) (AsRenderable, error) {
++func (v FallibleView) ErrorRenderable(ctx context.Context, err error) (AsRenderable, error) {
+ 	if v.CapturesErr == nil {
+ 		return nil, err
+ 	}
+@@ -41,7 +42,7 @@ func (v FallibleView) ErrorRenderable(err error) (AsRenderable, error) {
+ }
+ 
+ func TestRenderContainerWithFailingView(t *testing.T) {
+-	_, err := Render(ContainerView2{
++	_, err := Render(context.Background(), ContainerView2{
+ 		Heading: ChildView1{},
+ 		Body: FailingView{
+ 			Err: fmt.Errorf("construction: %w", errSomethingFailed),
+@@ -52,7 +53,7 @@ func TestRenderContainerWithFailingView(t *testing.T) {
+ 
+ func TestRenderContainerWithCapturedError(t *testing.T) {
+ 	t.Run("errors_bubble_out", func(t *testing.T) {
+-		_, err := Render(ContainerView2{
++		_, err := Render(context.Background(), ContainerView2{
+ 			Heading: ChildView1{},
+ 			Body: FallibleView{
+ 				Child: FailingView{Err: errSomethingFailed},
+@@ -62,7 +63,7 @@ func TestRenderContainerWithCapturedError(t *testing.T) {
+ 	})
+ 
+ 	t.Run("errors_can_push_replacement_views", func(t *testing.T) {
+-		html, err := Render(ContainerView2{
++		html, err := Render(context.Background(), ContainerView2{
+ 			Heading: ChildView1{},
+ 			Body: FallibleView{
+ 				Child:       FailingView{Err: errSomethingFailed},
+@@ -77,7 +78,7 @@ func TestRenderContainerWithCapturedError(t *testing.T) {
+ 	})
+ 
+ 	t.Run("errors_can_return_nil_views", func(t *testing.T) {
+-		html, err := Render(ContainerView2{
++		html, err := Render(context.Background(), ContainerView2{
+ 			Heading: ChildView1{},
+ 			Body: FallibleView{
+ 				Child:       FailingView{Err: errors.New("hi")},
+diff --git a/render_container_test.go b/render_container_test.go
+index 162f0d2..aef4e68 100644
+--- a/render_container_test.go
++++ b/render_container_test.go
+@@ -1,6 +1,7 @@
+ package veun_test
+ 
+ import (
++	"context"
+ 	"html/template"
+ 	"testing"
+ 
+@@ -19,30 +20,30 @@ var containerViewTpl = MustParseTemplate("containerView", `<div>
+ 	<div class="body">{{ slot "body" }}</div>
+ </div>`)
+ 
+-func tplWithRealSlotFunc(tpl *template.Template, slots map[string]AsRenderable) *template.Template {
++func tplWithRealSlotFunc(ctx context.Context, tpl *template.Template, slots map[string]AsRenderable) *template.Template {
+ 	return tpl.Funcs(template.FuncMap{
+ 		"slot": func(name string) (template.HTML, error) {
+ 			slot, ok := slots[name]
+ 			if ok {
+-				return Render(slot)
++				return Render(ctx, slot)
+ 			}
+ 			return template.HTML(""), nil
+ 		},
+ 	})
+ }
+ 
+-func (v ContainerView) Template() (*template.Template, error) {
+-	return tplWithRealSlotFunc(containerViewTpl, map[string]AsRenderable{
++func (v ContainerView) Template(ctx context.Context) (*template.Template, error) {
++	return tplWithRealSlotFunc(ctx, containerViewTpl, map[string]AsRenderable{
+ 		"heading": v.Heading,
+ 		"body":    v.Body,
+ 	}), nil
+ }
+ 
+-func (v ContainerView) TemplateData() (any, error) {
++func (v ContainerView) TemplateData(_ context.Context) (any, error) {
+ 	return nil, nil
+ }
+ 
+-func (v ContainerView) Renderable() (Renderable, error) {
++func (v ContainerView) Renderable(_ context.Context) (Renderable, error) {
+ 	return v, nil
+ }
+ 
+@@ -52,18 +53,18 @@ var childViewTemplate = template.Must(
+ 
+ type ChildView1 struct{}
+ 
+-func (v ChildView1) Renderable() (Renderable, error) {
++func (v ChildView1) Renderable(_ context.Context) (Renderable, error) {
+ 	return View{Tpl: childViewTemplate, Data: "HEADING"}, nil
+ }
+ 
+ type ChildView2 struct{}
+ 
+-func (v ChildView2) Renderable() (Renderable, error) {
++func (v ChildView2) Renderable(_ context.Context) (Renderable, error) {
+ 	return View{Tpl: childViewTemplate, Data: "BODY"}, nil
+ }
+ 
+ func TestRenderContainer(t *testing.T) {
+-	html, err := Render(&ContainerView{
++	html, err := Render(context.Background(), &ContainerView{
+ 		Heading: ChildView1{},
+ 		Body:    ChildView2{},
+ 	})
+diff --git a/render_person_test.go b/render_person_test.go
+index e2a99de..5de4182 100644
+--- a/render_person_test.go
++++ b/render_person_test.go
+@@ -1,6 +1,7 @@
+ package veun_test
+ 
+ import (
++	"context"
+ 	"html/template"
+ 	"testing"
+ 
+@@ -24,12 +25,12 @@ var personViewTpl = template.Must(
+ 	template.New("PersonView").Parse(`<div>Hi, {{ .Name }}.</div>`),
+ )
+ 
+-func (v *personView) Renderable() (Renderable, error) {
++func (v *personView) Renderable(_ context.Context) (Renderable, error) {
+ 	return View{Tpl: personViewTpl, Data: v.Person}, nil
+ }
+ 
+ func TestRenderPerson(t *testing.T) {
+-	html, err := Render(PersonView(Person{Name: "Stan"}))
++	html, err := Render(context.Background(), PersonView(Person{Name: "Stan"}))
+ 	assert.NoError(t, err)
+ 	assert.Equal(t, html, template.HTML(`<div>Hi, Stan.</div>`))
+ }
+diff --git a/render_with_data_fetch_test.go b/render_with_data_fetch_test.go
+index 963242e..e6166ed 100644
+--- a/render_with_data_fetch_test.go
++++ b/render_with_data_fetch_test.go
+@@ -1,6 +1,7 @@
+ package veun_test
+ 
+ import (
++	"context"
+ 	"fmt"
+ 	"html/template"
+ 	"testing"
+@@ -45,7 +46,7 @@ func NewExpensiveView(shouldErr bool) *ExpensiveView {
+ 	return &ExpensiveView{Data: dataCh, Err: errCh}
+ }
+ 
+-func (v *ExpensiveView) Renderable() (Renderable, error) {
++func (v *ExpensiveView) Renderable(_ context.Context) (Renderable, error) {
+ 	select {
+ 	case err := <-v.Err:
+ 		return nil, err
+@@ -56,13 +57,13 @@ func (v *ExpensiveView) Renderable() (Renderable, error) {
+ 
+ func TestViewWithChannels(t *testing.T) {
+ 	t.Run("successful", func(t *testing.T) {
+-		html, err := Render(NewExpensiveView(false))
++		html, err := Render(context.Background(), NewExpensiveView(false))
+ 		assert.NoError(t, err)
+ 		assert.Equal(t, template.HTML(`hi success`), html)
+ 	})
+ 
+ 	t.Run("failed", func(t *testing.T) {
+-		_, err := Render(NewExpensiveView(true))
++		_, err := Render(context.Background(), NewExpensiveView(true))
+ 		assert.Error(t, err)
+ 	})
+ }
+diff --git a/renderer.go b/renderer.go
+index 27d3abc..33af885 100644
+--- a/renderer.go
++++ b/renderer.go
+@@ -2,37 +2,38 @@ package veun
+ 
+ import (
+ 	"bytes"
++	"context"
+ 	"fmt"
+ 	"html/template"
+ )
+ 
+ type Renderable interface {
+-	Template() (*template.Template, error)
+-	TemplateData() (any, error)
++	Template(ctx context.Context) (*template.Template, error)
++	TemplateData(ctx context.Context) (any, error)
+ }
+ 
+ type AsRenderable interface {
+-	Renderable() (Renderable, error)
++	Renderable(ctx context.Context) (Renderable, error)
+ }
+ 
+-func Render(r AsRenderable) (template.HTML, error) {
+-	renderable, err := r.Renderable()
++func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
++	renderable, err := r.Renderable(ctx)
+ 	if err != nil {
+-		return handleRenderError(err, r)
++		return handleRenderError(ctx, err, r)
+ 	}
+ 
+-	out, err := render(renderable)
++	out, err := render(ctx, renderable)
+ 	if err != nil {
+-		return handleRenderError(err, r)
++		return handleRenderError(ctx, err, r)
+ 	}
+ 
+ 	return out, nil
+ }
+ 
+-func render(r Renderable) (template.HTML, error) {
++func render(ctx context.Context, r Renderable) (template.HTML, error) {
+ 	var empty template.HTML
+ 
+-	tpl, err := r.Template()
++	tpl, err := r.Template(ctx)
+ 	if err != nil {
+ 		return empty, err
+ 	}
+@@ -41,7 +42,7 @@ func render(r Renderable) (template.HTML, error) {
+ 		return empty, fmt.Errorf("missing template")
+ 	}
+ 
+-	data, err := r.TemplateData()
++	data, err := r.TemplateData(ctx)
+ 	if err != nil {
+ 		return empty, err
+ 	}
+diff --git a/slots.go b/slots.go
+index ef55359..61f7fb4 100644
+--- a/slots.go
++++ b/slots.go
+@@ -1,19 +1,24 @@
+ package veun
+ 
+-import "html/template"
++import (
++	"context"
++	"html/template"
++)
+ 
+ type Slots map[string]AsRenderable
+ 
+-func (s Slots) renderSlot(name string) (template.HTML, error) {
+-	slot, ok := s[name]
+-	if ok {
+-		return Render(slot)
+-	}
++func (s Slots) renderSlot(ctx context.Context) func(string) (template.HTML, error) {
++	return func(name string) (template.HTML, error) {
++		slot, ok := s[name]
++		if ok {
++			return Render(ctx, slot)
++		}
+ 
+-	var empty template.HTML
+-	return empty, nil
++		var empty template.HTML
++		return empty, nil
++	}
+ }
+ 
+-func (s Slots) addToTemplate(t *template.Template) *template.Template {
+-	return t.Funcs(template.FuncMap{"slot": s.renderSlot})
++func (s Slots) addToTemplate(ctx context.Context, t *template.Template) *template.Template {
++	return t.Funcs(template.FuncMap{"slot": s.renderSlot(ctx)})
+ }
+diff --git a/view.go b/view.go
+index 2bfc217..97f02f5 100644
+--- a/view.go
++++ b/view.go
+@@ -1,6 +1,9 @@
+ package veun
+ 
+-import "html/template"
++import (
++	"context"
++	"html/template"
++)
+ 
+ type View struct {
+ 	Tpl   *template.Template
+@@ -8,15 +11,15 @@ type View struct {
+ 	Data  any
+ }
+ 
+-func (v View) Template() (*template.Template, error) {
+-	return v.Slots.addToTemplate(v.Tpl), nil
++func (v View) Template(ctx context.Context) (*template.Template, error) {
++	return v.Slots.addToTemplate(ctx, v.Tpl), nil
+ }
+ 
+-func (v View) TemplateData() (any, error) {
++func (v View) TemplateData(_ context.Context) (any, error) {
+ 	return v.Data, nil
+ }
+ 
+-func (v View) Renderable() (Renderable, error) {
++func (v View) Renderable(_ context.Context) (Renderable, error) {
+ 	return v, nil
+ }
+ 

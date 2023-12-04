@@ -3,7 +3,7 @@ title = "Building view-trees: Error Handling [Part 3]"
 date = 2023-12-05
 +++
 
-Previously: [intro][intro], and [the basics][the-basics].
+Previously: [intro][part-1], and [the basics][part-2].
 
 ---
 
@@ -142,5 +142,13 @@ handling.
 Error handling is going to be much more important when we get
 to doing _real things_ like data access.
 
-[intro]: /writes/building-view-trees-in-go-part-1
-[the-basics]: /writes/building-view-trees-in-go-part-2
+---
+
+### Next:
+
+- [Async data fetching][part-4]
+
+
+[part-1]: /writes/building-view-trees-in-go-part-1
+[part-2]: /writes/building-view-trees-in-go-part-2
+[part-4]: /writes/building-view-trees-in-go-part-4
