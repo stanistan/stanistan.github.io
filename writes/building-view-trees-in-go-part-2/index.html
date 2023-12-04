@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="author" content="Stan Rozenraukh" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Building view-trees: The basics [Part 2] - stanistan</title>
+        
+            <link rel="alternate" type="application/rss+xml" title="RSS" href="https://www.stanistan.com/rss.xml">
+        
+        <link rel="icon" href="data:" />
+        
+            
+            <style type="text/css">body{border-top:5px solid #f6cde0;background:#fcfcfc;color:#333;font-family:Cochin,Times,serif;font-size:1.3em;line-height:1.55em;margin:0;padding:0}.content{margin:8em auto 0;max-width:33em;padding:2em;position:relative}.content.resume{margin:1em auto 0;max-width:35em}article{position:relative}h1{font-size:1.4em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.4em 0 0}h1+p{margin-top:0}h2{font-size:1.2em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.2em 0 0}h2+p{margin-top:0}h3{font-size:1.12em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.12em 0 0}h3+p{margin-top:0}h4{font-size:1em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1em 0 0}h4+p{margin-top:0}hr{border:0 dotted #f6cde0;border-top-width:1px;height:0}pre,.mono,code{font-family:monospace}.small{font-size:75%}.smaller{font-size:85%}.faded{color:#999}.center{text-align:center}a,.link-like{color:#0000a5;font-weight:bolder;text-underline-offset:6px}a:hover,.link-like:hover{color:#2525ff;text-decoration:none}ol,ul{list-style-position:outside;margin:0;margin-left:1.6em;padding:0}ol li,ul li{margin:0 0 .1em 0;padding:0 0 0 .2em}.outside{margin-left:-2em}ul.outside,ol.outside{margin-left:-.1em}code{background:#fdf4f8;border-bottom:1px dotted #f6cde0;padding:.3em;font-size:.85em}pre,blockquote{background:#fff;line-height:1.45em;margin-left:-2em;margin-right:-2em}pre{font-size:.85em;border-bottom:1px dotted #f6cde0;padding:1em 2em;overflow-x:scroll}pre code{background:inherit;border-bottom:0;padding:0;font-size:inherit}blockquote{font-size:.9em;font-style:italic;padding:.5em 2em;border-left:1px dotted #f6cde0}.tag{margin-right:.3em;border-radius:10px;color:#333;text-decoration:none}.tag:hover{color:#000;text-decoration:underline}.toc{margin:.2em -2em 0;padding:2em;font-size:.7em;line-height:1.45;border-bottom:1px dotted #f6cde0}.toc a{color:#333;font-weight:normal}.toc ul{list-style:none;margin-left:0em}.toc ul ul{margin-left:1em}.anchor-link{position:absolute;margin-left:-.9em;text-decoration:none;font-weight:normal}article .img-container{margin:.2em -2em 0}article .img-container img{width:100%;height:auto}@media only screen and (max-width: 500px){body{font-size:1.15em}.content{padding:1.8em}.smaller{font-size:90%}.small{font-size:83%}.outside{margin-left:inherit}article .img-container{margin:.2em -1em 0}}dl{margin:1.5em 0}dl dt{clear:left;float:left;text-decoration:underline;text-align:right;width:5.5em}dl dt::after{content:":"}dl dd{display:block;float:left}.clear{clear:both}.invoice-heading{padding:1.5em 0}.invoice-heading h1{float:left;padding:0}.invoice-heading .invoice-heading-code{float:right;font-weight:bold}table{padding-top:1.5em;width:100%}table th,table td{text-align:left}table th.right,table td.right{text-align:right}table tfoot td{font-weight:bold}table tfoot tr:first-child td{border-top:1px dotted #f6cde0;padding-top:.3em}table tbody tr:last-child td{padding-bottom:.3em}table tbody tr:first-child td{padding-top:.3em}table thead tr:last-child th{padding-bottom:.3em;border-bottom:1px dotted #ccc}details{font-size:85%}details summary{font-weight:bold;color:#0000a5}details summary:hover{color:#2525ff;cursor:pointer}.job{margin:10px 0 10px -20px;padding:0px 20px 40px 40px;background:#fef8fb}.job .place{margin-left:-20px}.job .position+.position{margin-top:1em}.job .position h3{font-size:93%;font-weight:bold;padding-top:.7em}.job .position h4.when{font-size:70%;font-weight:normal;padding-top:0;line-height:1.1em}.job .position .details{max-width:55em;margin-top:1em;font-size:88%;line-height:1.3em}.job .position .details li+li{margin-top:10px}</style>
+        
+    </head>
+    <body>
+        <div class="content ">
+            
+    <a href="/" class="faded mono small" title="stanistan /">go /</a>
+    <article>
+        <h1>Building view-trees: The basics [Part 2]</h1>
+        <div class="small faded">
+            
+    
+    
+    
+    <a href="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;the-details&#x2F;content&#x2F;writes&#x2F;building-view-trees-in-go-part-2.md" class="faded">.md</a>
+ |
+            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-2/" class="faded">permalink</a>
+            
+            | Published on December 04, 2023
+            
+        </div>
+
+        
+
+        
+
+        <section class="post">
+            <p>We laid our goals in the <a href="/writes/building-view-trees-in-go-part-1">part 1</a>.</p>
+<hr />
+<h1 id="let-s-make-something-renderable">Let's make something renderable</h1>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">import </span><span style="color:#183691;">&quot;html/template&quot;
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">type </span><span>RenderFunc </span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>) (template.</span><span style="font-weight:bold;color:#a71d5d;">HTML</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>)
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">type </span><span>Renderable </span><span style="font-weight:bold;color:#a71d5d;">interface </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#795da3;">Template</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">*</span><span>template.</span><span style="font-weight:bold;color:#a71d5d;">Template</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>)
+</span><span>    </span><span style="font-weight:bold;color:#795da3;">TemplateData</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">any</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>)
+</span><span>}
+</span></code></pre>
+<p>Let's start with interfaces and type definitions of the concepts:</p>
+<ol>
+<li>We want to be able to <code>Render</code> a <code>Renderable</code> struct into HTML,
+this can fail.</li>
+<li>We also want the Renderable thing to give us all of the information
+it needs so we can render it. This can also fail.</li>
+</ol>
+<p>This interface is small, let's see how far we can push this.</p>
+<h2 id="first-implementation">First Implementation</h2>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">Render</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>) (template.</span><span style="font-weight:bold;color:#a71d5d;">HTML</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">var </span><span>empty template.</span><span style="font-weight:bold;color:#a71d5d;">HTML
+</span><span>
+</span><span>    tpl, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>r.Template()
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>empty, err
+</span><span>    }
+</span><span>
+</span><span>    data, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>r.TemplateData()
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>empty, err
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">var </span><span>bs bytes.</span><span style="font-weight:bold;color:#a71d5d;">Buffer
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>tpl.Execute(</span><span style="font-weight:bold;color:#a71d5d;">&amp;</span><span>bs, data); err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>empty, err
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>template.HTML(bs.String()), </span><span style="color:#0086b3;">nil
+</span><span>}
+</span></code></pre>
+<p>The implementation is small, too, but what good are components
+if you can't compose them.</p>
+<h1 id="trees-and-subviews">Trees and Subviews</h1>
+<p>In order to bring the component into our tree composition view library,
+we need to have <code>Renderable</code> objects have subtrees.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span>_, _ </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>Render(ContainerView{
+</span><span>    Heading: ChildView1{},
+</span><span>    Body:    ChildView2{},
+</span><span>})
+</span></code></pre>
+<pre data-lang="mustache" style="background-color:#ffffff;color:#323232;" class="language-mustache "><code class="language-mustache" data-lang="mustache"><span>&lt;</span><span style="color:#63a35c;">div</span><span>&gt;
+</span><span>    &lt;</span><span style="color:#63a35c;">div </span><span style="color:#795da3;">class=</span><span style="color:#183691;">&quot;heading&quot;</span><span>&gt;</span><span style="color:#0086b3;">{{ </span><span>slot </span><span style="color:#183691;">&quot;heading&quot; </span><span style="color:#0086b3;">}}</span><span>&lt;/</span><span style="color:#63a35c;">div</span><span>&gt;
+</span><span>    &lt;</span><span style="color:#63a35c;">div </span><span style="color:#795da3;">class=</span><span style="color:#183691;">&quot;body&quot;</span><span>&gt;</span><span style="color:#0086b3;">{{ </span><span>slot </span><span style="color:#183691;">&quot;body&quot; </span><span style="color:#0086b3;">}}</span><span>&lt;/</span><span style="color:#63a35c;">div</span><span>&gt;
+</span><span>&lt;/</span><span style="color:#63a35c;">div</span><span>&gt;
+</span></code></pre>
+<h2 id="the-poc">The POC</h2>
+<p>The basic idea is to leverage <code>template.FuncMap</code> to create a
+<code>slot</code> function.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">ContainerView</span><span>) </span><span style="font-weight:bold;color:#795da3;">Template</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">*</span><span>template.</span><span style="font-weight:bold;color:#a71d5d;">Template</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>template.New(</span><span style="color:#183691;">&quot;containerView&quot;</span><span>).Funcs(template.FuncMap{
+</span><span>        </span><span style="color:#183691;">&quot;slot&quot;</span><span>: </span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(name </span><span style="font-weight:bold;color:#0086b3;">string</span><span>) (template.</span><span style="font-weight:bold;color:#a71d5d;">HTML</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">switch </span><span>name {
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">case </span><span style="color:#183691;">&quot;heading&quot;</span><span>:
+</span><span>                </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>Render(v.Heading)
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">case </span><span style="color:#183691;">&quot;body&quot;</span><span>:
+</span><span>                </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>Render(v.Body)
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">default</span><span>:
+</span><span>                </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>template.HTML(</span><span style="color:#183691;">&quot;&quot;</span><span>), </span><span style="color:#0086b3;">nil
+</span><span>            }
+</span><span>        },
+</span><span>    }).Parse(</span><span style="color:#183691;">`&lt;div&gt;
+</span><span style="color:#183691;">    &lt;div class=&quot;heading&quot;&gt;</span><span>{{ slot </span><span style="color:#183691;">&quot;heading&quot; </span><span>}}</span><span style="color:#183691;">&lt;/div&gt;
+</span><span style="color:#183691;">    &lt;div class=&quot;body&quot;&gt;</span><span>{{ slot </span><span style="color:#183691;">&quot;body&quot; </span><span>}}</span><span style="color:#183691;">&lt;/div&gt;
+</span><span style="color:#183691;">&lt;/div&gt;`</span><span>)
+</span><span>}
+</span></code></pre>
+<h3 id="alternate-approach">Alternate approach</h3>
+<p>Alternatively, we can directly inline the fields in the data so our template
+looks more like this:</p>
+<pre data-lang="mustache" style="background-color:#ffffff;color:#323232;" class="language-mustache "><code class="language-mustache" data-lang="mustache"><span>&lt;</span><span style="color:#63a35c;">div </span><span style="color:#795da3;">class=</span><span style="color:#183691;">&quot;heading&quot;</span><span>&gt;</span><span style="color:#0086b3;">{{ </span><span>render .Slots.Heading </span><span style="color:#0086b3;">}}</span><span>&lt;/</span><span style="color:#63a35c;">div</span><span>&gt;
+</span></code></pre>
+<h2 id="template-compilation">Template compilation</h2>
+<p><em>Refactor 1</em>: Making it so that we can do pre-compilation of the template,
+we can pre-parse it. The immediate issue is that we don't have slots,
+and the slot func is necessary to compile the tempalte. We can stub that out:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">slotFuncStub</span><span>(name </span><span style="font-weight:bold;color:#0086b3;">string</span><span>) (template.</span><span style="font-weight:bold;color:#a71d5d;">HTML</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>template.HTML(</span><span style="color:#183691;">&quot;&quot;</span><span>), </span><span style="color:#0086b3;">nil
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">mustParseTemplate</span><span>(name, contents </span><span style="font-weight:bold;color:#0086b3;">string</span><span>) </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>template.</span><span style="font-weight:bold;color:#a71d5d;">Template </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>template.Must(
+</span><span>        template.New(name).
+</span><span>        Funcs(template.FuncMap{</span><span style="color:#183691;">&quot;slot&quot;</span><span>: slotFuncStub}).
+</span><span>        Parse(contents),
+</span><span>    )
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">var </span><span>containerViewTpl </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>mustParseTemplate(</span><span style="color:#183691;">&quot;containerView&quot;</span><span>, </span><span style="color:#183691;">`&lt;div&gt;
+</span><span style="color:#183691;">    &lt;div class=&quot;heading&quot;&gt;</span><span>{{ slot </span><span style="color:#183691;">&quot;heading&quot; </span><span>}}</span><span style="color:#183691;">&lt;/div&gt;
+</span><span style="color:#183691;">    &lt;div class=&quot;body&quot;&gt;</span><span>{{ slot </span><span style="color:#183691;">&quot;body&quot; </span><span>}}</span><span style="color:#183691;">&lt;/div&gt;
+</span><span style="color:#183691;">&lt;/div&gt;`</span><span>)
+</span></code></pre>
+<p>And then update our <code>Template()</code> function:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span>containerViewTpl.Funcs(template.FuncMap{
+</span><span>    </span><span style="color:#183691;">&quot;slot&quot;</span><span>: </span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(name </span><span style="font-weight:bold;color:#0086b3;">string</span><span>) (template.</span><span style="font-weight:bold;color:#a71d5d;">HTML</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">switch </span><span>name {
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">case </span><span style="color:#183691;">&quot;heading&quot;</span><span>:
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>Render(v.Heading)
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">case </span><span style="color:#183691;">&quot;body&quot;</span><span>:
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>Render(v.Body)
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">default</span><span>:
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>template.HTML(</span><span style="color:#183691;">&quot;&quot;</span><span>), </span><span style="color:#0086b3;">nil
+</span><span>        }
+</span><span>    },
+</span><span>})
+</span></code></pre>
+<p><em>Refactor 2:</em> We can clean up the real slot function so that it
+is less brittle when views/slots are added and removed.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">tplWithRealSlotFunc</span><span>(
+</span><span>    tpl </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>template.</span><span style="font-weight:bold;color:#a71d5d;">Template</span><span>,
+</span><span>    slots </span><span style="font-weight:bold;color:#a71d5d;">map</span><span>[</span><span style="font-weight:bold;color:#0086b3;">string</span><span>]</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>,
+</span><span>) </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>template.</span><span style="font-weight:bold;color:#a71d5d;">Template </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>tpl.Funcs(template.FuncMap{
+</span><span>        </span><span style="color:#183691;">&quot;slot&quot;</span><span>: </span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(name </span><span style="font-weight:bold;color:#0086b3;">string</span><span>) (template.</span><span style="font-weight:bold;color:#a71d5d;">HTML</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>            slot, ok </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>slots[name]
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>ok {
+</span><span>                </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>Render(slot)
+</span><span>            }
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>template.HTML(</span><span style="color:#183691;">&quot;&quot;</span><span>), </span><span style="color:#0086b3;">nil
+</span><span>        },
+</span><span>    })
+</span><span>}
+</span><span>
+</span><span style="font-style:italic;color:#969896;">// ... snip ...
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">return </span><span>tplWithRealSlotFunc(containerViewTpl, </span><span style="font-weight:bold;color:#a71d5d;">map</span><span>[</span><span style="font-weight:bold;color:#0086b3;">string</span><span>]</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>{
+</span><span>    </span><span style="color:#183691;">&quot;heading&quot;</span><span>: v.Heading,
+</span><span>    </span><span style="color:#183691;">&quot;body&quot;</span><span>:    v.Body,
+</span><span>}), </span><span style="color:#0086b3;">nil
+</span></code></pre>
+<p>At this point we've extracted common implementation details but have
+kept our main interface the same, which is cool! Our base renderer
+doesn't need to know much about anything else, doesn't need to know
+about slots, or funcs, or where templates come from.</p>
+<h2 id="a-view">A <code>View{}</code></h2>
+<p>This is generally all well and good, we might want to have
+something produce a <code>Renderable</code> struct, in fact we might have a
+struct that is represents a <code>Renderable</code> object, what if we could
+capture the above pattern in a piece of data as well as behavior?</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">type </span><span>View </span><span style="font-weight:bold;color:#a71d5d;">struct </span><span>{
+</span><span>    Tpl   </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>template.</span><span style="font-weight:bold;color:#a71d5d;">Template
+</span><span>    Slots </span><span style="font-weight:bold;color:#a71d5d;">map</span><span>[</span><span style="font-weight:bold;color:#0086b3;">string</span><span>]</span><span style="font-weight:bold;color:#a71d5d;">Renderable
+</span><span>    Data  </span><span style="font-weight:bold;color:#a71d5d;">any
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">View</span><span>) </span><span style="font-weight:bold;color:#795da3;">Template</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">*</span><span>template.</span><span style="font-weight:bold;color:#a71d5d;">Template</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>tplWithRealSlotFunc(v.Tpl, v.Slots), </span><span style="color:#0086b3;">nil
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">View</span><span>) </span><span style="font-weight:bold;color:#795da3;">TemplateData</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">any</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>v.Data, </span><span style="color:#0086b3;">nil
+</span><span>}
+</span></code></pre>
+<p>The container becomes representable in a different way and it
+would have the equivalent outcome when rendered.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span>View{
+</span><span>  Tpl: containerViewTpl,
+</span><span>  Slots: </span><span style="font-weight:bold;color:#a71d5d;">map</span><span>[</span><span style="font-weight:bold;color:#0086b3;">string</span><span>]</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>{
+</span><span>    </span><span style="color:#183691;">&quot;heading&quot;</span><span>: ChildView1{},
+</span><span>    </span><span style="color:#183691;">&quot;body&quot;</span><span>:    ChildView2{},
+</span><span>  }
+</span><span>}
+</span></code></pre>
+<p>But we still might want to have ContainerView be the thing we can
+&quot;render&quot;, how would we do both?</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">type </span><span>AsRenderable </span><span style="font-weight:bold;color:#a71d5d;">interface </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">Renderable</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>)
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">type </span><span>Slots </span><span style="font-weight:bold;color:#a71d5d;">map</span><span>[</span><span style="font-weight:bold;color:#0086b3;">string</span><span>]</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable
+</span></code></pre>
+<p>And updating the <code>Render</code> function for the first time to take
+<code>AsRenderable</code> instead gives us our first really big interface
+change, but it unlocks something, too. A simpler way to build views:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">ContainerView</span><span>) </span><span style="font-weight:bold;color:#795da3;">Renderable</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>View{
+</span><span>        Tpl:   containerViewTpl,
+</span><span>        Slots: Slots{</span><span style="color:#183691;">&quot;heading&quot;</span><span>: v.Heading, </span><span style="color:#183691;">&quot;body&quot;</span><span>: v.Body},
+</span><span>    ), </span><span style="color:#0086b3;">nil
+</span><span>}
+</span></code></pre>
+
+        </section>
+
+        
+
+    </article>
+
+            
+        </div>
+    </body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="author" content="Stan Rozenraukh" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Building view-trees: Intro [Part 1] - stanistan</title>
+        
+            <link rel="alternate" type="application/rss+xml" title="RSS" href="https://www.stanistan.com/rss.xml">
+        
+        <link rel="icon" href="data:" />
+        
+            
+            <style type="text/css">body{border-top:5px solid #f6cde0;background:#fcfcfc;color:#333;font-family:Cochin,Times,serif;font-size:1.3em;line-height:1.55em;margin:0;padding:0}.content{margin:8em auto 0;max-width:33em;padding:2em;position:relative}.content.resume{margin:1em auto 0;max-width:35em}article{position:relative}h1{font-size:1.4em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.4em 0 0}h1+p{margin-top:0}h2{font-size:1.2em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.2em 0 0}h2+p{margin-top:0}h3{font-size:1.12em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.12em 0 0}h3+p{margin-top:0}h4{font-size:1em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1em 0 0}h4+p{margin-top:0}hr{border:0 dotted #f6cde0;border-top-width:1px;height:0}pre,.mono,code{font-family:monospace}.small{font-size:75%}.smaller{font-size:85%}.faded{color:#999}.center{text-align:center}a,.link-like{color:#0000a5;font-weight:bolder;text-underline-offset:6px}a:hover,.link-like:hover{color:#2525ff;text-decoration:none}ol,ul{list-style-position:outside;margin:0;margin-left:1.6em;padding:0}ol li,ul li{margin:0 0 .1em 0;padding:0 0 0 .2em}.outside{margin-left:-2em}ul.outside,ol.outside{margin-left:-.1em}code{background:#fdf4f8;border-bottom:1px dotted #f6cde0;padding:.3em;font-size:.85em}pre,blockquote{background:#fff;line-height:1.45em;margin-left:-2em;margin-right:-2em}pre{font-size:.85em;border-bottom:1px dotted #f6cde0;padding:1em 2em;overflow-x:scroll}pre code{background:inherit;border-bottom:0;padding:0;font-size:inherit}blockquote{font-size:.9em;font-style:italic;padding:.5em 2em;border-left:1px dotted #f6cde0}.tag{margin-right:.3em;border-radius:10px;color:#333;text-decoration:none}.tag:hover{color:#000;text-decoration:underline}.toc{margin:.2em -2em 0;padding:2em;font-size:.7em;line-height:1.45;border-bottom:1px dotted #f6cde0}.toc a{color:#333;font-weight:normal}.toc ul{list-style:none;margin-left:0em}.toc ul ul{margin-left:1em}.anchor-link{position:absolute;margin-left:-.9em;text-decoration:none;font-weight:normal}article .img-container{margin:.2em -2em 0}article .img-container img{width:100%;height:auto}@media only screen and (max-width: 500px){body{font-size:1.15em}.content{padding:1.8em}.smaller{font-size:90%}.small{font-size:83%}.outside{margin-left:inherit}article .img-container{margin:.2em -1em 0}}dl{margin:1.5em 0}dl dt{clear:left;float:left;text-decoration:underline;text-align:right;width:5.5em}dl dt::after{content:":"}dl dd{display:block;float:left}.clear{clear:both}.invoice-heading{padding:1.5em 0}.invoice-heading h1{float:left;padding:0}.invoice-heading .invoice-heading-code{float:right;font-weight:bold}table{padding-top:1.5em;width:100%}table th,table td{text-align:left}table th.right,table td.right{text-align:right}table tfoot td{font-weight:bold}table tfoot tr:first-child td{border-top:1px dotted #f6cde0;padding-top:.3em}table tbody tr:last-child td{padding-bottom:.3em}table tbody tr:first-child td{padding-top:.3em}table thead tr:last-child th{padding-bottom:.3em;border-bottom:1px dotted #ccc}details{font-size:85%}details summary{font-weight:bold;color:#0000a5}details summary:hover{color:#2525ff;cursor:pointer}.job{margin:10px 0 10px -20px;padding:0px 20px 40px 40px;background:#fef8fb}.job .place{margin-left:-20px}.job .position+.position{margin-top:1em}.job .position h3{font-size:93%;font-weight:bold;padding-top:.7em}.job .position h4.when{font-size:70%;font-weight:normal;padding-top:0;line-height:1.1em}.job .position .details{max-width:55em;margin-top:1em;font-size:88%;line-height:1.3em}.job .position .details li+li{margin-top:10px}</style>
+        
+    </head>
+    <body>
+        <div class="content ">
+            
+    <a href="/" class="faded mono small" title="stanistan /">go /</a>
+    <article>
+        <h1>Building view-trees: Intro [Part 1]</h1>
+        <div class="small faded">
+            
+    
+    
+    
+    <a href="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;the-details&#x2F;content&#x2F;writes&#x2F;building-view-trees-in-go-part-1.md" class="faded">.md</a>
+ |
+            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-1/" class="faded">permalink</a>
+            
+            | Published on December 01, 2023
+            
+        </div>
+
+        
+
+        
+
+        <section class="post">
+            <p>When I was at Etsy, we built a server-side component library called
+View Trees, but also called <code>neu</code> (because this was quicker to type).</p>
+<p>This is referenced in this <a rel="nofollow noreferrer" href="https://www.etsy.com/codeascraft/mobius-adopting-jsx-while-prioritizing-user-experience">Code As Craft</a> blog post, which is about
+extending/updating the framework to output server-rendered JSX components.</p>
+<p>After futzing around with <a rel="nofollow noreferrer" href="https://vuejs.org/">Vue</a> in present-me, and then reading more about
+similar-to-neu approaches for doing client-side interaction (like <a rel="nofollow noreferrer" href="https://htmx.org/">htmx</a>,
+and others) based on server side rendering I wanted to revisit this library,
+but from a Go perspective.</p>
+<hr />
+<p>This is going to be a series of posts describing an iterative approach to
+building this out, aming to explain why things look and the way they do through
+specific problems and solutions to them.</p>
+<p><strong>Things to keep in mind</strong></p>
+<ul>
+<li>In Go, we have built-in templates with the <a rel="nofollow noreferrer" href="https://pkg.go.dev/html/template"><code>html/template</code></a>
+package, and a standard way of compiling and rendering templates.
+We're not introducing a new templating language. And want to leverage
+the way folks already write their templates, but give them different
+ways to compose them (not inclusion, not inheritence).</li>
+<li>There are standard HTTP handlers in the <code>net/http</code> package, try
+to integrate with that using middleware (and other standard patterns)
+and not introduce any http routing or anything else.</li>
+<li>We want to make the interfaces small, and the composition simple and obvious.</li>
+<li>Errors are recoverable!</li>
+</ul>
+<h2 id="how-does-go-do-templates">How does go do templates?</h2>
+<p>The idiomatic way to render HTML templates is to write some data
+to a buffer via <code>tpl.Execute</code>:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">import </span><span style="color:#183691;">&quot;html/template&quot;
+</span><span>
+</span><span>contents </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span style="color:#183691;">`&lt;div&gt;Hi, </span><span>{{ .Name }}</span><span style="color:#183691;">&lt;/div&gt;`
+</span><span>tpl </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>template.Must(template.New(</span><span style="color:#183691;">&quot;hi&quot;</span><span>).Parse(contents))
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">var </span><span>bs bytes.</span><span style="font-weight:bold;color:#a71d5d;">Buffer
+</span><span>err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>tpl.Execute(</span><span style="font-weight:bold;color:#a71d5d;">&amp;</span><span>bs, </span><span style="font-weight:bold;color:#a71d5d;">map</span><span>[</span><span style="font-weight:bold;color:#0086b3;">string</span><span>]</span><span style="font-weight:bold;color:#0086b3;">string</span><span>{</span><span style="color:#183691;">&quot;Name&quot;</span><span>: </span><span style="color:#183691;">&quot;Stan&quot;</span><span>})
+</span></code></pre>
+<p>The above snippet is an extremely simplified version of what you would
+do. Idiomatically, one would expect template compilation from external
+files that are embedded into your binary and compiled and a named type
+for the template data, error handling, and maybe writing to
+an <code>http.ResponseWriter</code>.</p>
+<h1 id="where-are-we-going">Where are we going?</h1>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span>html, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>Render(PersonView(Person{Name: </span><span style="color:#183691;">&quot;Stan&quot;</span><span>}))
+</span></code></pre>
+<p>Conceptually, what we have is piece of data, let's say a <code>Person</code> struct,
+and an html view of that that knows how to take that data and render
+it into HTML. We can, of course, just make a function that does this
+for the use case above.</p>
+<p>But what we want is something like this:</p>
+<ul>
+<li>A <code>Render</code> function that render's a view.</li>
+<li>A view that is parameterized by a struct.</li>
+<li>Outputting valid HTML.</li>
+</ul>
+<p>The larger semantic difference is we are lifting the way we desribe
+our data inputs and views into being first-class &quot;objects&quot; (structs
+that can possibly have behaviors and guarantees) so we can leverage
+the language to do composition, parameterization, polymorphism,
+etc... so we can do things like components :)</p>
+<hr />
+<h3 id="next">Next:</h3>
+<ul>
+<li><a href="/writes/building-view-trees-in-go-part-2">The basics</a></li>
+</ul>
+
+        </section>
+
+        
+
+    </article>
+
+            
+        </div>
+    </body>
+</html>
