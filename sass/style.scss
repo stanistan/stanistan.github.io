@@ -33,6 +33,11 @@ body {
   position: relative;
 }
 
+.content.resume {
+  margin: 1em auto 0;
+  max-width: 35em;
+}
+
 article {
   position: relative;
 }
@@ -87,6 +92,7 @@ a,
 .link-like {
   color: $link-color;
   font-weight: bolder;
+  text-underline-offset: 6px;
 
   &:hover {
     color: $link-hover-color;
@@ -317,3 +323,51 @@ details {
     }
   }
 }
+
+.job {
+
+
+  margin: 10px 0 10px -20px;
+  padding: 0px 20px 40px 40px;
+  background: lighten(#fdf4f8, 1%);
+
+  .place {
+    margin-left: -20px;
+  }
+
+  .position {
+
+    & + .position {
+      margin-top: 1em;
+    }
+
+    h3 {
+      font-size: 93%;
+      font-weight: bold;
+      padding-top: 0.7em;
+      // line-height: 1.2em;
+    }
+
+    h4.when {
+      font-size: 70%;
+      font-weight: normal;
+      padding-top: 0;
+      line-height: 1.1em;
+    }
+
+    .details {
+      max-width: 55em;
+      margin-top: 1em;
+      font-size: 88%;
+      line-height: 1.3em;
+
+      li + li {
+        margin-top: 10px;
+      }
+    }
+
+
+  }
+
+}
+

@@ -18,7 +18,7 @@
         {% endif %}
     </head>
     <body>
-        <div class="content">
+        <div class="content {% block content_class %}{% endblock content_class %}">
             {% block content %}{% endblock content %}
             {% if config.extra.debug.templates %}
             <pre>{{ __tera_context }}</pre>
