@@ -57,6 +57,13 @@ func Render(r Renderable) (template.HTML, error) {
 The implementation is small, too, but what good are components
 if you can't compose them.
 
+### Patches
+
+{{ veun_diff(summary="Initial implementation", patch=1) }}
+
+{{ veun_diff(summary="Testing rendering Person()", patch=2) }}
+
+
 # Trees and Subviews
 
 In order to bring the component into our tree composition view library,
@@ -100,6 +107,9 @@ func (v ContainerView) Template() (*template.Template, error) {
 </div>`)
 }
 ```
+
+{{ veun_diff(summary="POC implementation and tests", patch=3) }}
+
 
 ### Alternate approach
 
@@ -152,6 +162,8 @@ containerViewTpl.Funcs(template.FuncMap{
 })
 ```
 
+{{ veun_diff(summary="implementing this refactor", patch=4) }}
+
 *Refactor 2:* We can clean up the real slot function so that it
 is less brittle when views/slots are added and removed.
 
@@ -184,6 +196,8 @@ kept our main interface the same, which is cool! Our base renderer
 doesn't need to know much about anything else, doesn't need to know
 about slots, or funcs, or where templates come from.
 
+{{ veun_diff(summary="Patch implementing this slot refactor", patch=5) }}
+
 ## A `View{}`
 
 This is generally all well and good, we might want to have
@@ -209,6 +223,8 @@ func (v View) TemplateData() (any, error) {
 
 The container becomes representable in a different way and it
 would have the equivalent outcome when rendered.
+
+{{ veun_diff(summary="view.go implementation (and tests)", patch=6) }}
 
 ```go
 View{
@@ -243,5 +259,7 @@ func (v ContainerView) Renderable() (Renderable, error) {
     ), nil
 }
 ```
+
+{{ veun_diff(summary="AsRenderable implementation (and tests)", patch=7) }}
 
 [part-1]: /writes/building-view-trees-in-go-part-1
