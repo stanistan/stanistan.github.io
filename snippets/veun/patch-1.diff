@@ -1,0 +1,46 @@
+90edfc07f2585860932c24a2619b3977c933fd6a Initial Renderer implementation
+diff --git a/renderer.go b/renderer.go
+new file mode 100644
+index 0000000..c96d89d
+--- /dev/null
++++ b/renderer.go
+@@ -0,0 +1,39 @@
++package veun
++
++import (
++	"bytes"
++	"fmt"
++	"html/template"
++)
++
++type RenderFunc func(r Renderable) (template.HTML, error)
++
++type Renderable interface {
++	Template() (*template.Template, error)
++	TemplateData() (any, error)
++}
++
++func Render(r Renderable) (template.HTML, error) {
++	var empty template.HTML
++
++	tpl, err := r.Template()
++	if err != nil {
++		return empty, err
++	}
++
++	if tpl == nil {
++		return empty, fmt.Errorf("missing template")
++	}
++
++	data, err := r.TemplateData()
++	if err != nil {
++		return empty, err
++	}
++
++	var bs bytes.Buffer
++	if err := tpl.Execute(&bs, data); err != nil {
++		return empty, err
++	}
++
++	return template.HTML(bs.String()), nil
++}
