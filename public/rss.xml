@@ -7,7 +7,280 @@
       <generator>Zola</generator>
       <language>en</language>
       <atom:link href="https://www.stanistan.com/rss.xml" rel="self" type="application/rss+xml"/>
-      <lastBuildDate>Mon, 17 Jul 2023 00:00:00 +0000</lastBuildDate>
+      <lastBuildDate>Mon, 04 Dec 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Building view-trees: The basics [Part 2]</title>
+          <pubDate>Mon, 04 Dec 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-2/</link>
+          <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-2/</guid>
+          <description>&lt;p&gt;We laid our goals in the &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;part 1&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;h1 id=&quot;let-s-make-something-renderable&quot;&gt;Let&#x27;s make something renderable&lt;&#x2F;h1&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;html&#x2F;template&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;RenderFunc &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(r &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Renderable &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;interface &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Template&lt;&#x2F;span&gt;&lt;span&gt;() (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Template&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;TemplateData&lt;&#x2F;span&gt;&lt;span&gt;() (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;any&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Let&#x27;s start with interfaces and type definitions of the concepts:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;We want to be able to &lt;code&gt;Render&lt;&#x2F;code&gt; a &lt;code&gt;Renderable&lt;&#x2F;code&gt; struct into HTML,
+this can fail.&lt;&#x2F;li&gt;
+&lt;li&gt;We also want the Renderable thing to give us all of the information
+it needs so we can render it. This can also fail.&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;This interface is small, let&#x27;s see how far we can push this.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;first-implementation&quot;&gt;First Implementation&lt;&#x2F;h2&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Render&lt;&#x2F;span&gt;&lt;span&gt;(r &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;var &lt;&#x2F;span&gt;&lt;span&gt;empty template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    tpl, err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;r.Template()
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;empty, err
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    data, err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;r.TemplateData()
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;empty, err
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;var &lt;&#x2F;span&gt;&lt;span&gt;bs bytes.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Buffer
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;tpl.Execute(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;bs, data); err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;empty, err
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;template.HTML(bs.String()), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The implementation is small, too, but what good are components
+if you can&#x27;t compose them.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;trees-and-subviews&quot;&gt;Trees and Subviews&lt;&#x2F;h1&gt;
+&lt;p&gt;In order to bring the component into our tree composition view library,
+we need to have &lt;code&gt;Renderable&lt;&#x2F;code&gt; objects have subtrees.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;_, _ &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;Render(ContainerView{
+&lt;&#x2F;span&gt;&lt;span&gt;    Heading: ChildView1{},
+&lt;&#x2F;span&gt;&lt;span&gt;    Body:    ChildView2{},
+&lt;&#x2F;span&gt;&lt;span&gt;})
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;mustache&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-mustache &quot;&gt;&lt;code class=&quot;language-mustache&quot; data-lang=&quot;mustache&quot;&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#63a35c;&quot;&gt;div&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#63a35c;&quot;&gt;div &lt;&#x2F;span&gt;&lt;span style=&quot;color:#795da3;&quot;&gt;class=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;{{ &lt;&#x2F;span&gt;&lt;span&gt;slot &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;}}&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#63a35c;&quot;&gt;div&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#63a35c;&quot;&gt;div &lt;&#x2F;span&gt;&lt;span style=&quot;color:#795da3;&quot;&gt;class=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;body&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;{{ &lt;&#x2F;span&gt;&lt;span&gt;slot &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;body&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;}}&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#63a35c;&quot;&gt;div&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#63a35c;&quot;&gt;div&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;the-poc&quot;&gt;The POC&lt;&#x2F;h2&gt;
+&lt;p&gt;The basic idea is to leverage &lt;code&gt;template.FuncMap&lt;&#x2F;code&gt; to create a
+&lt;code&gt;slot&lt;&#x2F;code&gt; function.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(v &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;ContainerView&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Template&lt;&#x2F;span&gt;&lt;span&gt;() (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Template&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;template.New(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;containerView&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;).Funcs(template.FuncMap{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;slot&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(name &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;switch &lt;&#x2F;span&gt;&lt;span&gt;name {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;case &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;                &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;Render(v.Heading)
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;case &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;body&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;                &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;Render(v.Body)
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;default&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;                &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;template.HTML(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;            }
+&lt;&#x2F;span&gt;&lt;span&gt;        },
+&lt;&#x2F;span&gt;&lt;span&gt;    }).Parse(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;`&amp;lt;div&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;    &amp;lt;div class=&amp;quot;heading&amp;quot;&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;{{ slot &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot; &lt;&#x2F;span&gt;&lt;span&gt;}}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;lt;&#x2F;div&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;    &amp;lt;div class=&amp;quot;body&amp;quot;&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;{{ slot &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;body&amp;quot; &lt;&#x2F;span&gt;&lt;span&gt;}}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;lt;&#x2F;div&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;lt;&#x2F;div&amp;gt;`&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;alternate-approach&quot;&gt;Alternate approach&lt;&#x2F;h3&gt;
+&lt;p&gt;Alternatively, we can directly inline the fields in the data so our template
+looks more like this:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;mustache&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-mustache &quot;&gt;&lt;code class=&quot;language-mustache&quot; data-lang=&quot;mustache&quot;&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#63a35c;&quot;&gt;div &lt;&#x2F;span&gt;&lt;span style=&quot;color:#795da3;&quot;&gt;class=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;{{ &lt;&#x2F;span&gt;&lt;span&gt;render .Slots.Heading &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;}}&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#63a35c;&quot;&gt;div&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;template-compilation&quot;&gt;Template compilation&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;em&gt;Refactor 1&lt;&#x2F;em&gt;: Making it so that we can do pre-compilation of the template,
+we can pre-parse it. The immediate issue is that we don&#x27;t have slots,
+and the slot func is necessary to compile the tempalte. We can stub that out:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;slotFuncStub&lt;&#x2F;span&gt;&lt;span&gt;(name &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;template.HTML(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;mustParseTemplate&lt;&#x2F;span&gt;&lt;span&gt;(name, contents &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Template &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;template.Must(
+&lt;&#x2F;span&gt;&lt;span&gt;        template.New(name).
+&lt;&#x2F;span&gt;&lt;span&gt;        Funcs(template.FuncMap{&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;slot&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: slotFuncStub}).
+&lt;&#x2F;span&gt;&lt;span&gt;        Parse(contents),
+&lt;&#x2F;span&gt;&lt;span&gt;    )
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;var &lt;&#x2F;span&gt;&lt;span&gt;containerViewTpl &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;mustParseTemplate(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;containerView&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;`&amp;lt;div&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;    &amp;lt;div class=&amp;quot;heading&amp;quot;&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;{{ slot &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot; &lt;&#x2F;span&gt;&lt;span&gt;}}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;lt;&#x2F;div&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;    &amp;lt;div class=&amp;quot;body&amp;quot;&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;{{ slot &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;body&amp;quot; &lt;&#x2F;span&gt;&lt;span&gt;}}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;lt;&#x2F;div&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;lt;&#x2F;div&amp;gt;`&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And then update our &lt;code&gt;Template()&lt;&#x2F;code&gt; function:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;containerViewTpl.Funcs(template.FuncMap{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;slot&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(name &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;switch &lt;&#x2F;span&gt;&lt;span&gt;name {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;case &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;Render(v.Heading)
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;case &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;body&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;Render(v.Body)
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;default&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;template.HTML(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;    },
+&lt;&#x2F;span&gt;&lt;span&gt;})
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;em&gt;Refactor 2:&lt;&#x2F;em&gt; We can clean up the real slot function so that it
+is less brittle when views&#x2F;slots are added and removed.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;tplWithRealSlotFunc&lt;&#x2F;span&gt;&lt;span&gt;(
+&lt;&#x2F;span&gt;&lt;span&gt;    tpl &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Template&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    slots &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Template &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;tpl.Funcs(template.FuncMap{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;slot&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(name &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;            slot, ok &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;slots[name]
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;ok {
+&lt;&#x2F;span&gt;&lt;span&gt;                &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;Render(slot)
+&lt;&#x2F;span&gt;&lt;span&gt;            }
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;template.HTML(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;        },
+&lt;&#x2F;span&gt;&lt;span&gt;    })
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; ... snip ...
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;tplWithRealSlotFunc(containerViewTpl, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: v.Heading,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;body&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;:    v.Body,
+&lt;&#x2F;span&gt;&lt;span&gt;}), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;At this point we&#x27;ve extracted common implementation details but have
+kept our main interface the same, which is cool! Our base renderer
+doesn&#x27;t need to know much about anything else, doesn&#x27;t need to know
+about slots, or funcs, or where templates come from.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;a-view&quot;&gt;A &lt;code&gt;View{}&lt;&#x2F;code&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;This is generally all well and good, we might want to have
+something produce a &lt;code&gt;Renderable&lt;&#x2F;code&gt; struct, in fact we might have a
+struct that is represents a &lt;code&gt;Renderable&lt;&#x2F;code&gt; object, what if we could
+capture the above pattern in a piece of data as well as behavior?&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;View &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    Tpl   &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Template
+&lt;&#x2F;span&gt;&lt;span&gt;    Slots &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable
+&lt;&#x2F;span&gt;&lt;span&gt;    Data  &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;any
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(v &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;View&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Template&lt;&#x2F;span&gt;&lt;span&gt;() (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Template&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;tplWithRealSlotFunc(v.Tpl, v.Slots), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(v &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;View&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;TemplateData&lt;&#x2F;span&gt;&lt;span&gt;() (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;any&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;v.Data, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The container becomes representable in a different way and it
+would have the equivalent outcome when rendered.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;View{
+&lt;&#x2F;span&gt;&lt;span&gt;  Tpl: containerViewTpl,
+&lt;&#x2F;span&gt;&lt;span&gt;  Slots: &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: ChildView1{},
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;body&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;:    ChildView2{},
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But we still might want to have ContainerView be the thing we can
+&amp;quot;render&amp;quot;, how would we do both?&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;AsRenderable &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;interface &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;() (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Slots &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And updating the &lt;code&gt;Render&lt;&#x2F;code&gt; function for the first time to take
+&lt;code&gt;AsRenderable&lt;&#x2F;code&gt; instead gives us our first really big interface
+change, but it unlocks something, too. A simpler way to build views:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(v &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;ContainerView&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;() (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;View{
+&lt;&#x2F;span&gt;&lt;span&gt;        Tpl:   containerViewTpl,
+&lt;&#x2F;span&gt;&lt;span&gt;        Slots: Slots{&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;heading&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: v.Heading, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;body&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: v.Body},
+&lt;&#x2F;span&gt;&lt;span&gt;    ), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</description>
+      </item>
+      <item>
+          <title>Building view-trees: Intro [Part 1]</title>
+          <pubDate>Fri, 01 Dec 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-1/</link>
+          <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-1/</guid>
+          <description>&lt;p&gt;When I was at Etsy, we built a server-side component library called
+View Trees, but also called &lt;code&gt;neu&lt;&#x2F;code&gt; (because this was quicker to type).&lt;&#x2F;p&gt;
+&lt;p&gt;This is referenced in this &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;www.etsy.com&#x2F;codeascraft&#x2F;mobius-adopting-jsx-while-prioritizing-user-experience&quot;&gt;Code As Craft&lt;&#x2F;a&gt; blog post, which is about
+extending&#x2F;updating the framework to output server-rendered JSX components.&lt;&#x2F;p&gt;
+&lt;p&gt;After futzing around with &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;vuejs.org&#x2F;&quot;&gt;Vue&lt;&#x2F;a&gt; in present-me, and then reading more about
+similar-to-neu approaches for doing client-side interaction (like &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;htmx.org&#x2F;&quot;&gt;htmx&lt;&#x2F;a&gt;,
+and others) based on server side rendering I wanted to revisit this library,
+but from a Go perspective.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;This is going to be a series of posts describing an iterative approach to
+building this out, aming to explain why things look and the way they do through
+specific problems and solutions to them.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Things to keep in mind&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;In Go, we have built-in templates with the &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;pkg.go.dev&#x2F;html&#x2F;template&quot;&gt;&lt;code&gt;html&#x2F;template&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;
+package, and a standard way of compiling and rendering templates.
+We&#x27;re not introducing a new templating language. And want to leverage
+the way folks already write their templates, but give them different
+ways to compose them (not inclusion, not inheritence).&lt;&#x2F;li&gt;
+&lt;li&gt;There are standard HTTP handlers in the &lt;code&gt;net&#x2F;http&lt;&#x2F;code&gt; package, try
+to integrate with that using middleware (and other standard patterns)
+and not introduce any http routing or anything else.&lt;&#x2F;li&gt;
+&lt;li&gt;We want to make the interfaces small, and the composition simple and obvious.&lt;&#x2F;li&gt;
+&lt;li&gt;Errors are recoverable!&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;how-does-go-do-templates&quot;&gt;How does go do templates?&lt;&#x2F;h2&gt;
+&lt;p&gt;The idiomatic way to render HTML templates is to write some data
+to a buffer via &lt;code&gt;tpl.Execute&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;html&#x2F;template&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;contents &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;`&amp;lt;div&amp;gt;Hi, &lt;&#x2F;span&gt;&lt;span&gt;{{ .Name }}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;lt;&#x2F;div&amp;gt;`
+&lt;&#x2F;span&gt;&lt;span&gt;tpl &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;template.Must(template.New(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;hi&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;).Parse(contents))
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;var &lt;&#x2F;span&gt;&lt;span&gt;bs bytes.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Buffer
+&lt;&#x2F;span&gt;&lt;span&gt;err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;tpl.Execute(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;bs, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;{&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;Name&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;Stan&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;})
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The above snippet is an extremely simplified version of what you would
+do. Idiomatically, one would expect template compilation from external
+files that are embedded into your binary and compiled and a named type
+for the template data, error handling, and maybe writing to
+an &lt;code&gt;http.ResponseWriter&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;where-are-we-going&quot;&gt;Where are we going?&lt;&#x2F;h1&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;html, err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;Render(PersonView(Person{Name: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;Stan&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;}))
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Conceptually, what we have is piece of data, let&#x27;s say a &lt;code&gt;Person&lt;&#x2F;code&gt; struct,
+and an html view of that that knows how to take that data and render
+it into HTML. We can, of course, just make a function that does this
+for the use case above.&lt;&#x2F;p&gt;
+&lt;p&gt;But what we want is something like this:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;A &lt;code&gt;Render&lt;&#x2F;code&gt; function that render&#x27;s a view.&lt;&#x2F;li&gt;
+&lt;li&gt;A view that is parameterized by a struct.&lt;&#x2F;li&gt;
+&lt;li&gt;Outputting valid HTML.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;The larger semantic difference is we are lifting the way we desribe
+our data inputs and views into being first-class &amp;quot;objects&amp;quot; (structs
+that can possibly have behaviors and guarantees) so we can leverage
+the language to do composition, parameterization, polymorphism,
+etc... so we can do things like components :)&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;h3 id=&quot;next&quot;&gt;Next:&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;The basics&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
       <item>
           <title>Reverse engineering github diffs</title>
           <pubDate>Mon, 17 Jul 2023 00:00:00 +0000</pubDate>
@@ -330,11 +603,11 @@ written by the author of the PR.
 </description>
       </item>
       <item>
-          <title>Coming back to color-transit (part 1)</title>
+          <title>Coming back to color-transit</title>
           <pubDate>Tue, 31 Dec 2019 00:00:00 +0000</pubDate>
           <author>Unknown</author>
-          <link>https://www.stanistan.com/writes/coming-back-to-color-transit-part-1/</link>
-          <guid>https://www.stanistan.com/writes/coming-back-to-color-transit-part-1/</guid>
+          <link>https://www.stanistan.com/writes/coming-back-to-color-transit/</link>
+          <guid>https://www.stanistan.com/writes/coming-back-to-color-transit/</guid>
           <description>&lt;p&gt;&lt;em&gt;Note:&lt;&#x2F;em&gt; I&#x27;m writing this as an experiment in coming back to a side-project
 that has long been sitting around, and quitetly.&lt;&#x2F;p&gt;
 &lt;p&gt;Looking at it with old eyes and high level questions (of myself) like:&lt;&#x2F;p&gt;
@@ -1255,6 +1528,8 @@ drawing &lt;em&gt;reactive&lt;&#x2F;em&gt; to user parameterization in the UI.&l
 &lt;p&gt;So eventually, there&#x27;ll be a second post, and updates to the app, and a
 write up of the process.&lt;&#x2F;p&gt;
 &lt;p&gt;...which will hopefully take less than a couple of months to finish...&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;update&quot;&gt;Update&lt;&#x2F;h2&gt;
+&lt;p&gt;As of 2023, I have not come back to this, and I don&#x27;t think I will.&lt;&#x2F;p&gt;
 </description>
       </item>
       <item>
