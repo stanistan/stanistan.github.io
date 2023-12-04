@@ -1,7 +1,6 @@
 +++
 title = "Building view-trees: Error Handling [Part 3]"
 date = 2023-12-05
-draft = true
 +++
 
 Previously: [intro][intro], and [the basics][the-basics].

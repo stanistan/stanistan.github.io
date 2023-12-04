@@ -261,7 +261,11 @@ func (v ContainerView) Renderable() (Renderable, error) {
     ), nil
 }
 ```
+### Next:
+
+- [Error handling][part-3]
 
 {{ veun_diff(patch=8) }}
 
 [part-1]: /writes/building-view-trees-in-go-part-1
+[part-3]: /writes/building-view-trees-in-go-part-3

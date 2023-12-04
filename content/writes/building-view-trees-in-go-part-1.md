@@ -82,6 +82,7 @@ etc... so we can do things like components :)
 ### Next:
 
 - [The basics][part-2]
+- [Error handling][part-3]
 
 
 [cac]: https://www.etsy.com/codeascraft/mobius-adopting-jsx-while-prioritizing-user-experience
@@ -89,3 +90,4 @@ etc... so we can do things like components :)
 [htmx]: https://htmx.org/
 [vue]: https://vuejs.org/
 [part-2]: /writes/building-view-trees-in-go-part-2
+[part-3]: /writes/building-view-trees-in-go-part-3
