@@ -1,0 +1,12 @@
+{% set path = "static/snippets/veun/patch-" ~ patch ~ ".diff" %}
+{% set data = load_data(path=path) %}
+{% set md_data = "```patch
+" ~ data ~ "
+```" %}
+
+<details>
+<summary>{{ summary }}</summary>
+
+{{ md_data | markdown(inline=true) | safe }}
+
+</details>

@@ -1,0 +1,153 @@
+3fb3dcf7e2abacff8a42d8b3da86f85f6576e08e Renderable and AsRenderable
+diff --git a/render_container_as_view_test.go b/render_container_as_view_test.go
+index 7123b23..a3a0c37 100644
+--- a/render_container_as_view_test.go
++++ b/render_container_as_view_test.go
+@@ -12,7 +12,7 @@ import (
+ func TestRenderContainerAsView(t *testing.T) {
+ 	html, err := Render(View{
+ 		Tpl: containerViewTpl,
+-		Slots: map[string]Renderable{
++		Slots: map[string]AsRenderable{
+ 			"heading": ChildView1{},
+ 			"body":    ChildView2{},
+ 		},
+diff --git a/render_container_test.go b/render_container_test.go
+index 4bc829c..14dd884 100644
+--- a/render_container_test.go
++++ b/render_container_test.go
+@@ -10,8 +10,8 @@ import (
+ )
+ 
+ type ContainerView struct {
+-	Heading Renderable
+-	Body    Renderable
++	Heading AsRenderable
++	Body    AsRenderable
+ }
+ 
+ var containerViewTpl = MustParseTemplate("containerView", `<div>
+@@ -19,7 +19,7 @@ var containerViewTpl = MustParseTemplate("containerView", `<div>
+ 	<div class="body">{{ slot "body" }}</div>
+ </div>`)
+ 
+-func tplWithRealSlotFunc(tpl *template.Template, slots map[string]Renderable) *template.Template {
++func tplWithRealSlotFunc(tpl *template.Template, slots map[string]AsRenderable) *template.Template {
+ 	return tpl.Funcs(template.FuncMap{
+ 		"slot": func(name string) (template.HTML, error) {
+ 			slot, ok := slots[name]
+@@ -32,7 +32,7 @@ func tplWithRealSlotFunc(tpl *template.Template, slots map[string]Renderable) *t
+ }
+ 
+ func (v ContainerView) Template() (*template.Template, error) {
+-	return tplWithRealSlotFunc(containerViewTpl, map[string]Renderable{
++	return tplWithRealSlotFunc(containerViewTpl, map[string]AsRenderable{
+ 		"heading": v.Heading,
+ 		"body":    v.Body,
+ 	}), nil
+@@ -42,12 +42,20 @@ func (v ContainerView) TemplateData() (any, error) {
+ 	return nil, nil
+ }
+ 
++func (v ContainerView) Renderable() (Renderable, error) {
++	return v, nil
++}
++
+ var childViewTemplate = template.Must(
+ 	template.New("childView").Parse(`{{ . }}`),
+ )
+ 
+ type ChildView1 struct{}
+ 
++func (v ChildView1) Renderable() (Renderable, error) {
++	return v, nil
++}
++
+ func (v ChildView1) Template() (*template.Template, error) {
+ 	return childViewTemplate, nil
+ }
+@@ -66,6 +74,10 @@ func (v ChildView2) TemplateData() (any, error) {
+ 	return "BODY", nil
+ }
+ 
++func (v ChildView2) Renderable() (Renderable, error) {
++	return v, nil
++}
++
+ func TestRenderContainer(t *testing.T) {
+ 	html, err := Render(&ContainerView{
+ 		Heading: ChildView1{},
+diff --git a/render_person_test.go b/render_person_test.go
+index 64a542b..80ef587 100644
+--- a/render_person_test.go
++++ b/render_person_test.go
+@@ -34,6 +34,10 @@ func (v *personView) TemplateData() (any, error) {
+ 	return v.Person, nil
+ }
+ 
++func (v *personView) Renderable() (veun.Renderable, error) {
++	return v, nil
++}
++
+ func TestRenderPerson(t *testing.T) {
+ 	html, err := veun.Render(PersonView(Person{Name: "Stan"}))
+ 	assert.NoError(t, err)
+diff --git a/renderer.go b/renderer.go
+index c96d89d..cb2c5f0 100644
+--- a/renderer.go
++++ b/renderer.go
+@@ -6,14 +6,25 @@ import (
+ 	"html/template"
+ )
+ 
+-type RenderFunc func(r Renderable) (template.HTML, error)
+-
+ type Renderable interface {
+ 	Template() (*template.Template, error)
+ 	TemplateData() (any, error)
+ }
+ 
+-func Render(r Renderable) (template.HTML, error) {
++type AsRenderable interface {
++	Renderable() (Renderable, error)
++}
++
++func Render(r AsRenderable) (template.HTML, error) {
++	rr, err := r.Renderable()
++	if err != nil {
++		return template.HTML(""), err
++	}
++
++	return render(rr)
++}
++
++func render(r Renderable) (template.HTML, error) {
+ 	var empty template.HTML
+ 
+ 	tpl, err := r.Template()
+diff --git a/view.go b/view.go
+index ee54469..bb33a3d 100644
+--- a/view.go
++++ b/view.go
+@@ -4,7 +4,7 @@ import "html/template"
+ 
+ type View struct {
+ 	Tpl   *template.Template
+-	Slots map[string]Renderable
++	Slots map[string]AsRenderable
+ 	Data  any
+ }
+ 
+@@ -16,7 +16,11 @@ func (v View) TemplateData() (any, error) {
+ 	return v.Data, nil
+ }
+ 
+-func tplWithRealSlotFunc(tpl *template.Template, slots map[string]Renderable) *template.Template {
++func (v View) Renderable() (Renderable, error) {
++	return v, nil
++}
++
++func tplWithRealSlotFunc(tpl *template.Template, slots map[string]AsRenderable) *template.Template {
+ 	return tpl.Funcs(template.FuncMap{
+ 		"slot": func(name string) (template.HTML, error) {
+ 			slot, ok := slots[name]

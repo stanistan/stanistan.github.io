@@ -1,0 +1,74 @@
+23ca88bbcdc25dce2036dec8295720abc26e6cec Initial test for rendering PersonView(Person...)
+diff --git a/go.mod b/go.mod
+index 09551ac..ec2216f 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,3 +1,9 @@
+ module github.com/stanistan/veun
+ 
+ go 1.21.4
++
++require (
++	github.com/alecthomas/assert/v2 v2.4.0 // indirect
++	github.com/alecthomas/repr v0.3.0 // indirect
++	github.com/hexops/gotextdiff v1.0.3 // indirect
++)
+diff --git a/go.sum b/go.sum
+new file mode 100644
+index 0000000..bb218ed
+--- /dev/null
++++ b/go.sum
+@@ -0,0 +1,6 @@
++github.com/alecthomas/assert/v2 v2.4.0 h1:/ZiZ0NnriAWPYYO+4eOjgzNELrFQLaHNr92mHSHFj9U=
++github.com/alecthomas/assert/v2 v2.4.0/go.mod h1:fw5suVxB+wfYJ3291t0hRTqtGzFYdSwstnRQdaQx2DM=
++github.com/alecthomas/repr v0.3.0 h1:NeYzUPfjjlqHY4KtzgKJiWd6sVq2eNUPTi34PiFGjY8=
++github.com/alecthomas/repr v0.3.0/go.mod h1:Fr0507jx4eOXV7AlPV6AVZLYrLIuIeSOWtW57eE/O/4=
++github.com/hexops/gotextdiff v1.0.3 h1:gitA9+qJrrTCsiCl7+kh75nPqQt1cx4ZkudSTLoUqJM=
++github.com/hexops/gotextdiff v1.0.3/go.mod h1:pSWU5MAI3yDq+fZBTazCSJysOMbxWL1BSow5/V2vxeg=
+diff --git a/render_person_test.go b/render_person_test.go
+new file mode 100644
+index 0000000..64a542b
+--- /dev/null
++++ b/render_person_test.go
+@@ -0,0 +1,41 @@
++package veun_test
++
++import (
++	"html/template"
++	"testing"
++
++	"github.com/alecthomas/assert/v2"
++	"github.com/stanistan/veun"
++)
++
++type Person struct {
++	Name string
++}
++
++type personView struct {
++	Person Person
++}
++
++func PersonView(person Person) *personView {
++	return &personView{Person: person}
++}
++
++var _ veun.Renderable = &personView{}
++
++var personViewTpl = template.Must(
++	template.New("PersonView").Parse(`<div>Hi, {{ .Name }}.</div>`),
++)
++
++func (v *personView) Template() (*template.Template, error) {
++	return personViewTpl, nil
++}
++
++func (v *personView) TemplateData() (any, error) {
++	return v.Person, nil
++}
++
++func TestRenderPerson(t *testing.T) {
++	html, err := veun.Render(PersonView(Person{Name: "Stan"}))
++	assert.NoError(t, err)
++	assert.Equal(t, html, template.HTML(`<div>Hi, Stan.</div>`))
++}
