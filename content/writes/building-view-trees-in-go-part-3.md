@@ -7,20 +7,20 @@ Previously: [intro][intro], and [the basics][the-basics].
 
 ---
 
-## Handling errors, `err != nil`
+We have a bunch of assumptions about what things can fail
+and which ones cannot.
 
-Above we have a bunch of assumptions about what things can fail
-and which ones cannot. And any error should bubble all of the
-way out of the render pipeline. Template rendering will fail
-when rendering one of the slots fails. Any template parsing
-can/will bubble up as well, any data fetching, anything that
-happens during the `Renderable` call.
+Right now, any error will bubble all of the way out of the render
+pipeline, and template rendering will fail. If a slot render fails,
+the same thing will happen. Any template parsing can/will bubble up
+as well, any data fetching, anything that happens during the
+`Renderable` call.
 
 There are a few ways we can build and execute Render. The views
 either populate data top down, or they fetch data lazilly,
 they can do validation, they can not, each of these can fail.
 
-### Marker interfaces (duck typing yo)
+## Handling errors, `err != nil`
 
 Something that can eventually be rendered, something that is `AsRenderable`
 should also be able to handle its own error failure, or handle
@@ -29,19 +29,27 @@ a failure lower down in the tree.
 Handling errors will introduce another refactor to
 our renderer, but will keep our UX/API *small* and opt-in.
 
+### Marker interfaces (duck typing yo)
+
 ```go
 type ErrorRenderable interface {
-    // ErrorRenderable can return bubble the error
-    // back up, which will continue to fail the render
-    // the same as it did before.
-    //
-    // It can also return nil for Renderable,
-    // which will ignore the error entirely.
-    //
-    // Otherwise we will attempt to render next one.
     ErrorRenderable(err error) (AsRenderable, error)
 }
+```
 
+And our logic to handle the error is pretty simple:
+
+- Check to see if we actually have an error handler
+  - If we don't we bubble up the error.
+- Check to see if the erro handler wants to handle
+  the error itself.
+  - Returning an error means we want to buble it up.
+  - Returning `nil` for the `AsRenderable` means we
+    don't care about this error at all. OK to move on.
+- Try to render the thing.
+
+
+```go
 func handleRenderError(err error, with any) (template.HTML, error) {
     var empty template.HTML
 
@@ -54,14 +62,11 @@ func handleRenderError(err error, with any) (template.HTML, error) {
         return empty, err
     }
 
-    // we can delegate error handling here, if err is
-    // returned we propagate up.
     r, err := errRenderable.ErrorRenderable(err)
     if err != nil {
         return empty, err
     }
 
-    // if we ignore the error, we can move it along.
     if r == nil {
         return empty, nil
     }
@@ -69,6 +74,10 @@ func handleRenderError(err error, with any) (template.HTML, error) {
     return Render(r)
 }
 ```
+
+_Note:_ It is definitely the case here that if our error
+handler fails to render and it is `ErrorRenderable` as well
+we'll keep trying.
 
 ### Fallible Views!
 
