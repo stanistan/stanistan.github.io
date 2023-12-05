@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="author" content="Stan Rozenraukh" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Building view-trees: Error Handling [Part 3] - stanistan</title>
+        
+            <link rel="alternate" type="application/rss+xml" title="RSS" href="https://www.stanistan.com/rss.xml">
+        
+        <link rel="icon" href="data:" />
+        
+            
+            <style type="text/css">body{border-top:5px solid #f6cde0;background:#fcfcfc;color:#333;font-family:Cochin,Times,serif;font-size:1.3em;line-height:1.55em;margin:0;padding:0}.content{margin:8em auto 0;max-width:33em;padding:2em;position:relative}.content.resume{margin:1em auto 0;max-width:35em}article{position:relative}h1{font-size:1.4em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.4em 0 0}h1+p{margin-top:0}h2{font-size:1.2em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.2em 0 0}h2+p{margin-top:0}h3{font-size:1.12em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.12em 0 0}h3+p{margin-top:0}h4{font-size:1em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1em 0 0}h4+p{margin-top:0}hr{border:0 dotted #f6cde0;border-top-width:1px;height:0}pre,.mono,code{font-family:monospace}.small{font-size:75%}.smaller{font-size:85%}.faded{color:#999}.center{text-align:center}a,.link-like{color:#0000a5;font-weight:bolder;text-underline-offset:6px}a:hover,.link-like:hover{color:#2525ff;text-decoration:none}ol,ul{list-style-position:outside;margin:0;margin-left:1.6em;padding:0}ol li,ul li{margin:0 0 .1em 0;padding:0 0 0 .2em}.outside{margin-left:-2em}ul.outside,ol.outside{margin-left:-.1em}code{background:#fdf4f8;border-bottom:1px dotted #f6cde0;padding:.3em;font-size:.85em}pre,blockquote{background:#fff;line-height:1.45em;margin-left:-2em;margin-right:-2em}pre{font-size:.85em;border-bottom:1px dotted #f6cde0;padding:1em 2em;overflow-x:scroll}pre code{background:inherit;border-bottom:0;padding:0;font-size:inherit}blockquote{font-size:.9em;font-style:italic;padding:.5em 2em;border-left:1px dotted #f6cde0}.tag{margin-right:.3em;border-radius:10px;color:#333;text-decoration:none}.tag:hover{color:#000;text-decoration:underline}.toc{margin:.2em -2em 0;padding:2em;font-size:.7em;line-height:1.45;border-bottom:1px dotted #f6cde0}.toc a{color:#333;font-weight:normal}.toc ul{list-style:none;margin-left:0em}.toc ul ul{margin-left:1em}.anchor-link{position:absolute;margin-left:-.9em;text-decoration:none;font-weight:normal}article .img-container{margin:.2em -2em 0}article .img-container img{width:100%;height:auto}@media only screen and (max-width: 500px){body{font-size:1.15em}.content{padding:1.8em}.smaller{font-size:90%}.small{font-size:83%}.outside{margin-left:inherit}article .img-container{margin:.2em -1em 0}}dl{margin:1.5em 0}dl dt{clear:left;float:left;text-decoration:underline;text-align:right;width:5.5em}dl dt::after{content:":"}dl dd{display:block;float:left}.clear{clear:both}.invoice-heading{padding:1.5em 0}.invoice-heading h1{float:left;padding:0}.invoice-heading .invoice-heading-code{float:right;font-weight:bold}table{padding-top:1.5em;width:100%}table th,table td{text-align:left}table th.right,table td.right{text-align:right}table tfoot td{font-weight:bold}table tfoot tr:first-child td{border-top:1px dotted #f6cde0;padding-top:.3em}table tbody tr:last-child td{padding-bottom:.3em}table tbody tr:first-child td{padding-top:.3em}table thead tr:last-child th{padding-bottom:.3em;border-bottom:1px dotted #ccc}details{font-size:85%}details summary{font-weight:bold;color:#00003f}details summary:hover{color:#2525ff;cursor:pointer}.job{margin:10px 0 10px -20px;padding:0px 20px 40px 40px;background:#fef8fb}.job .place{margin-left:-20px}.job .position+.position{margin-top:1em}.job .position h3{font-size:93%;font-weight:bold;padding-top:.7em}.job .position h4.when{font-size:70%;font-weight:normal;padding-top:0;line-height:1.1em}.job .position .details{max-width:55em;margin-top:1em;font-size:88%;line-height:1.3em}.job .position .details li+li{margin-top:10px}</style>
+        
+    </head>
+    <body>
+        <div class="content ">
+            
+    <a href="/" class="faded mono small" title="stanistan /">go /</a>
+    <article>
+        <h1>Building view-trees: Error Handling [Part 3]</h1>
+        <div class="small faded">
+            
+    
+    
+    
+    <a href="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;the-details&#x2F;content&#x2F;writes&#x2F;building-view-trees-in-go-part-3.md" class="faded">.md</a>
+ |
+            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-3/" class="faded">permalink</a>
+            
+            | Published on December 05, 2023
+            
+        </div>
+
+        
+
+        
+
+        <section class="post">
+            <p>Previously: <a href="/writes/building-view-trees-in-go-part-1">intro</a>, and <a href="/writes/building-view-trees-in-go-part-2">the basics</a>.</p>
+<hr />
+<p>We have a bunch of assumptions about what things can fail
+and which ones cannot.</p>
+<p>Right now, any error will bubble all of the way out of the render
+pipeline, and template rendering will fail. If a slot render fails,
+the same thing will happen. Any template parsing can/will bubble up
+as well, any data fetching, anything that happens during the
+<code>Renderable</code> call.</p>
+<p>There are a few ways we can build and execute Render. The views
+either populate data top down, or they fetch data lazilly,
+they can do validation, they can not, each of these can fail.</p>
+<h2 id="handling-errors-err-nil">Handling errors, <code>err != nil</code></h2>
+<p>Something that can eventually be rendered, something that is <code>AsRenderable</code>
+should also be able to handle its own error failure, or handle
+a failure lower down in the tree.</p>
+<p>Handling errors will introduce another refactor to
+our renderer, but will keep our UX/API <em>small</em> and opt-in.</p>
+<h3 id="marker-interfaces-duck-typing-yo">Marker interfaces (duck typing yo)</h3>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">type </span><span>ErrorRenderable </span><span style="font-weight:bold;color:#a71d5d;">interface </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#795da3;">ErrorRenderable</span><span>(err </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>)
+</span><span>}
+</span></code></pre>
+<p>And our logic to handle the error is pretty simple:</p>
+<ul>
+<li>Check to see if we actually have an error handler
+<ul>
+<li>If we don't we bubble up the error.</li>
+</ul>
+</li>
+<li>Check to see if the erro handler wants to handle
+the error itself.
+<ul>
+<li>Returning an error means we want to buble it up.</li>
+<li>Returning <code>nil</code> for the <code>AsRenderable</code> means we
+don't care about this error at all. OK to move on.</li>
+<li>Do we have something to render?
+<ul>
+<li>Try to do so!</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><em>Note:</em> It is definitely the case here that if our error
+handler fails to render and it is <code>ErrorRenderable</code> as well
+we'll keep trying.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">handleRenderError</span><span>(err </span><span style="font-weight:bold;color:#0086b3;">error</span><span>, with </span><span style="font-weight:bold;color:#a71d5d;">any</span><span>) (template.</span><span style="font-weight:bold;color:#a71d5d;">HTML</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">var </span><span>empty template.</span><span style="font-weight:bold;color:#a71d5d;">HTML
+</span><span>
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>with </span><span style="font-weight:bold;color:#a71d5d;">== </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>empty, err
+</span><span>    }
+</span><span>
+</span><span>    errRenderable, ok </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>with.(</span><span style="font-weight:bold;color:#a71d5d;">ErrorRenderable</span><span>)
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if !</span><span>ok {
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>empty, err
+</span><span>    }
+</span><span>
+</span><span>    r, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>errRenderable.ErrorRenderable(err)
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>empty, err
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>r </span><span style="font-weight:bold;color:#a71d5d;">== </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>empty, </span><span style="color:#0086b3;">nil
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>Render(r)
+</span><span>}
+</span></code></pre>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      with handleRenderError and ErrorRenderable
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;400a872b27bc9fdb4a03ce1f1c2b8084702be132">(source: 400a872b)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/error_renderable.go b/error_renderable.go
+</span><span>new file mode 100644
+</span><span>index 0000000..63159e8
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> /dev/null
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/error_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -0,0 +1,39 @@
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">package veun
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">import &quot;html/template&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type ErrorRenderable interface {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// ErrorRenderable can return bubble the error
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// back up, which will continue to fail the render
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// the same as it did before.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	//
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// It can also return nil for Renderable,
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// which will ignore the error entirely.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	//
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// Otherwise we will attempt to render next one.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	ErrorRenderable(err error) (AsRenderable, error)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func handleRenderError(err error, with any) (template.HTML, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	var empty template.HTML
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if with == nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return empty, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	errRenderable, ok := with.(ErrorRenderable)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if !ok {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return empty, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	r, err := errRenderable.ErrorRenderable(err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return empty, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if r == nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return empty, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return Render(r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span>diff --git a/render_container_error_test.go b/render_container_error_test.go
+</span><span>new file mode 100644
+</span><span>index 0000000..8052a8d
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> /dev/null
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/render_container_error_test.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -0,0 +1,96 @@
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">package veun_test
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">import (
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;errors&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;fmt&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;html/template&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;testing&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;github.com/alecthomas/assert/v2&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	. &quot;github.com/stanistan/veun&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type FailingView struct {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	Err error
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (v FailingView) Renderable() (Renderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return nil, fmt.Errorf(&quot;FailingView.Renderable(): %w&quot;, v.Err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type FallibleView struct {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	CapturesErr error
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	Child       AsRenderable
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (v FallibleView) Renderable() (Renderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return v.Child.Renderable()
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (v FallibleView) ErrorRenderable(err error) (AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if v.CapturesErr == nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return nil, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if errors.Is(err, v.CapturesErr) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return ChildView1{}, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return nil, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func TestRenderContainerWithFailingView(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	_, err := Render(ContainerView2{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		Heading: ChildView1{},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		Body: FailingView{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			Err: fmt.Errorf(&quot;construction: %w&quot;, errSomethingFailed),
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	assert.IsError(t, err, errSomethingFailed)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func TestRenderContainerWithCapturedError(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;errors_bubble_out&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		_, err := Render(ContainerView2{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			Heading: ChildView1{},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			Body: FallibleView{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">				Child: FailingView{Err: errSomethingFailed},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.IsError(t, err, errSomethingFailed)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;errors_can_push_replacement_views&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		html, err := Render(ContainerView2{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			Heading: ChildView1{},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			Body: FallibleView{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">				Child:       FailingView{Err: errSomethingFailed},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">				CapturesErr: errSomethingFailed,
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.NoError(t, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, template.HTML(`&lt;div&gt;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&lt;div class=&quot;heading&quot;&gt;HEADING&lt;/div&gt;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&lt;div class=&quot;body&quot;&gt;HEADING&lt;/div&gt;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">&lt;/div&gt;`), html)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;errors_can_return_nil_views&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		html, err := Render(ContainerView2{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			Heading: ChildView1{},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			Body: FallibleView{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">				Child:       FailingView{Err: errors.New(&quot;hi&quot;)},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">				CapturesErr: errSomethingFailed,
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.NoError(t, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, template.HTML(`&lt;div&gt;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&lt;div class=&quot;heading&quot;&gt;HEADING&lt;/div&gt;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&lt;div class=&quot;body&quot;&gt;&lt;/div&gt;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">&lt;/div&gt;`), html)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">var errSomethingFailed = errors.New(&quot;an error&quot;)
+</span><span>diff --git a/renderer.go b/renderer.go
+</span><span>index cb2c5f0..27d3abc 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/renderer.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/renderer.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -16,12 +16,17 @@ type AsRenderable interface {
+</span><span> }
+</span><span> 
+</span><span> func Render(r AsRenderable) (template.HTML, error) {
+</span><span style="background-color:#ffecec;color:#323232;">-	rr, err := r.Renderable()
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	renderable, err := r.Renderable()
+</span><span> 	if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		return template.HTML(&quot;&quot;), err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return handleRenderError(err, r)
+</span><span> 	}
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-	return render(rr)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	out, err := render(renderable)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return handleRenderError(err, r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return out, nil
+</span><span> }
+</span><span> 
+</span><span> func render(r Renderable) (template.HTML, error) {
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<h3 id="fallible-views">Fallible Views!</h3>
+<p>With this in hand, and a quick change to the <code>Render</code> function to
+call this instead of returning an error, we get some neat behavior,
+and an example of composition based <em>delegation</em>.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">type </span><span>FallibleView </span><span style="font-weight:bold;color:#a71d5d;">struct </span><span>{
+</span><span>    Contents     </span><span style="font-weight:bold;color:#a71d5d;">AsRenderable
+</span><span>    ErrorHandler </span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(err </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>)
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">FallibleView</span><span>) </span><span style="font-weight:bold;color:#795da3;">Renderable</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>v.Contents.Renderable()
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">FallibleView</span><span>) </span><span style="font-weight:bold;color:#795da3;">ErrorRenderable</span><span>(err </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>v.ErrorHandler(err)
+</span><span>}
+</span></code></pre>
+<p>This starts to show the kind of thing we can do with composition and this
+libary.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">logWarningErrorHandler</span><span>(err </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    log.Printf(</span><span style="color:#183691;">&quot;something failed, but it&#39;s ok: </span><span style="color:#0086b3;">%s</span><span style="color:#183691;">&quot;</span><span>, err)
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span style="color:#0086b3;">nil</span><span>, </span><span style="color:#0086b3;">nil </span><span style="font-style:italic;color:#969896;">// we don&#39;t care for this example
+</span><span>}
+</span><span>
+</span><span>html, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>Render(FallibleView{
+</span><span>    Contents:     someViewThatMightFailToRender,
+</span><span>    ErrorHandler: logWarningErrorHandler,
+</span><span>})
+</span></code></pre>
+<p>Or more realistically a situation where you're not sure what
+you are rendering in some slot.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">Container</span><span>) </span><span style="font-weight:bold;color:#795da3;">Renderable</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>View{
+</span><span>        </span><span style="font-style:italic;color:#969896;">// ... snip ...
+</span><span>        Slots: Slots{
+</span><span>            </span><span style="color:#183691;">&quot;extra_content&quot;</span><span>: FallibleView{
+</span><span>                Contents:     v.ContentFactory(),
+</span><span>                ErrorHandler: logWarningErrorHandler,
+</span><span>            },
+</span><span>        },
+</span><span>    }, </span><span style="color:#0086b3;">nil
+</span><span>}
+</span></code></pre>
+<p>You can see this in action in the tests in the patch above where
+we use <code>errors.Is(err, somethingKnown)</code> to do error bubbling or
+handling.</p>
+<p>Error handling is going to be much more important when we get
+to doing <em>real things</em> like data access.</p>
+
+        </section>
+
+        
+
+    </article>
+
+            
+        </div>
+    </body>
+</html>
