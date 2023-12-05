@@ -8,7 +8,7 @@ $highlight: lighten($highlight-base, 50%);
 $highlight-light: lighten($highlight-base, 54%);
 $highlight-dark: darken($highlight-base, 35%);
 
-$link-color: lighten(darkblue, 5%);
+$link-color: #000193;
 $link-hover-color: lighten($link-color, 25%);
 
 $mono: monospace;
@@ -97,6 +97,10 @@ a,
   &:hover {
     color: $link-hover-color;
     text-decoration: none;
+  }
+
+  &:active {
+    color: red;
   }
 }
 
