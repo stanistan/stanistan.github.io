@@ -63,11 +63,20 @@ if you can&#x27;t compose them.&lt;&#x2F;p&gt;
 
 
 
-&lt;details&gt;
-&lt;summary&gt;Initial implementation&lt;&#x2F;summary&gt;
 
-&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;90edfc07f2585860932c24a2619b3977c933fd6a Initial Renderer implementation
-&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;renderer.go b&#x2F;renderer.go
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      Initial Renderer implementation
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;90edfc07f2585860932c24a2619b3977c933fd6a&quot;&gt;(source: 90edfc07)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;renderer.go b&#x2F;renderer.go
 &lt;&#x2F;span&gt;&lt;span&gt;new file mode 100644
 &lt;&#x2F;span&gt;&lt;span&gt;index 0000000..c96d89d
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; &#x2F;dev&#x2F;null
@@ -116,16 +125,26 @@ if you can&#x27;t compose them.&lt;&#x2F;p&gt;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 
 
-&lt;&#x2F;details&gt;
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
 
 
 
 
-&lt;details&gt;
-&lt;summary&gt;Testing rendering Person()&lt;&#x2F;summary&gt;
 
-&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;23ca88bbcdc25dce2036dec8295720abc26e6cec Initial test for rendering PersonView(Person...)
-&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;go.mod b&#x2F;go.mod
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      Initial test for rendering PersonView(Person...)
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;23ca88bbcdc25dce2036dec8295720abc26e6cec&quot;&gt;(source: 23ca88bb)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;go.mod b&#x2F;go.mod
 &lt;&#x2F;span&gt;&lt;span&gt;index 09551ac..ec2216f 100644
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;go.mod
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;go.mod
@@ -202,7 +221,8 @@ if you can&#x27;t compose them.&lt;&#x2F;p&gt;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 
 
-&lt;&#x2F;details&gt;
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
 &lt;h1 id=&quot;trees-and-subviews&quot;&gt;Trees and Subviews&lt;&#x2F;h1&gt;
 &lt;p&gt;In order to bring the component into our tree composition view library,
 we need to have &lt;code&gt;Renderable&lt;&#x2F;code&gt; objects have subtrees.&lt;&#x2F;p&gt;
@@ -241,11 +261,20 @@ we need to have &lt;code&gt;Renderable&lt;&#x2F;code&gt; objects have subtrees.&
 
 
 
-&lt;details&gt;
-&lt;summary&gt;POC implementation and tests&lt;&#x2F;summary&gt;
 
-&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;40fb4895f4da3511b61334414de612417cd2932f test for v1 of composition
-&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;render_container_test.go b&#x2F;render_container_test.go
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      test for v1 of composition
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;40fb4895f4da3511b61334414de612417cd2932f&quot;&gt;(source: 40fb4895)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;render_container_test.go b&#x2F;render_container_test.go
 &lt;&#x2F;span&gt;&lt;span&gt;new file mode 100644
 &lt;&#x2F;span&gt;&lt;span&gt;index 0000000..951acb3
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; &#x2F;dev&#x2F;null
@@ -328,7 +357,8 @@ we need to have &lt;code&gt;Renderable&lt;&#x2F;code&gt; objects have subtrees.&
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 
 
-&lt;&#x2F;details&gt;
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
 &lt;h3 id=&quot;alternate-approach&quot;&gt;Alternate approach&lt;&#x2F;h3&gt;
 &lt;p&gt;Alternatively, we can directly inline the fields in the data so our template
 looks more like this:&lt;&#x2F;p&gt;
@@ -373,11 +403,20 @@ and the slot func is necessary to compile the tempalte. We can stub that out:&lt
 
 
 
-&lt;details&gt;
-&lt;summary&gt;implementing this refactor&lt;&#x2F;summary&gt;
 
-&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;48ddc3cce42cbb9337027a7f1df7fd241217ca85 After refactor (1)
-&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;render_container_test.go b&#x2F;render_container_test.go
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      After refactor (1)
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;48ddc3cce42cbb9337027a7f1df7fd241217ca85&quot;&gt;(source: 48ddc3cc)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;render_container_test.go b&#x2F;render_container_test.go
 &lt;&#x2F;span&gt;&lt;span&gt;index 951acb3..526d1b8 100644
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;render_container_test.go
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;render_container_test.go
@@ -429,7 +468,8 @@ and the slot func is necessary to compile the tempalte. We can stub that out:&lt
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 
 
-&lt;&#x2F;details&gt;
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
 &lt;p&gt;&lt;em&gt;Refactor 2:&lt;&#x2F;em&gt; We can clean up the real slot function so that it
 is less brittle when views&#x2F;slots are added and removed.&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;tplWithRealSlotFunc&lt;&#x2F;span&gt;&lt;span&gt;(
@@ -462,11 +502,20 @@ about slots, or funcs, or where templates come from.&lt;&#x2F;p&gt;
 
 
 
-&lt;details&gt;
-&lt;summary&gt;Patch implementing this slot refactor&lt;&#x2F;summary&gt;
 
-&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;510eb19285474bc41c882a6a4ef9941e9070539c after refactor (2)
-&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;render_container_test.go b&#x2F;render_container_test.go
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      after refactor (2)
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;510eb19285474bc41c882a6a4ef9941e9070539c&quot;&gt;(source: 510eb192)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;render_container_test.go b&#x2F;render_container_test.go
 &lt;&#x2F;span&gt;&lt;span&gt;index 526d1b8..c372d45 100644
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;render_container_test.go
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;render_container_test.go
@@ -506,7 +555,8 @@ about slots, or funcs, or where templates come from.&lt;&#x2F;p&gt;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 
 
-&lt;&#x2F;details&gt;
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
 &lt;h2 id=&quot;a-view&quot;&gt;A &lt;code&gt;View{}&lt;&#x2F;code&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;This is generally all well and good, we might want to have
 something produce a &lt;code&gt;Renderable&lt;&#x2F;code&gt; struct, in fact we might have a
@@ -532,11 +582,20 @@ would have the equivalent outcome when rendered.&lt;&#x2F;p&gt;
 
 
 
-&lt;details&gt;
-&lt;summary&gt;view.go implementation (and tests)&lt;&#x2F;summary&gt;
 
-&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;745d3ae0d69260b83c0ae50491b7bacd3f37dafe with initial view.go and test
-&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;render_container_as_view_test.go b&#x2F;render_container_as_view_test.go
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      with initial view.go and test
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;745d3ae0d69260b83c0ae50491b7bacd3f37dafe&quot;&gt;(source: 745d3ae0)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;render_container_as_view_test.go b&#x2F;render_container_as_view_test.go
 &lt;&#x2F;span&gt;&lt;span&gt;new file mode 100644
 &lt;&#x2F;span&gt;&lt;span&gt;index 0000000..7123b23
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; &#x2F;dev&#x2F;null
@@ -649,7 +708,8 @@ would have the equivalent outcome when rendered.&lt;&#x2F;p&gt;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 
 
-&lt;&#x2F;details&gt;
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
 &lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span&gt;View{
 &lt;&#x2F;span&gt;&lt;span&gt;  Tpl: containerViewTpl,
 &lt;&#x2F;span&gt;&lt;span&gt;  Slots: &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;{
@@ -680,11 +740,20 @@ change, but it unlocks something, too. A simpler way to build views:&lt;&#x2F;p&
 
 
 
-&lt;details&gt;
-&lt;summary&gt;AsRenderable implementation (and tests)&lt;&#x2F;summary&gt;
 
-&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;3fb3dcf7e2abacff8a42d8b3da86f85f6576e08e Renderable and AsRenderable
-&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;render_container_as_view_test.go b&#x2F;render_container_as_view_test.go
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      Renderable and AsRenderable
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;3fb3dcf7e2abacff8a42d8b3da86f85f6576e08e&quot;&gt;(source: 3fb3dcf7)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;render_container_as_view_test.go b&#x2F;render_container_as_view_test.go
 &lt;&#x2F;span&gt;&lt;span&gt;index 7123b23..a3a0c37 100644
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;render_container_as_view_test.go
 &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;render_container_as_view_test.go
@@ -840,7 +909,8 @@ change, but it unlocks something, too. A simpler way to build views:&lt;&#x2F;p&
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 
 
-&lt;&#x2F;details&gt;
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
 </description>
       </item>
       <item>
