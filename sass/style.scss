@@ -281,7 +281,8 @@ dl {
 }
 
 table {
-  padding-top: 1.5em;
+  margin-top: 1em;
+  margin-bottom: 1em;
   width: 100%;
 
   th,
@@ -290,6 +291,10 @@ table {
     &.right {
       text-align: right;
     }
+  }
+
+  th {
+    font-size: 75%;
   }
 
   tfoot td {
@@ -312,6 +317,10 @@ table {
   thead tr:last-child th {
     padding-bottom: 0.3em;
     border-bottom: 1px dotted #ccc;
+  }
+
+  tr {
+    width: 100%;
   }
 
 }
