@@ -1,0 +1,173 @@
+400a872b27bc9fdb4a03ce1f1c2b8084702be132 with handleRenderError and ErrorRenderable
+diff --git a/error_renderable.go b/error_renderable.go
+new file mode 100644
+index 0000000..63159e8
+--- /dev/null
++++ b/error_renderable.go
+@@ -0,0 +1,39 @@
++package veun
++
++import "html/template"
++
++type ErrorRenderable interface {
++	// ErrorRenderable can return bubble the error
++	// back up, which will continue to fail the render
++	// the same as it did before.
++	//
++	// It can also return nil for Renderable,
++	// which will ignore the error entirely.
++	//
++	// Otherwise we will attempt to render next one.
++	ErrorRenderable(err error) (AsRenderable, error)
++}
++
++func handleRenderError(err error, with any) (template.HTML, error) {
++	var empty template.HTML
++
++	if with == nil {
++		return empty, err
++	}
++
++	errRenderable, ok := with.(ErrorRenderable)
++	if !ok {
++		return empty, err
++	}
++
++	r, err := errRenderable.ErrorRenderable(err)
++	if err != nil {
++		return empty, err
++	}
++
++	if r == nil {
++		return empty, nil
++	}
++
++	return Render(r)
++}
+diff --git a/render_container_error_test.go b/render_container_error_test.go
+new file mode 100644
+index 0000000..8052a8d
+--- /dev/null
++++ b/render_container_error_test.go
+@@ -0,0 +1,96 @@
++package veun_test
++
++import (
++	"errors"
++	"fmt"
++	"html/template"
++	"testing"
++
++	"github.com/alecthomas/assert/v2"
++
++	. "github.com/stanistan/veun"
++)
++
++type FailingView struct {
++	Err error
++}
++
++func (v FailingView) Renderable() (Renderable, error) {
++	return nil, fmt.Errorf("FailingView.Renderable(): %w", v.Err)
++}
++
++type FallibleView struct {
++	CapturesErr error
++	Child       AsRenderable
++}
++
++func (v FallibleView) Renderable() (Renderable, error) {
++	return v.Child.Renderable()
++}
++
++func (v FallibleView) ErrorRenderable(err error) (AsRenderable, error) {
++	if v.CapturesErr == nil {
++		return nil, err
++	}
++
++	if errors.Is(err, v.CapturesErr) {
++		return ChildView1{}, nil
++	}
++
++	return nil, nil
++}
++
++func TestRenderContainerWithFailingView(t *testing.T) {
++	_, err := Render(ContainerView2{
++		Heading: ChildView1{},
++		Body: FailingView{
++			Err: fmt.Errorf("construction: %w", errSomethingFailed),
++		},
++	})
++	assert.IsError(t, err, errSomethingFailed)
++}
++
++func TestRenderContainerWithCapturedError(t *testing.T) {
++	t.Run("errors_bubble_out", func(t *testing.T) {
++		_, err := Render(ContainerView2{
++			Heading: ChildView1{},
++			Body: FallibleView{
++				Child: FailingView{Err: errSomethingFailed},
++			},
++		})
++		assert.IsError(t, err, errSomethingFailed)
++	})
++
++	t.Run("errors_can_push_replacement_views", func(t *testing.T) {
++		html, err := Render(ContainerView2{
++			Heading: ChildView1{},
++			Body: FallibleView{
++				Child:       FailingView{Err: errSomethingFailed},
++				CapturesErr: errSomethingFailed,
++			},
++		})
++		assert.NoError(t, err)
++		assert.Equal(t, template.HTML(`<div>
++	<div class="heading">HEADING</div>
++	<div class="body">HEADING</div>
++</div>`), html)
++	})
++
++	t.Run("errors_can_return_nil_views", func(t *testing.T) {
++		html, err := Render(ContainerView2{
++			Heading: ChildView1{},
++			Body: FallibleView{
++				Child:       FailingView{Err: errors.New("hi")},
++				CapturesErr: errSomethingFailed,
++			},
++		})
++		assert.NoError(t, err)
++		assert.Equal(t, template.HTML(`<div>
++	<div class="heading">HEADING</div>
++	<div class="body"></div>
++</div>`), html)
++	})
++
++}
++
++var errSomethingFailed = errors.New("an error")
+diff --git a/renderer.go b/renderer.go
+index cb2c5f0..27d3abc 100644
+--- a/renderer.go
++++ b/renderer.go
+@@ -16,12 +16,17 @@ type AsRenderable interface {
+ }
+ 
+ func Render(r AsRenderable) (template.HTML, error) {
+-	rr, err := r.Renderable()
++	renderable, err := r.Renderable()
+ 	if err != nil {
+-		return template.HTML(""), err
++		return handleRenderError(err, r)
+ 	}
+ 
+-	return render(rr)
++	out, err := render(renderable)
++	if err != nil {
++		return handleRenderError(err, r)
++	}
++
++	return out, nil
+ }
+ 
+ func render(r Renderable) (template.HTML, error) {
