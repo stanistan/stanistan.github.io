@@ -1,0 +1,69 @@
+6c5721832cd6597b9cb0d255dc5fb9daf68a42ef with Slot map[string]AsRenderable
+diff --git a/render_container_as_view_test.go b/render_container_as_view_test.go
+index a3a0c37..9af1ad0 100644
+--- a/render_container_as_view_test.go
++++ b/render_container_as_view_test.go
+@@ -9,13 +9,22 @@ import (
+ 	. "github.com/stanistan/veun"
+ )
+ 
++type ContainerView2 struct {
++	Heading AsRenderable
++	Body    AsRenderable
++}
++
++func (v ContainerView2) Renderable() (Renderable, error) {
++	return View{
++		Tpl:   containerViewTpl,
++		Slots: Slots{"heading": v.Heading, "body": v.Body},
++	}, nil
++}
++
+ func TestRenderContainerAsView(t *testing.T) {
+-	html, err := Render(View{
+-		Tpl: containerViewTpl,
+-		Slots: map[string]AsRenderable{
+-			"heading": ChildView1{},
+-			"body":    ChildView2{},
+-		},
++	html, err := Render(ContainerView2{
++		Heading: ChildView1{},
++		Body:    ChildView2{},
+ 	})
+ 	assert.NoError(t, err)
+ 	assert.Equal(t, template.HTML(`<div>
+diff --git a/slots.go b/slots.go
+new file mode 100644
+index 0000000..974792e
+--- /dev/null
++++ b/slots.go
+@@ -0,0 +1,3 @@
++package veun
++
++type Slots map[string]AsRenderable
+diff --git a/view.go b/view.go
+index bb33a3d..11b2da6 100644
+--- a/view.go
++++ b/view.go
+@@ -20,14 +20,19 @@ func (v View) Renderable() (Renderable, error) {
+ 	return v, nil
+ }
+ 
+-func tplWithRealSlotFunc(tpl *template.Template, slots map[string]AsRenderable) *template.Template {
++func tplWithRealSlotFunc(
++	tpl *template.Template,
++	slots map[string]AsRenderable,
++) *template.Template {
+ 	return tpl.Funcs(template.FuncMap{
+ 		"slot": func(name string) (template.HTML, error) {
+ 			slot, ok := slots[name]
+ 			if ok {
+ 				return Render(slot)
+ 			}
+-			return template.HTML(""), nil
++
++			var empty template.HTML
++			return empty, nil
+ 		},
+ 	})
+ }
