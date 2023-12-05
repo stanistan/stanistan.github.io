@@ -316,7 +316,7 @@ details {
   font-size: 85%;
   summary {
     font-weight: bold;
-    color: $link-color;
+    color: darken($link-color, 20%);
     &:hover {
       color: $link-hover-color;
       cursor: pointer;

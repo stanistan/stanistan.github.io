@@ -1,12 +1,24 @@
 {% set path = "static/snippets/veun/patch-" ~ patch ~ ".diff" %}
 {% set data = load_data(path=path) %}
+{% set split_data = data | split(pat="\n") %}
+{% set commit_info = split_data | first | split(pat=" ") %}
+{% set commit_hash = commit_info | first %}
+{% set commit_title = commit_info | slice(start=1) | join(sep=" ") %}
+{% set commit = "https://github.com/stanistan/veun/commit/" ~ commit_hash %}
+{% set inline_md = split_data | slice(start=1) | join(sep="
+") %}
 {% set md_data = "```patch
-" ~ data ~ "
+" ~ inline_md ~ "
 ```" %}
 
-<details>
-<summary>{{ summary }}</summary>
+<div>
+  <details>
+    <summary class="small">
+      {{ commit_title }}
+      <a href="{{ commit }}">(source: {{ commit_hash | truncate(length=8, end="") }})</a>
+    </summary>
 
 {{ md_data | markdown(inline=true) | safe }}
 
-</details>
+  </details>
+</div>
