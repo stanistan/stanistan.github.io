@@ -750,16 +750,6 @@ would have the equivalent outcome when rendered.</p>
 </span><span>
 </span><span style="font-weight:bold;color:#a71d5d;">type </span><span>Slots </span><span style="font-weight:bold;color:#a71d5d;">map</span><span>[</span><span style="font-weight:bold;color:#0086b3;">string</span><span>]</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable
 </span></code></pre>
-<p>And updating the <code>Render</code> function for the first time to take
-<code>AsRenderable</code> instead gives us our first really big interface
-change, but it unlocks something, too. A simpler way to build views:</p>
-<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">ContainerView</span><span>) </span><span style="font-weight:bold;color:#795da3;">Renderable</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
-</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>View{
-</span><span>        Tpl:   containerViewTpl,
-</span><span>        Slots: Slots{</span><span style="color:#183691;">&quot;heading&quot;</span><span>: v.Heading, </span><span style="color:#183691;">&quot;body&quot;</span><span>: v.Body},
-</span><span>    ), </span><span style="color:#0086b3;">nil
-</span><span>}
-</span></code></pre>
 
 
 
@@ -929,6 +919,107 @@ change, but it unlocks something, too. A simpler way to build views:</p>
 </span><span> 	return tpl.Funcs(template.FuncMap{
 </span><span> 		&quot;slot&quot;: func(name string) (template.HTML, error) {
 </span><span> 			slot, ok := slots[name]
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<p>And updating the <code>Render</code> function for the first time to take
+<code>AsRenderable</code> instead gives us our first really big interface
+change, but it unlocks something, too. A simpler way to build views:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">ContainerView</span><span>) </span><span style="font-weight:bold;color:#795da3;">Renderable</span><span>() (</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>View{
+</span><span>        Tpl:   containerViewTpl,
+</span><span>        Slots: Slots{</span><span style="color:#183691;">&quot;heading&quot;</span><span>: v.Heading, </span><span style="color:#183691;">&quot;body&quot;</span><span>: v.Body},
+</span><span>    ), </span><span style="color:#0086b3;">nil
+</span><span>}
+</span></code></pre>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      with Slot map[string]AsRenderable
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;6c5721832cd6597b9cb0d255dc5fb9daf68a42ef">(source: 6c572183)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/render_container_as_view_test.go b/render_container_as_view_test.go
+</span><span>index a3a0c37..9af1ad0 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/render_container_as_view_test.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/render_container_as_view_test.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -9,13 +9,22 @@ import (
+</span><span> 	. &quot;github.com/stanistan/veun&quot;
+</span><span> )
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type ContainerView2 struct {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	Heading AsRenderable
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	Body    AsRenderable
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (v ContainerView2) Renderable() (Renderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return View{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		Tpl:   containerViewTpl,
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		Slots: Slots{&quot;heading&quot;: v.Heading, &quot;body&quot;: v.Body},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> func TestRenderContainerAsView(t *testing.T) {
+</span><span style="background-color:#ffecec;color:#323232;">-	html, err := Render(View{
+</span><span style="background-color:#ffecec;color:#323232;">-		Tpl: containerViewTpl,
+</span><span style="background-color:#ffecec;color:#323232;">-		Slots: map[string]AsRenderable{
+</span><span style="background-color:#ffecec;color:#323232;">-			&quot;heading&quot;: ChildView1{},
+</span><span style="background-color:#ffecec;color:#323232;">-			&quot;body&quot;:    ChildView2{},
+</span><span style="background-color:#ffecec;color:#323232;">-		},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	html, err := Render(ContainerView2{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		Heading: ChildView1{},
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		Body:    ChildView2{},
+</span><span> 	})
+</span><span> 	assert.NoError(t, err)
+</span><span> 	assert.Equal(t, template.HTML(`&lt;div&gt;
+</span><span>diff --git a/slots.go b/slots.go
+</span><span>new file mode 100644
+</span><span>index 0000000..974792e
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> /dev/null
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/slots.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -0,0 +1,3 @@
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">package veun
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type Slots map[string]AsRenderable
+</span><span>diff --git a/view.go b/view.go
+</span><span>index bb33a3d..11b2da6 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/view.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/view.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -20,14 +20,19 @@ func (v View) Renderable() (Renderable, error) {
+</span><span> 	return v, nil
+</span><span> }
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-func tplWithRealSlotFunc(tpl *template.Template, slots map[string]AsRenderable) *template.Template {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func tplWithRealSlotFunc(
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	tpl *template.Template,
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	slots map[string]AsRenderable,
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">) *template.Template {
+</span><span> 	return tpl.Funcs(template.FuncMap{
+</span><span> 		&quot;slot&quot;: func(name string) (template.HTML, error) {
+</span><span> 			slot, ok := slots[name]
+</span><span> 			if ok {
+</span><span> 				return Render(slot)
+</span><span> 			}
+</span><span style="background-color:#ffecec;color:#323232;">-			return template.HTML(&quot;&quot;), nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			var empty template.HTML
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return empty, nil
+</span><span> 		},
+</span><span> 	})
+</span><span> }
 </span><span>
 </span></code></pre>
 
