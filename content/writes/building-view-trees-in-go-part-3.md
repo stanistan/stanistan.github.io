@@ -46,8 +46,12 @@ And our logic to handle the error is pretty simple:
   - Returning an error means we want to buble it up.
   - Returning `nil` for the `AsRenderable` means we
     don't care about this error at all. OK to move on.
-- Try to render the thing.
+  - Do we have something to render?
+    - Try to do so!
 
+_Note:_ It is definitely the case here that if our error
+handler fails to render and it is `ErrorRenderable` as well
+we'll keep trying.
 
 ```go
 func handleRenderError(err error, with any) (template.HTML, error) {
@@ -75,15 +79,14 @@ func handleRenderError(err error, with any) (template.HTML, error) {
 }
 ```
 
-_Note:_ It is definitely the case here that if our error
-handler fails to render and it is `ErrorRenderable` as well
-we'll keep trying.
+{{ veun_diff(patch=9) }}
 
 ### Fallible Views!
 
 With this in hand, and a quick change to the `Render` function to
 call this instead of returning an error, we get some neat behavior,
 and an example of composition based _delegation_.
+
 
 ```go
 type FallibleView struct {
@@ -100,6 +103,44 @@ func (v FallibleView) ErrorRenderable(err error) (AsRenderable, error) {
 }
 ```
 
+This starts to show the kind of thing we can do with composition and this
+libary.
+
+```go
+func logWarningErrorHandler(err error) (AsRenderable, error) {
+    log.Printf("something failed, but it's ok: %s", err)
+    return nil, nil // we don't care for this example
+}
+
+html, err := Render(FallibleView{
+    Contents:     someViewThatMightFailToRender,
+    ErrorHandler: logWarningErrorHandler,
+})
+```
+
+Or more realistically a situation where you're not sure what
+you are rendering in some slot.
+
+```go
+func (v Container) Renderable() (Renderable, error) {
+    return View{
+        // ... snip ...
+        Slots: Slots{
+            "extra_content": FallibleView{
+                Contents:     v.ContentFactory(),
+                ErrorHandler: logWarningErrorHandler,
+            },
+        },
+    }, nil
+}
+```
+
+You can see this in action in the tests in the patch above where
+we use `errors.Is(err, somethingKnown)` to do error bubbling or
+handling.
+
+Error handling is going to be much more important when we get
+to doing _real things_ like data access.
 
 [intro]: /writes/building-view-trees-in-go-part-1
 [the-basics]: /writes/building-view-trees-in-go-part-2
