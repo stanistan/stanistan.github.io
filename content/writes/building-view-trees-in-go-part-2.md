@@ -269,7 +269,9 @@ func (v ContainerView) Renderable() (Renderable, error) {
 ### Next:
 
 - [Error handling][part-3]
+- [Async data fetching][part-4]
 
 
 [part-1]: /writes/building-view-trees-in-go-part-1
 [part-3]: /writes/building-view-trees-in-go-part-3
+[part-4]: /writes/building-view-trees-in-go-part-4
