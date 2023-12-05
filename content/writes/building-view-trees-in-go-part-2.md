@@ -247,6 +247,8 @@ type AsRenderable interface {
 type Slots map[string]AsRenderable
 ```
 
+{{ veun_diff(patch=7) }}
+
 And updating the `Render` function for the first time to take
 `AsRenderable` instead gives us our first really big interface
 change, but it unlocks something, too. A simpler way to build views:
@@ -260,6 +262,6 @@ func (v ContainerView) Renderable() (Renderable, error) {
 }
 ```
 
-{{ veun_diff(patch=7) }}
+{{ veun_diff(patch=8) }}
 
 [part-1]: /writes/building-view-trees-in-go-part-1
