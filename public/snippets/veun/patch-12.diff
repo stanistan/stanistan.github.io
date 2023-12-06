@@ -1,0 +1,63 @@
+a6a523ee86aea28ad776b835edfe581354292cd7 testing for cancelled context
+diff --git a/render_with_data_fetch_test.go b/render_with_data_fetch_test.go
+index e6166ed..4d93650 100644
+--- a/render_with_data_fetch_test.go
++++ b/render_with_data_fetch_test.go
+@@ -23,7 +23,7 @@ type ExpensiveView struct {
+ 	Err  chan error
+ }
+ 
+-func NewExpensiveView(shouldErr bool) *ExpensiveView {
++func NewExpensiveView(shouldErr bool, sleepFor time.Duration) *ExpensiveView {
+ 	errCh := make(chan error)
+ 	dataCh := make(chan ExpensiveViewData)
+ 
+@@ -35,7 +35,7 @@ func NewExpensiveView(shouldErr bool) *ExpensiveView {
+ 
+ 		// do data fetching and either write to
+ 		// one thing or the other
+-		time.Sleep(1 * time.Millisecond)
++		time.Sleep(sleepFor)
+ 		if shouldErr {
+ 			errCh <- fmt.Errorf("fetch failed")
+ 		} else {
+@@ -46,8 +46,10 @@ func NewExpensiveView(shouldErr bool) *ExpensiveView {
+ 	return &ExpensiveView{Data: dataCh, Err: errCh}
+ }
+ 
+-func (v *ExpensiveView) Renderable(_ context.Context) (Renderable, error) {
++func (v *ExpensiveView) Renderable(ctx context.Context) (Renderable, error) {
+ 	select {
++	case <-ctx.Done():
++		return nil, ctx.Err()
+ 	case err := <-v.Err:
+ 		return nil, err
+ 	case data := <-v.Data:
+@@ -57,13 +59,25 @@ func (v *ExpensiveView) Renderable(_ context.Context) (Renderable, error) {
+ 
+ func TestViewWithChannels(t *testing.T) {
+ 	t.Run("successful", func(t *testing.T) {
+-		html, err := Render(context.Background(), NewExpensiveView(false))
++		html, err := Render(context.Background(), NewExpensiveView(false, 1*time.Millisecond))
+ 		assert.NoError(t, err)
+ 		assert.Equal(t, template.HTML(`hi success`), html)
+ 	})
+ 
+ 	t.Run("failed", func(t *testing.T) {
+-		_, err := Render(context.Background(), NewExpensiveView(true))
++		_, err := Render(context.Background(), NewExpensiveView(true, 1*time.Millisecond))
+ 		assert.Error(t, err)
+ 	})
++
++	t.Run("context timed out", func(t *testing.T) {
++		ctx, _ := context.WithTimeout(context.Background(), 1*time.Millisecond)
++		_, err := Render(ctx, NewExpensiveView(false, 2*time.Millisecond))
++		assert.Error(t, err)
++	})
++
++	t.Run("context timeout not reached", func(t *testing.T) {
++		ctx, _ := context.WithTimeout(context.Background(), 5*time.Millisecond)
++		_, err := Render(ctx, NewExpensiveView(false, 2*time.Millisecond))
++		assert.NoError(t, err)
++	})
+ }

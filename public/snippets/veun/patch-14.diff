@@ -1,0 +1,48 @@
+8c05c6653563aa8b19879b46e59cd5addebf7131 moving renderable to renderable.go, adding RenderableFunc
+diff --git a/renderable.go b/renderable.go
+new file mode 100644
+index 0000000..57f3791
+--- /dev/null
++++ b/renderable.go
+@@ -0,0 +1,21 @@
++package veun
++
++import (
++	"context"
++	"html/template"
++)
++
++type Renderable interface {
++	Template(ctx context.Context) (*template.Template, error)
++	TemplateData(ctx context.Context) (any, error)
++}
++
++type AsRenderable interface {
++	Renderable(ctx context.Context) (Renderable, error)
++}
++
++type RenderableFunc func(context.Context) (Renderable, error)
++
++func (f RenderableFunc) Renderable(ctx context.Context) (Renderable, error) {
++	return f(ctx)
++}
+diff --git a/renderer.go b/renderer.go
+index 33af885..ebbddef 100644
+--- a/renderer.go
++++ b/renderer.go
+@@ -7,15 +7,6 @@ import (
+ 	"html/template"
+ )
+ 
+-type Renderable interface {
+-	Template(ctx context.Context) (*template.Template, error)
+-	TemplateData(ctx context.Context) (any, error)
+-}
+-
+-type AsRenderable interface {
+-	Renderable(ctx context.Context) (Renderable, error)
+-}
+-
+ func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
+ 	renderable, err := r.Renderable(ctx)
+ 	if err != nil {
