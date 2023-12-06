@@ -166,7 +166,7 @@ func WithTimeout(r AsRenderable, timeout time.Duration) AsRenderable {
 }
 ```
 
-I know this is a function signature, but seeing this immediately makes me think
+This is just a function signature, but seeing this immediately makes me think
 of ways that something can be extracted into a different kind of pattern.
 
 HTTP middleware has the signature: `func(http.Handler) http.Handler`.
@@ -184,15 +184,16 @@ func WithTimeout(timeout time.Duration) func(AsRenderable) AsRenderable {
 Is this actually useful? How would this be used in practice?
 
 Probably _not_ by doing: `WithTimeout(timeout)(view)`, but if we had some way
-of applying these, like: `Decorate(view, WithTimeout(timeout))`, this might be ok.
+of applying these, like: `Compose(view, WithTimeout(timeout))`, this might be ok.
 
-Let's just save this idea for later in case we have use for it.
+Let's just save this idea for later...
 
 ### A Renderable function
 
-
-Something that is interesting here though is the part we `// ...` over. Sometimes
-we don't need a full struct, sometimes we only need a closure.
+Something that _is_ interesting here though is the part we gloss
+over, (`// ...`). Sometimes we don't need a full struct, sometimes
+we only need a closure, and the resulting code can be clearer and
+simpler to reason about.
 
 ```go
 type RenderableFunc func(context.Context) (Renderable, error)
@@ -207,20 +208,24 @@ func (f RenderableFunc) Renderable(ctx context.Context) (Renderable, error) {
 And now to use it:
 
 ```go
-func WithTimeout(r AsRenderable, timeout time.Duration) AsRenderable {
-    return RenderableFunc(func(ctx context.Context) (Renderable, error) {
-        ctx, _ = context.WithTimeout(timeout)
-        return r.Renderable(ctx)
-    })
+func WithTimeout(timeout time.Duration) func(AsRenderable) AsRenderable {
+    return func(r AsRenderable) AsRenderable {
+        return RenderableFunc(func(ctx context.Context) (Renderable, error) {
+            ctx, _ = context.WithTimeout(timeout)
+            return r.Renderable(ctx)
+        })
+    }
 }
 ```
 
-_N.B. Because go contexts are copies, cancelling subtree renders
-**MUST BE** done through delegating._
+_N.B._ Because go contexts are copies, cancelling subtree renders
+**MUST BE** done through delegating.
 
 ```go
-func WithErrorHandler(eh ErrorRenderable, r AsRenderable) AsRenderable {
-    return FallibleView{Contents: r, ErrorRenderable: eh}
+func WithErrorHandler(eh ErrorRenderable) func(AsRenderable) AsRenderable {
+    return func(r AsRenderable) AsRenderable {
+        return FallibleView{Contents: r, ErrorRenderable: eh}
+    }
 }
 ```
 
