@@ -1,0 +1,14 @@
+35883748e5b08774c57ae582bc5e700eb053161c slot can be nil, we return empty
+diff --git a/slots.go b/slots.go
+index 61f7fb4..8a04e81 100644
+--- a/slots.go
++++ b/slots.go
+@@ -10,7 +10,7 @@ type Slots map[string]AsRenderable
+ func (s Slots) renderSlot(ctx context.Context) func(string) (template.HTML, error) {
+ 	return func(name string) (template.HTML, error) {
+ 		slot, ok := s[name]
+-		if ok {
++		if ok && slot != nil {
+ 			return Render(ctx, slot)
+ 		}
+ 
