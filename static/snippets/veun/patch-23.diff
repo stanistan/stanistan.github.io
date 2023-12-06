@@ -1,0 +1,39 @@
+791b18a1bad686f575176c63dd504284d61d6a81 convenience function RequestHandlerFunc
+diff --git a/http_request_renderable.go b/http_request_renderable.go
+index 8d5f5c0..9a0c7c5 100644
+--- a/http_request_renderable.go
++++ b/http_request_renderable.go
+@@ -20,6 +20,14 @@ func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable,
+ 	return f(r)
+ }
+ 
++func RequestHandlerFunc(r RequestRenderableFunc) http.Handler {
++	return HTTPHandler{Renderable: r}
++}
++
++func RequestHandler(r RequestRenderable) http.Handler {
++	return HTTPHandler{Renderable: r}
++}
++
+ // HTTPHandler implements http.Handler for a RequestRenderable.
+ type HTTPHandler struct {
+ 	Renderable RequestRenderable
+diff --git a/http_request_test.go b/http_request_test.go
+index 04f6f6b..8298521 100644
+--- a/http_request_test.go
++++ b/http_request_test.go
+@@ -12,11 +12,9 @@ import (
+ )
+ 
+ func TestRequestBasicHandler(t *testing.T) {
+-	var handler = veun.HTTPHandler{
+-		veun.RequestRenderableFunc(func(r *http.Request) (veun.AsRenderable, error) {
+-			return nil, nil
+-		}),
+-	}
++	var handler = veun.RequestHandlerFunc(func(r *http.Request) (veun.AsRenderable, error) {
++		return nil, nil
++	})
+ 
+ 	mux := http.NewServeMux()
+ 

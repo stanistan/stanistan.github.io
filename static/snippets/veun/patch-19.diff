@@ -1,0 +1,28 @@
+bda46e00f7b324f3f9e456d0de9a2531adfe0518 Adding RequestRenderable & Func
+diff --git a/http_request_renderable.go b/http_request_renderable.go
+new file mode 100644
+index 0000000..66700c8
+--- /dev/null
++++ b/http_request_renderable.go
+@@ -0,0 +1,21 @@
++package veun
++
++import (
++	"net/http"
++)
++
++// RequestRenderable represents a method that
++// can create a view out of an http.Request.
++type RequestRenderable interface {
++	RequestRenderable(r *http.Request) (AsRenderable, error)
++}
++
++// RequestRenderableFunc is the function representation of a
++// RequestRenderable.
++type RequestRenderableFunc func(*http.Request) (AsRenderable, error)
++
++// RequestRenderable conforms RequestRenderableFunc to
++// RequestRenderable interface.
++func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable, error) {
++	return f(r)
++}

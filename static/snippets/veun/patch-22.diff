@@ -1,0 +1,16 @@
+eedee59249cc4308a7262d0fd0a4112e1d707248 fix: safe to pass nil to renderer
+diff --git a/renderer.go b/renderer.go
+index fe37ba0..8546abc 100644
+--- a/renderer.go
++++ b/renderer.go
+@@ -8,6 +8,10 @@ import (
+ )
+ 
+ func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
++	if r == nil {
++		return template.HTML(""), nil
++	}
++
+ 	renderable, err := r.Renderable(ctx)
+ 	if err != nil {
+ 		return handleRenderError(ctx, err, r)

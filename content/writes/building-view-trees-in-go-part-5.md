@@ -131,6 +131,8 @@ func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable,
 }
 ```
 
+{{ veun_diff(patch=19) }}
+
 We still need a handler that can do something with this...
 
 ```go
@@ -156,13 +158,56 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
+{{ veun_diff(patch=20) }}
+
 And our route definition can look more like this:
 
 ```go
-http.Handle("/some_route", HTTPHandler{RequestRenderableFunc(MyViewFromRequest)}
+mux := http.NewServeMux()
+
+mux.Handle("/empty", HTTPHandler{
+    RequestRenderableFunc(func(r *http.Request) (AsRenderable, error) {
+        return nil, nil
+    }),
+})
 ```
 
-**TODO** First patch/snippet here would be great.
+### Testing
+
+Of course we can write an HTTP server using the standard library, *but* Go also
+provides `net/http/httptest`, where we can start a server and make requests
+to it as if it were remote from our tests.
+
+```go
+srv := httptest.NewServer(mux)
+// and we can make requests to srv.URL
+```
+
+{{ veun_diff(patch=21) }}
+
+Our example above ended up unearthing a bug where that was not safe to do,
+but it should be-- in our error handlers and the slot we allow for a view
+to be `nil`.
+
+{{ veun_diff(patch=22) }}
+
+### More Funcs
+
+We can add convenience constructors to the `HTTPHandler{RequestRenderable...}`
+pattern, and this becomes a bit nicer to deal with.
+
+```go
+mux.Handle("/empty", RequestHandlerFunc(func(r *http.Request) (AsRenderable, error) {
+    return nil, nil
+})
+```
+
+{{ veun_diff(patch=23) }}
+
+## A broken abstraction
+
+
+
 
 [part-1]: /writes/building-view-trees-in-go-part-1
 [part-2]: /writes/building-view-trees-in-go-part-2
