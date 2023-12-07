@@ -1,6 +1,8 @@
 +++
 title = "Building view-trees: http.Handler [Part 5]"
-date = 2023-12-10
+date = 2023-12-08
+
+extra.toc = true
 +++
 
 Previously: [intro][part-1], [the basics][part-2], [error handling][part-3],
@@ -8,7 +10,7 @@ and [async data fetching][part-4].
 
 ---
 
-## Small Improvements
+## An Aside: Small Improvements
 
 Before we go forward, let's make some small quality of life improvements.
 
@@ -197,16 +199,309 @@ We can add convenience constructors to the `HTTPHandler{RequestRenderable...}`
 pattern, and this becomes a bit nicer to deal with.
 
 ```go
-mux.Handle("/empty", RequestHandlerFunc(func(r *http.Request) (AsRenderable, error) {
-    return nil, nil
-})
+var empty = RequestRenderableFunc(
+    func(r *http.Request) (AsRenderable, error) {
+        return nil, nil
+    },
+)
+
+mux.Handle("/empty", HTTPHandler{empty})
 ```
 
 {{ veun_diff(patch=23) }}
 
-## A broken abstraction
+## Composing RequestRenderables
+
+I'm a big fan of interfaces that work well together and are self-consistent,
+views/renderables compose well together -- this is how we get render trees, that
+continue to maintain the same abstraction.
+
+Turns out we have a very similar pattern available to us with `RequestRenderable`
+types as well.
+
+### Why
+
+In a real world web application, you are going to end up up with standard a container
+view at the top level signifying the `<html>...` and whatever application and page chrome
+you need.
+
+```go
+var htmlTpl = MustParseTemplate("html", `<html><body>{{ slot "body" }}</body></html>`)
+
+type html struct {
+    Body  AsRenderable
+}
+
+func (v html) Renderable(_ context.Context) (Renderable, error) {
+    return View{Tpl: htmlTpl, Slots: Slots{"body": v.Body}}, nil
+}
+```
+
+Having each `RequestRenderable` be aware of which wrapper view is needed might be
+annoying, and ends up making our functions less re-usable across different contexts.
+
+But we can re-use the interface (again, similar to the middleware pattern).
+
+```go
+func HTML(renderable RequestRenderable) RequestRenderable {
+    return RequestRenderableFunc(func(r *http.Request) (AsRenderable, error) {
+        v, err := renderable.RequestRenderable(r)
+        if err != nil {
+            return nil, err
+        }
+
+        return html{Body: v}, nil
+    })
+}
+```
+
+Or more clearly:
+
+```go
+func HTML(renderable RequestRenderable) http.Handler {
+    return RequestHandlerFunc( /* ... */ )
+}
+```
+
+So we can:
+
+```go
+mux.handle("/html/empty", HTML(empty))
+```
+
+{{ veun_diff(patch=24) }}
 
 
+## Fixing the abstraction
+
+While this is _nice_, we've lost some functionality, and no longer have answers
+to the questions:
+
+- How will we redirect?
+- What if we want to 404?
+- What if we want to send back http response headers?
+- What is our error handling strategy?
+
+And real applications _need answers_ to these questions.
+
+The current implementation will either fail (with panics, for now), or render a `200`.
+
+I've played around with having this return an `Response` struct or something
+like that, which would create different levels of composition with usage that
+is something like this:
+
+**Standard response, `200` with rendered view:**
+
+```go
+return Response(view), nil
+```
+
+**Rendered view with custom status code:**
+
+```go
+return Response(view, StatusCode(404)), nil
+```
+
+**An empty 404**
+
+```go
+return NotFoundResponse()
+```
+
+**Redirects**
+
+```go
+return RedirectResponse(301, toLocation)
+```
+
+If you squint above, the handler will actually be returning
+something that implements an `http.Handler` and this is really powerful.
+
+The problem with the approach is we lose the composability we need.
+
+### http.Handler
+
+Let's add _one more return variable_ to our `RequestRenderable`.
+
+```go
+type RequestRenderable interface {
+    RequestRenderable(*http.Request) (AsRenderable, http.Handler, error)
+}
+```
+
+To go back through our examples above usage would be:
+
+
+**Standard response, `200` with rendered view:**
+
+```go
+return view, nil, nil
+```
+
+**Rendered view with custom status code:**
+
+```go
+return view, StatusCode(404), nil
+```
+
+**An empty 404:**
+
+```go
+return nil, http.NotFoundHandler(), nil
+```
+
+**Redirects:**
+
+```go
+return nil, http.RedirectHandler(toLocation, 301), nil
+```
+
+**Custom Response Headers:**
+
+```go
+return view, ResponseHeader(...), nil
+```
+
+This means we have the optionality of adding http handlers to our response
+but _also_ have the types and flexibility to do view composition
+in our request handers.
+
+{{ veun_diff(patch=25) }}
+
+{{ veun_diff(patch=26) }}
+
+### Error Handling
+
+We always come back to error handling, our implementation currently
+has three places where we `panic`.
+
+1. `RequestRenderable()` returns an error
+2. `Render()` returns an error
+3. `Write` fails
+
+Our library already has hooks two of these to fail...
+
+1. RequestRenderable composition can fully handle (1) and (2).
+2. We can't really do anything else here-- maybe the connection went away,
+   and we let it fail.
+
+
+Let's make a really silly error view...
+
+```go
+var errorViewTpl = MustParseTemplate("errorView", `Error: {{ . }}`)
+
+type errorView struct {
+    Error error
+}
+
+func (v errorView) Renderable(_ context.Context) (Renderable, error) {
+    return View{Tpl: errorViewTpl, Data: v.Error}, nil
+}
+
+func newErrorView(_ context.Context, err error) (AsRenderable, error) {
+    return errorView{Error: err}, nil
+}
+```
+
+And leverage our `ErrorRenderable` interface to do some composition.
+
+```go
+func WithErrorHandler(eh ErrorRenderable) func(RequestRenderable) RequestRenderable {
+    return func(renderable RequestRenderable) RequestRenderable {
+        return RequestRenderableFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+            v, next, err := renderable.RequestRenderable(r)
+            if err != nil {
+                v, err = eh.ErrorRenderable(r.Context(), err)
+                return v, nil, err
+            }
+
+            html, err := Render(r.Context(), v)
+            if err != nil {
+                v, err = eh.ErrorRenderable(r.Context(), err)
+                return v, nil, err
+            }
+
+            if len(html) == 0 {
+                return nil, next, nil
+            }
+
+            return nil, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+                if next != nil {
+                    next.ServeHTTP(w, r)
+                }
+
+                _, _ = w.Write([]byte(html))
+            }), nil
+        })
+    }
+}
+```
+
+This is cool and all, but it's _basically_ the same thing as our `HTTPHandler`, but
+with an ErrorRenderable provided. So I don't like it.
+
+So maybe let's make that part of a base handler, and also include a default error
+handler instead.
+
+First, let's make `HTTPHandler` a function instead of a struct, this eliminates the
+need for `RequestHandlerFunc`.
+
+{{ veun_diff(patch=27) }}
+
+### Adding the error delegate option
+
+Let's add the field to our (now private) `handler`, and make it something that
+we can add to the `HTTPHandler`. In this case, I prefer to have them be optional
+configurations, meaning we should be adding them as so:
+
+```go
+type HandlerOption func(h *handler)
+
+func HTTPHandler(r RequestRenderable, opts ...HandlerOption) http.Handler { /* ... */ }
+
+type handler struct {
+    Renderable   RequestRenderable
+    ErrorHandler ErrorRenderable    // <- this is new
+}
+```
+
+And we can replace the `panic` calls with `handleError(ctx, err, ResponseWriter)`
+which will either do error degation-- using our `handleRenderError`, or
+write out at `500 Internal Server Error`.
+
+
+{{ veun_diff(patch=28) }}
+
+## Putting it together
+
+From the tests in the patches, we can see that making a handler is now pretty
+simple, by building up the few pieces we've put together, we have a pretty
+robust little library.
+
+```go
+import (
+    "net/http"
+
+    . "github.com/stanistan/veun"
+)
+
+type myServer struct {
+    // some db contections and contexts
+}
+
+func (s *myServer) SomePageHandler(r *http.Request) (AsRenderable, http.Handler, error) {
+    // Stuff...
+}
+
+func main() {
+    http.Handle("/some-page", HTML(s.SomePageHandler))
+}
+```
+
+This is compatible with middleware, any router that works with `http.Handler`
+functions, and can do response headers, redirects, custom error pages,
+and cancellation/deadlines.
 
 
 [part-1]: /writes/building-view-trees-in-go-part-1

@@ -1,0 +1,66 @@
+8020b8ca9584eba0e6b6369428a98fe8248f1c15 HTTPHandler is a function, and renaming RequestHandler
+diff --git a/http_request_renderable.go b/http_request_renderable.go
+index 5d6bf82..d62379d 100644
+--- a/http_request_renderable.go
++++ b/http_request_renderable.go
+@@ -20,21 +20,21 @@ func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable,
+ 	return f(r)
+ }
+ 
+-func RequestHandlerFunc(r RequestRenderableFunc) http.Handler {
+-	return HTTPHandler{Renderable: r}
++func HTTPHandlerFunc(r RequestRenderableFunc) http.Handler {
++	return handler{Renderable: r}
+ }
+ 
+-func RequestHandler(r RequestRenderable) http.Handler {
+-	return HTTPHandler{Renderable: r}
++func HTTPHandler(r RequestRenderable) http.Handler {
++	return handler{Renderable: r}
+ }
+ 
+-// HTTPHandler implements http.Handler for a RequestRenderable.
+-type HTTPHandler struct {
++// handler implements http.Handler for a RequestRenderable.
++type handler struct {
+ 	Renderable RequestRenderable
+ }
+ 
+ // ServeHTTP implements http.Handler.
+-func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
++func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+ 	renderable, next, err := h.Renderable.RequestRenderable(r)
+ 	if err != nil {
+ 		panic(err)
+@@ -53,5 +53,4 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+ 	if err != nil {
+ 		panic(err)
+ 	}
+-
+ }
+diff --git a/http_request_test.go b/http_request_test.go
+index 237f111..2940f4d 100644
+--- a/http_request_test.go
++++ b/http_request_test.go
+@@ -23,7 +23,7 @@ func (v html) Renderable(_ context.Context) (Renderable, error) {
+ }
+ 
+ func HTML(renderable RequestRenderable) http.Handler {
+-	return RequestHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
++	return HTTPHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+ 		v, next, err := renderable.RequestRenderable(r)
+ 		if err != nil {
+ 			return nil, next, err
+@@ -53,10 +53,10 @@ func TestRequestRequestHandler(t *testing.T) {
+ 
+ 	mux := http.NewServeMux()
+ 
+-	mux.Handle("/empty", RequestHandler(empty))
++	mux.Handle("/empty", HTTPHandler(empty))
+ 	mux.Handle("/html/empty", HTML(empty))
+ 
+-	mux.Handle("/person", RequestHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
++	mux.Handle("/person", HTTPHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+ 		name := r.URL.Query().Get("name")
+ 		if name == "" {
+ 			return nil, nil, fmt.Errorf("missing name")
