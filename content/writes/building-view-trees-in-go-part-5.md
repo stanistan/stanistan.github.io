@@ -54,9 +54,13 @@ this can be here as well.
 
 #### Documentation
 
+Adding some documentation to our public functions and types.
+
 {{ veun_diff(patch=17) }}
 
 #### More meaningful library errors
+
+These should be custom error types but for now this is ok.
 
 {{ veun_diff(patch=18) }}
 
@@ -81,24 +85,33 @@ In the simplest case, a view/renderable can be produced by a request.
 We keep our the views simple and they don't know anything about
 where their inputs come from.
 
+I can imagine having different kind of constructing functions
+for the view type as well.
+
 
 ```go
-import "net/http"
+package some_view
 
-type MyViewFromRequest(r *http.Request) (MyView, error) {
-    return MyView{}, nil
+import (
+    "net/http"
+
+    "github.com/stanistan/veun"
+)
+
+type FromRequest(r *http.Request) (veun.AsRenderable, error) {
+    return myView{/* */}, nil
 }
 ```
 
-This is a good start and we can have a handler that works with
-this.
+This is a good start and we can write a handler that works with
+this type of function.
 
-Keep `panic` everywhere for error handling because we don't really
-know what else to do :(
+We're going to `panic` everywhere for error handling for the moment
+because what that's a problem for future us to solve.
 
 ```go
-http.Handle("/some_route", func(w http.ResponseWriter, r *http.Request) {
-    view, err := MyViewFromRequest(r)
+http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    view, err := some_view.FromRequest(r)
     if err != nil {
         panic(err)
     }
@@ -115,10 +128,10 @@ http.Handle("/some_route", func(w http.ResponseWriter, r *http.Request) {
 })
 ```
 
-Squinting, the only thing that is specific to that route (that isn't part of
-the rendering behavior) is `MyViewFromRequest`.
+The only thing that is specific to that route (that isn't part of
+the rendering behavior) is `FromRequest`.
 
-And we can extract it into an interface and function type that can
+And we can extract it into an interface (and function type) that can
 produce either a view or error out.
 
 ```go
@@ -135,7 +148,19 @@ func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable,
 
 {{ veun_diff(patch=19) }}
 
-We still need a handler that can do something with this...
+And to make a handler:
+
+```go
+func(renderable RequestRenderable) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // snip...
+        view, err := renderable.RequestRenderable(r)
+        // snip ...
+    })
+}
+```
+
+We can extract this into a type:
 
 ```go
 type HTTPHandler struct {
@@ -144,19 +169,7 @@ type HTTPHandler struct {
 
 func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     view, err := h.r.RequestRenderable(r)
-    if err != nil {
-        panic(err)
-    }
-
-    html, err := Render(r.Context(), view)
-    if err != nil {
-        panic(err)
-    }
-
-    _, err = w.Write([]byte(html))
-    if err != nil {
-        panic(err)
-    }
+    // ...
 }
 ```
 
@@ -208,18 +221,23 @@ var empty = RequestRenderableFunc(
 mux.Handle("/empty", HTTPHandler{empty})
 ```
 
+Every change we make to how we represent requets/renderables and handlers
+will be captured in these tests going forward.
+
 {{ veun_diff(patch=23) }}
 
-## Composing RequestRenderables
+## Composing RequestRenderable
 
-I'm a big fan of interfaces that work well together and are self-consistent,
-views/renderables compose well together -- this is how we get render trees, that
-continue to maintain the same abstraction.
+I'm a big fan of interfaces that work well together and are self-consistent.
+Views and renderables compose well together (using slots and delegation), we
+are making trees of views after all. And the tree itself is renderable, just
+like a node in the tree is-- at some point we don't really have to care too
+much.
 
 Turns out we have a very similar pattern available to us with `RequestRenderable`
-types as well.
+types.
 
-### Why
+### Why do we even care?
 
 In a real world web application, you are going to end up up with standard a container
 view at the top level signifying the `<html>...` and whatever application and page chrome
@@ -240,7 +258,7 @@ func (v html) Renderable(_ context.Context) (Renderable, error) {
 Having each `RequestRenderable` be aware of which wrapper view is needed might be
 annoying, and ends up making our functions less re-usable across different contexts.
 
-But we can re-use the interface (again, similar to the middleware pattern).
+_But,_ we can re-use the interface (similar to the middleware pattern).
 
 ```go
 func HTML(renderable RequestRenderable) RequestRenderable {
@@ -314,14 +332,18 @@ return NotFoundResponse()
 return RedirectResponse(301, toLocation)
 ```
 
-If you squint above, the handler will actually be returning
-something that implements an `http.Handler` and this is really powerful.
+Looking at this, and remembering we want to be compatible with
+the standard library, what we're really doing here is building
+things that implememnt `http.Handler`. This is really powerful.
 
-The problem with the approach is we lose the composability we need.
+The problem with the above approach is we lose library composability,
+as soon as we are dealing with `http.Handler` we can longer extract
+view information.
 
 ### http.Handler
 
-Let's add _one more return variable_ to our `RequestRenderable`.
+But we can do both! Go obviously has multiple return values, so
+let's add _one more_ to our `RequestRenderable`.
 
 ```go
 type RequestRenderable interface {
@@ -370,10 +392,13 @@ in our request handers.
 
 {{ veun_diff(patch=26) }}
 
+This is pretty neat, and allows the person writing their application
+to only use what they need and when they need it.
+
 ### Error Handling
 
-We always come back to error handling, our implementation currently
-has three places where we `panic`.
+Going back to error handling, we always come back to error handling,
+our implementation currently has three places where we `panic`.
 
 1. `RequestRenderable()` returns an error
 2. `Render()` returns an error
@@ -381,9 +406,9 @@ has three places where we `panic`.
 
 Our library already has hooks two of these to fail...
 
-1. RequestRenderable composition can fully handle (1) and (2).
-2. We can't really do anything else here-- maybe the connection went away,
-   and we let it fail.
+- RequestRenderable composition can fully handle (1) and (2).
+- For (3), we can't really do anything else here-- maybe the connection went away,
+  and we let it fail.
 
 
 Let's make a really silly error view...
@@ -438,11 +463,17 @@ func WithErrorHandler(eh ErrorRenderable) func(RequestRenderable) RequestRendera
 }
 ```
 
-This is cool and all, but it's _basically_ the same thing as our `HTTPHandler`, but
-with an ErrorRenderable provided. So I don't like it.
+I don't like it...
 
-So maybe let's make that part of a base handler, and also include a default error
-handler instead.
+1. It illustrates how given the public types and functions in
+   our library, we can pretty quickly build out a solution without breaking our
+   abstraction.
+
+2. It's _basically_ the same thing as our `HTTPHandler`, but with an
+   ErrorRenderable provided (which maybe isn't the right abstraction).
+
+We can  put this responsibility in our handler implementation and add some sane defaults,
+mainly `500 Internal Server Error`.
 
 First, let's make `HTTPHandler` a function instead of a struct, this eliminates the
 need for `RequestHandlerFunc`.
@@ -451,9 +482,9 @@ need for `RequestHandlerFunc`.
 
 ### Adding the error delegate option
 
-Let's add the field to our (now private) `handler`, and make it something that
-we can add to the `HTTPHandler`. In this case, I prefer to have them be optional
-configurations, meaning we should be adding them as so:
+Now that our handler is private, we can add options! And our options should be
+optional. If we end up adding more things to our handler, we can do so with
+these optional arguments.
 
 ```go
 type HandlerOption func(h *handler)
@@ -466,10 +497,9 @@ type handler struct {
 }
 ```
 
-And we can replace the `panic` calls with `handleError(ctx, err, ResponseWriter)`
+Replace the `panic` calls with `handleError(ctx, err, ResponseWriter)`
 which will either do error degation-- using our `handleRenderError`, or
-write out at `500 Internal Server Error`.
-
+write out at `500 Internal Server Error`, and we're basically done!
 
 {{ veun_diff(patch=28) }}
 
@@ -501,8 +531,10 @@ func main() {
 
 This is compatible with middleware, any router that works with `http.Handler`
 functions, and can do response headers, redirects, custom error pages,
-and cancellation/deadlines.
+and cancellation/deadlines, and really any kind of way that someone would
+want to structure their HTTP server.
 
+{{ veun_diff(patch=29) }}
 
 [part-1]: /writes/building-view-trees-in-go-part-1
 [part-2]: /writes/building-view-trees-in-go-part-2
