@@ -1,0 +1,74 @@
+2b9f6914a5b601be10aa63954e68a50229ee7cc6 one-liner implementation for our HTTPHandler
+diff --git a/http_request_renderable.go b/http_request_renderable.go
+index 1ff20bc..5d6bf82 100644
+--- a/http_request_renderable.go
++++ b/http_request_renderable.go
+@@ -35,7 +35,7 @@ type HTTPHandler struct {
+ 
+ // ServeHTTP implements http.Handler.
+ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+-	renderable, _, err := h.Renderable.RequestRenderable(r)
++	renderable, next, err := h.Renderable.RequestRenderable(r)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+@@ -45,8 +45,13 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+ 		panic(err)
+ 	}
+ 
++	if next != nil {
++		next.ServeHTTP(w, r)
++	}
++
+ 	_, err = w.Write([]byte(html))
+ 	if err != nil {
+ 		panic(err)
+ 	}
++
+ }
+diff --git a/http_request_test.go b/http_request_test.go
+index 23051c5..237f111 100644
+--- a/http_request_test.go
++++ b/http_request_test.go
+@@ -34,8 +34,21 @@ func HTML(renderable RequestRenderable) http.Handler {
+ }
+ 
+ func TestRequestRequestHandler(t *testing.T) {
++	var statusCode = func(code int) http.Handler {
++		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++			w.WriteHeader(code)
++		})
++	}
++
+ 	var empty = RequestRenderableFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+-		return nil, nil, nil
++		switch r.URL.Query().Get("not_found") {
++		case "default":
++			return nil, http.NotFoundHandler(), nil
++		case "nil_404":
++			return nil, statusCode(http.StatusNotFound), nil
++		default:
++			return nil, nil, nil
++		}
+ 	})
+ 
+ 	mux := http.NewServeMux()
+@@ -85,6 +98,18 @@ func TestRequestRequestHandler(t *testing.T) {
+ 		assert.Equal(t, 200, code)
+ 	})
+ 
++	t.Run("empty handler can 404", func(t *testing.T) {
++		body, code, _ := sendRequest(t, "/empty?not_found=default")
++		assert.Equal(t, "404 page not found\n", body)
++		assert.Equal(t, 404, code)
++	})
++
++	t.Run("empty handler can 404 and nil", func(t *testing.T) {
++		body, code, _ := sendRequest(t, "/empty?not_found=nil_404")
++		assert.Equal(t, "", body)
++		assert.Equal(t, 404, code)
++	})
++
+ 	t.Run("person renders (name=Stan)", func(t *testing.T) {
+ 		body, code, _ := sendRequest(t, "/person?name=Stan")
+ 		assert.Equal(t, "<div>Hi, Stan.</div>", body)

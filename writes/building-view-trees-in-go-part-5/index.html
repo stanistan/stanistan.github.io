@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="author" content="Stan Rozenraukh" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Building view-trees: http.Handler [Part 5] - stanistan</title>
+        
+            <link rel="alternate" type="application/rss+xml" title="RSS" href="https://www.stanistan.com/rss.xml">
+        
+        <link rel="icon" href="data:" />
+        
+            
+            <style type="text/css">body{border-top:5px solid #f6cde0;background:#fcfcfc;color:#333;font-family:Cochin,Times,serif;font-size:1.3em;line-height:1.55em;margin:0;padding:0}.content{margin:8em auto 0;max-width:33em;padding:2em;position:relative}.content.resume{margin:1em auto 0;max-width:35em}article{position:relative}h1{font-size:1.4em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.4em 0 0}h1+p{margin-top:0}h2{font-size:1.2em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.2em 0 0}h2+p{margin-top:0}h3{font-size:1.12em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1.12em 0 0}h3+p{margin-top:0}h4{font-size:1em;font-weight:800;color:#262626;font-family:monospace;margin:0;padding:1em 0 0}h4+p{margin-top:0}hr{border:0 dotted #f6cde0;border-top-width:1px;height:0}pre,.mono,code{font-family:monospace}.small{font-size:75%}.smaller{font-size:85%}.faded{color:#999}.center{text-align:center}a,.link-like{color:#000193;font-weight:bolder;text-underline-offset:6px}a:hover,.link-like:hover{color:#1415ff;text-decoration:none}a:active,.link-like:active{color:red}ol,ul{list-style-position:outside;margin:0;margin-left:1.6em;padding:0}ol li,ul li{margin:0 0 .1em 0;padding:0 0 0 .2em}.outside{margin-left:-2em}ul.outside,ol.outside{margin-left:-.1em}code{background:#fdf4f8;border-bottom:1px dotted #f6cde0;padding:.3em;font-size:.85em}pre,blockquote{background:#fff;line-height:1.45em;margin-left:-2em;margin-right:-2em}pre{font-size:.85em;border-bottom:1px dotted #f6cde0;padding:1em 2em;overflow-x:scroll}pre code{background:inherit;border-bottom:0;padding:0;font-size:inherit}blockquote{font-size:.9em;font-style:italic;padding:.5em 2em;border-left:1px dotted #f6cde0}.tag{margin-right:.3em;border-radius:10px;color:#333;text-decoration:none}.tag:hover{color:#000;text-decoration:underline}.toc{margin:.2em -2em 0;padding:2em;font-size:.7em;line-height:1.45;border-bottom:1px dotted #f6cde0}.toc a{color:#333;font-weight:normal}.toc ul{list-style:none;margin-left:0em}.toc ul ul{margin-left:1em}.anchor-link{position:absolute;margin-left:-.9em;text-decoration:none;font-weight:normal}article .img-container{margin:.2em -2em 0}article .img-container img{width:100%;height:auto}@media only screen and (max-width: 500px){body{font-size:1.15em}.content{padding:1.8em}.smaller{font-size:90%}.small{font-size:83%}.outside{margin-left:inherit}article .img-container{margin:.2em -1em 0}}dl{margin:1.5em 0}dl dt{clear:left;float:left;text-decoration:underline;text-align:right;width:5.5em}dl dt::after{content:":"}dl dd{display:block;float:left}.clear{clear:both}.invoice-heading{padding:1.5em 0}.invoice-heading h1{float:left;padding:0}.invoice-heading .invoice-heading-code{float:right;font-weight:bold}table{margin-top:1em;margin-bottom:1em;width:100%}table th,table td{text-align:left}table th.right,table td.right{text-align:right}table th{font-size:75%}table tfoot td{font-weight:bold}table tfoot tr:first-child td{border-top:1px dotted #f6cde0;padding-top:.3em}table tbody tr:last-child td{padding-bottom:.3em}table tbody tr:first-child td{padding-top:.3em}table thead tr:last-child th{padding-bottom:.3em;border-bottom:1px dotted #ccc}table tr{width:100%}details{font-size:85%}details summary{font-weight:bold;color:#00002d}details summary:hover{color:#1415ff;cursor:pointer}.job{margin:10px 0 10px -20px;padding:0px 20px 40px 40px;background:#fef8fb}.job .place{margin-left:-20px}.job .position+.position{margin-top:1em}.job .position h3{font-size:93%;font-weight:bold;padding-top:.7em}.job .position h4.when{font-size:70%;font-weight:normal;padding-top:0;line-height:1.1em}.job .position .details{max-width:55em;margin-top:1em;font-size:88%;line-height:1.3em}.job .position .details li+li{margin-top:10px}</style>
+        
+    </head>
+    <body>
+        <div class="content ">
+            
+    <a href="/" class="faded mono small" title="stanistan /">go /</a>
+    <article>
+        <h1>Building view-trees: http.Handler [Part 5]</h1>
+        <div class="small faded">
+            
+    
+    
+    
+    <a href="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;stanistan&#x2F;stanistan.github.io&#x2F;the-details&#x2F;content&#x2F;writes&#x2F;building-view-trees-in-go-part-5.md" class="faded">.md</a>
+ |
+            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/" class="faded">permalink</a>
+            
+            | Published on December 08, 2023
+            
+        </div>
+
+        
+
+        
+        <section class="toc">
+            <ul>
+                
+                <li>
+                    <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#an-aside-small-improvements">An Aside: Small Improvements</a>
+                    
+                    <ul>
+                        
+                        <li>
+                            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#parsing-templates-from-separate-files">Parsing templates from separate files</a>
+                        </li>
+                        
+                        <li>
+                            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#others">Others</a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li>
+                    <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#the-http-server">The HTTP Server</a>
+                    
+                    <ul>
+                        
+                        <li>
+                            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#views-are-a-function-of-requests-and-routes">Views are a function of requests and routes</a>
+                        </li>
+                        
+                        <li>
+                            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#testing">Testing</a>
+                        </li>
+                        
+                        <li>
+                            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#more-funcs">More Funcs</a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li>
+                    <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#composing-requestrenderable">Composing RequestRenderable</a>
+                    
+                    <ul>
+                        
+                        <li>
+                            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#why-do-we-even-care">Why do we even care?</a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li>
+                    <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#fixing-the-abstraction">Fixing the abstraction</a>
+                    
+                    <ul>
+                        
+                        <li>
+                            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#http-handler">http.Handler</a>
+                        </li>
+                        
+                        <li>
+                            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#error-handling">Error Handling</a>
+                        </li>
+                        
+                        <li>
+                            <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#adding-the-error-delegate-option">Adding the error delegate option</a>
+                        </li>
+                        
+                    </ul>
+                    
+                </li>
+                
+                <li>
+                    <a href="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/#putting-it-together">Putting it together</a>
+                    
+                </li>
+                
+            </ul>
+        </section>
+        
+
+        <section class="post">
+            <p>Previously: <a href="/writes/building-view-trees-in-go-part-1">intro</a>, <a href="/writes/building-view-trees-in-go-part-2">the basics</a>, <a href="/writes/building-view-trees-in-go-part-3">error handling</a>,
+and <a href="/writes/building-view-trees-in-go-part-4">async data fetching</a>.</p>
+<hr />
+<h2 id="an-aside-small-improvements">An Aside: Small Improvements</h2>
+<p>Before we go forward, let's make some small quality of life improvements.</p>
+<h3 id="parsing-templates-from-separate-files">Parsing templates from separate files</h3>
+<p>We've had all of our templates be inlined in strings before. This is
+fine for testing, but when we're building an app, we'll want to have
+something in place for loading/embedding our templates diffently.</p>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      tempalte FS parsing
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;cde937033d46b06c8fb959e745df8d73436c4267">(source: cde93703)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/view.go b/view.go
+</span><span>index 97f02f5..f092749 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/view.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/view.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -3,6 +3,7 @@ package veun
+</span><span> import (
+</span><span> 	&quot;context&quot;
+</span><span> 	&quot;html/template&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;io/fs&quot;
+</span><span> )
+</span><span> 
+</span><span> type View struct {
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -27,10 +28,16 @@ func slotFuncStub(name string) (template.HTML, error) {
+</span><span> 	return template.HTML(&quot;&quot;), nil
+</span><span> }
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func newTemplate(name string) *template.Template {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return template.New(name).Funcs(template.FuncMap{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		&quot;slot&quot;: slotFuncStub,
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> func MustParseTemplate(name, contents string) *template.Template {
+</span><span style="background-color:#ffecec;color:#323232;">-	return template.Must(
+</span><span style="background-color:#ffecec;color:#323232;">-		template.New(name).
+</span><span style="background-color:#ffecec;color:#323232;">-			Funcs(template.FuncMap{&quot;slot&quot;: slotFuncStub}).
+</span><span style="background-color:#ffecec;color:#323232;">-			Parse(contents),
+</span><span style="background-color:#ffecec;color:#323232;">-	)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return template.Must(newTemplate(name).Parse(contents))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func MustParseTemplateFS(f fs.FS, ps ...string) *template.Template {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return template.Must(newTemplate(&quot;ROOT&quot;).ParseFS(f, ps...))
+</span><span> }
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">import </span><span style="color:#183691;">&quot;embed&quot;
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">var </span><span>(
+</span><span>    </span><span style="font-style:italic;color:#969896;">//go:embed templates
+</span><span>    templatesFS embed.</span><span style="font-weight:bold;color:#a71d5d;">FS
+</span><span>    templates   </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>MustParseTemplateFS(templatesFS, </span><span style="color:#183691;">&quot;templates/*.tpl&quot;</span><span>)
+</span><span>)
+</span></code></pre>
+<p>If our templates are malformed, this will panic during startup or test
+time.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span>View{
+</span><span>    </span><span style="font-style:italic;color:#969896;">// ...
+</span><span>    Tpl: templates.Lookup(</span><span style="color:#183691;">&quot;my_view.tpl&quot;</span><span>),
+</span><span>}
+</span></code></pre>
+<h3 id="others">Others</h3>
+<h4 id="slots-can-be-nil-views">Slots can be nil views</h4>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      slot can be nil, we return empty
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;35883748e5b08774c57ae582bc5e700eb053161c">(source: 35883748)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/slots.go b/slots.go
+</span><span>index 61f7fb4..8a04e81 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/slots.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/slots.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -10,7 +10,7 @@ type Slots map[string]AsRenderable
+</span><span> func (s Slots) renderSlot(ctx context.Context) func(string) (template.HTML, error) {
+</span><span> 	return func(name string) (template.HTML, error) {
+</span><span> 		slot, ok := s[name]
+</span><span style="background-color:#ffecec;color:#323232;">-		if ok {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		if ok &amp;&amp; slot != nil {
+</span><span> 			return Render(ctx, slot)
+</span><span> 		}
+</span><span> 
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<p>This is a design decision, but we allow a view to be empty/nil and then
+we don't render it. We might want to move this into <code>Render</code>, but
+this can be here as well.</p>
+<h4 id="documentation">Documentation</h4>
+<p>Adding some documentation to our public functions and types.</p>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      doc comments
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;2b70959caf5740686880054be3ef90289d73cce9">(source: 2b70959c)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/renderable.go b/renderable.go
+</span><span>index 57f3791..27759f6 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/renderable.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -5,17 +5,25 @@ import (
+</span><span> 	&quot;html/template&quot;
+</span><span> )
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// Renderable represents any struct that can be rendered
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// in the Render function.
+</span><span> type Renderable interface {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// Template provides the template object / parsed and compiled,
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// that Render will execute given a context.
+</span><span> 	Template(ctx context.Context) (*template.Template, error)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// TemplateData provides the data to the template given a context.
+</span><span> 	TemplateData(ctx context.Context) (any, error)
+</span><span> }
+</span><span> 
+</span><span> type AsRenderable interface {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// Renderable produces a Renderable struct given a context.
+</span><span> 	Renderable(ctx context.Context) (Renderable, error)
+</span><span> }
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// RenderableFunc is a function that conforms to the Renderable interface.
+</span><span> type RenderableFunc func(context.Context) (Renderable, error)
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// Renderable implements Renderable for RenderableFunc.
+</span><span> func (f RenderableFunc) Renderable(ctx context.Context) (Renderable, error) {
+</span><span> 	return f(ctx)
+</span><span> }
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<h4 id="more-meaningful-library-errors">More meaningful library errors</h4>
+<p>These should be custom error types but for now this is ok.</p>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      error wrapping
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;7008a944d4b4997f862326e7eff9c5b7afced7ce">(source: 7008a944)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/renderer.go b/renderer.go
+</span><span>index ebbddef..fe37ba0 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/renderer.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/renderer.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -26,7 +26,7 @@ func render(ctx context.Context, r Renderable) (template.HTML, error) {
+</span><span> 
+</span><span> 	tpl, err := r.Template(ctx)
+</span><span> 	if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		return empty, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return empty, fmt.Errorf(&quot;Template: %w&quot;, err)
+</span><span> 	}
+</span><span> 
+</span><span> 	if tpl == nil {
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -35,12 +35,12 @@ func render(ctx context.Context, r Renderable) (template.HTML, error) {
+</span><span> 
+</span><span> 	data, err := r.TemplateData(ctx)
+</span><span> 	if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		return empty, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return empty, fmt.Errorf(&quot;TemplateData: %w&quot;, err)
+</span><span> 	}
+</span><span> 
+</span><span> 	var bs bytes.Buffer
+</span><span> 	if err := tpl.Execute(&amp;bs, data); err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		return empty, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return empty, fmt.Errorf(&quot;tpl.Execute: %w&quot;, err)
+</span><span> 	}
+</span><span> 
+</span><span> 	return template.HTML(bs.String()), nil
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<h2 id="the-http-server">The HTTP Server</h2>
+<p>In Go, there is one fundamental interface for serving an HTTP endpoint,
+<a rel="nofollow noreferrer" href="https://pkg.go.dev/net/http#Handler"><code>http.Handler</code></a>. In practice, you can either make a type
+that implements <code>ServeHTTP(...)</code> or use <code>http.HandlerFunc</code> to make a
+function into a handler. For us, with views and renderables, this is
+a bit too low level. We want:</p>
+<ul>
+<li>Something that can produce views based on a request.</li>
+<li>Something that will allow us to do redirects and 404s.</li>
+<li>To integrate well with standard http handlers and middleware.</li>
+<li>To have short meaningful routes.</li>
+<li>To maintain flexibility and composability.</li>
+<li>TO NOT build our own router.</li>
+</ul>
+<h3 id="views-are-a-function-of-requests-and-routes">Views are a function of requests and routes</h3>
+<p>In the simplest case, a view/renderable can be produced by a request.
+We keep our the views simple and they don't know anything about
+where their inputs come from.</p>
+<p>I can imagine having different kind of constructing functions
+for the view type as well.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">package </span><span>some_view
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">import </span><span>(
+</span><span>    </span><span style="color:#183691;">&quot;net/http&quot;
+</span><span>
+</span><span>    </span><span style="color:#183691;">&quot;github.com/stanistan/veun&quot;
+</span><span>)
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">type </span><span>FromRequest(</span><span style="font-weight:bold;color:#a71d5d;">r *</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (veun.AsRenderable, error) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>myView{</span><span style="font-style:italic;color:#969896;">/* */</span><span>}, </span><span style="color:#0086b3;">nil
+</span><span>}
+</span></code></pre>
+<p>This is a good start and we can write a handler that works with
+this type of function.</p>
+<p>We're going to <code>panic</code> everywhere for error handling for the moment
+because what that's a problem for future us to solve.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span>http.HandlerFunc(</span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(w http.</span><span style="font-weight:bold;color:#a71d5d;">ResponseWriter</span><span>, r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) {
+</span><span>    view, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>some_view.FromRequest(r)
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>        </span><span style="color:#62a35c;">panic</span><span>(err)
+</span><span>    }
+</span><span>
+</span><span>    html, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>Render(r.Context(), view)
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>        </span><span style="color:#62a35c;">panic</span><span>(err)
+</span><span>    }
+</span><span>
+</span><span>    _, err </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>w.Write([]</span><span style="font-weight:bold;color:#0086b3;">byte</span><span>(html))
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>        </span><span style="color:#62a35c;">panic</span><span>(err)
+</span><span>    }
+</span><span>})
+</span></code></pre>
+<p>The only thing that is specific to that route (that isn't part of
+the rendering behavior) is <code>FromRequest</code>.</p>
+<p>And we can extract it into an interface (and function type) that can
+produce either a view or error out.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">type </span><span>RequestRenderable </span><span style="font-weight:bold;color:#a71d5d;">interface </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#795da3;">RequestRenderable</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>)
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">type </span><span>RequestRenderableFunc </span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>)
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span>(f </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderableFunc</span><span>) </span><span style="font-weight:bold;color:#795da3;">RequestRenderable</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>f(r)
+</span><span>}
+</span></code></pre>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      Adding RequestRenderable &amp; Func
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;bda46e00f7b324f3f9e456d0de9a2531adfe0518">(source: bda46e00)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/http_request_renderable.go b/http_request_renderable.go
+</span><span>new file mode 100644
+</span><span>index 0000000..66700c8
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> /dev/null
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -0,0 +1,21 @@
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">package veun
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">import (
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;net/http&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// RequestRenderable represents a method that
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// can create a view out of an http.Request.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type RequestRenderable interface {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	RequestRenderable(r *http.Request) (AsRenderable, error)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// RequestRenderableFunc is the function representation of a
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// RequestRenderable.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type RequestRenderableFunc func(*http.Request) (AsRenderable, error)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// RequestRenderable conforms RequestRenderableFunc to
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// RequestRenderable interface.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return f(r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<p>And to make a handler:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func</span><span>(renderable </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable</span><span>) http.</span><span style="font-weight:bold;color:#a71d5d;">Handler </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>http.HandlerFunc(</span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(w http.</span><span style="font-weight:bold;color:#a71d5d;">ResponseWriter</span><span>, r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) {
+</span><span>        </span><span style="font-style:italic;color:#969896;">// snip...
+</span><span>        view, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>renderable.RequestRenderable(r)
+</span><span>        </span><span style="font-style:italic;color:#969896;">// snip ...
+</span><span>    })
+</span><span>}
+</span></code></pre>
+<p>We can extract this into a type:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">type </span><span>HTTPHandler </span><span style="font-weight:bold;color:#a71d5d;">struct </span><span>{
+</span><span>    r </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span>(h </span><span style="font-weight:bold;color:#a71d5d;">HTTPHandler</span><span>) </span><span style="font-weight:bold;color:#795da3;">ServeHTTP</span><span>(w http.</span><span style="font-weight:bold;color:#a71d5d;">ResponseWriter</span><span>, r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) {
+</span><span>    view, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>h.r.RequestRenderable(r)
+</span><span>    </span><span style="font-style:italic;color:#969896;">// ...
+</span><span>}
+</span></code></pre>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      Initial HTTPHandler (with panics)
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;4f37b29cf27abf2e516c922a4353f784e6c996cf">(source: 4f37b29c)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/http_request_renderable.go b/http_request_renderable.go
+</span><span>index 66700c8..8d5f5c0 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_renderable.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -19,3 +19,26 @@ type RequestRenderableFunc func(*http.Request) (AsRenderable, error)
+</span><span> func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable, error) {
+</span><span> 	return f(r)
+</span><span> }
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// HTTPHandler implements http.Handler for a RequestRenderable.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type HTTPHandler struct {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	Renderable RequestRenderable
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// ServeHTTP implements http.Handler.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	renderable, err := h.Renderable.RequestRenderable(r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		panic(err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	html, err := Render(r.Context(), renderable)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		panic(err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	_, err = w.Write([]byte(html))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		panic(err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<p>And our route definition can look more like this:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span>mux </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>http.NewServeMux()
+</span><span>
+</span><span>mux.Handle(</span><span style="color:#183691;">&quot;/empty&quot;</span><span>, HTTPHandler{
+</span><span>    RequestRenderableFunc(</span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span style="color:#0086b3;">nil</span><span>, </span><span style="color:#0086b3;">nil
+</span><span>    }),
+</span><span>})
+</span></code></pre>
+<h3 id="testing">Testing</h3>
+<p>Of course we can write an HTTP server using the standard library, <em>but</em> Go also
+provides <code>net/http/httptest</code>, where we can start a server and make requests
+to it as if it were remote from our tests.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span>srv </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>httptest.NewServer(mux)
+</span><span style="font-style:italic;color:#969896;">// and we can make requests to srv.URL
+</span></code></pre>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      First test for the http handler
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;cf9d6bbd91707b0bf8eeca426d9d2f2f876038ef">(source: cf9d6bbd)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/http_request_test.go b/http_request_test.go
+</span><span>new file mode 100644
+</span><span>index 0000000..04f6f6b
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> /dev/null
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_test.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -0,0 +1,57 @@
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">package veun_test
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">import (
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;context&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;io/ioutil&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;net/http&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;net/http/httptest&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;testing&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;github.com/alecthomas/assert/v2&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;github.com/stanistan/veun&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func TestRequestBasicHandler(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	var handler = veun.HTTPHandler{
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		veun.RequestRenderableFunc(func(r *http.Request) (veun.AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		}),
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux := http.NewServeMux()
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/empty&quot;, handler)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	server := httptest.NewServer(mux)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	defer server.Close()
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	var sendRequest = func(t *testing.T, to string) (string, int, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		t.Helper()
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		req, err := http.NewRequestWithContext(context.TODO(), &quot;GET&quot;, server.URL+to, nil)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.NoError(t, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		res, err := http.DefaultClient.Do(req)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return &quot;&quot;, 0, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		defer res.Body.Close()
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		data, err := ioutil.ReadAll(res.Body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.NoError(t, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return string(data), res.StatusCode, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;the root path is a real server that 404s&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		_, code, _ := sendRequest(t, &quot;/&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 404, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;empty handler is indeed empty&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		body, code, _ := sendRequest(t, &quot;/empty&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 200, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<p>Our example above ended up unearthing a bug where that was not safe to do,
+but it should be-- in our error handlers and the slot we allow for a view
+to be <code>nil</code>.</p>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      fix: safe to pass nil to renderer
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;eedee59249cc4308a7262d0fd0a4112e1d707248">(source: eedee592)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/renderer.go b/renderer.go
+</span><span>index fe37ba0..8546abc 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/renderer.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/renderer.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -8,6 +8,10 @@ import (
+</span><span> )
+</span><span> 
+</span><span> func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if r == nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return template.HTML(&quot;&quot;), nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> 	renderable, err := r.Renderable(ctx)
+</span><span> 	if err != nil {
+</span><span> 		return handleRenderError(ctx, err, r)
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<h3 id="more-funcs">More Funcs</h3>
+<p>We can add convenience constructors to the <code>HTTPHandler{RequestRenderable...}</code>
+pattern, and this becomes a bit nicer to deal with.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">var </span><span>empty </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>RequestRenderableFunc(
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span style="color:#0086b3;">nil</span><span>, </span><span style="color:#0086b3;">nil
+</span><span>    },
+</span><span>)
+</span><span>
+</span><span>mux.Handle(</span><span style="color:#183691;">&quot;/empty&quot;</span><span>, HTTPHandler{empty})
+</span></code></pre>
+<p>Every change we make to how we represent requets/renderables and handlers
+will be captured in these tests going forward.</p>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      convenience function RequestHandlerFunc
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;791b18a1bad686f575176c63dd504284d61d6a81">(source: 791b18a1)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/http_request_renderable.go b/http_request_renderable.go
+</span><span>index 8d5f5c0..9a0c7c5 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_renderable.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -20,6 +20,14 @@ func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable,
+</span><span> 	return f(r)
+</span><span> }
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func RequestHandlerFunc(r RequestRenderableFunc) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return HTTPHandler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func RequestHandler(r RequestRenderable) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return HTTPHandler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> // HTTPHandler implements http.Handler for a RequestRenderable.
+</span><span> type HTTPHandler struct {
+</span><span> 	Renderable RequestRenderable
+</span><span>diff --git a/http_request_test.go b/http_request_test.go
+</span><span>index 04f6f6b..8298521 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_test.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_test.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -12,11 +12,9 @@ import (
+</span><span> )
+</span><span> 
+</span><span> func TestRequestBasicHandler(t *testing.T) {
+</span><span style="background-color:#ffecec;color:#323232;">-	var handler = veun.HTTPHandler{
+</span><span style="background-color:#ffecec;color:#323232;">-		veun.RequestRenderableFunc(func(r *http.Request) (veun.AsRenderable, error) {
+</span><span style="background-color:#ffecec;color:#323232;">-			return nil, nil
+</span><span style="background-color:#ffecec;color:#323232;">-		}),
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	var handler = veun.RequestHandlerFunc(func(r *http.Request) (veun.AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return nil, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span> 
+</span><span> 	mux := http.NewServeMux()
+</span><span> 
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<h2 id="composing-requestrenderable">Composing RequestRenderable</h2>
+<p>I'm a big fan of interfaces that work well together and are self-consistent.
+Views and renderables compose well together (using slots and delegation), we
+are making trees of views after all. And the tree itself is renderable, just
+like a node in the tree is-- at some point we don't really have to care too
+much.</p>
+<p>Turns out we have a very similar pattern available to us with <code>RequestRenderable</code>
+types.</p>
+<h3 id="why-do-we-even-care">Why do we even care?</h3>
+<p>In a real world web application, you are going to end up up with standard a container
+view at the top level signifying the <code>&lt;html&gt;...</code> and whatever application and page chrome
+you need.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">var </span><span>htmlTpl </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>MustParseTemplate(</span><span style="color:#183691;">&quot;html&quot;</span><span>, </span><span style="color:#183691;">`&lt;html&gt;&lt;body&gt;</span><span>{{ slot </span><span style="color:#183691;">&quot;body&quot; </span><span>}}</span><span style="color:#183691;">&lt;/body&gt;&lt;/html&gt;`</span><span>)
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">type </span><span>html </span><span style="font-weight:bold;color:#a71d5d;">struct </span><span>{
+</span><span>    Body  </span><span style="font-weight:bold;color:#a71d5d;">AsRenderable
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">html</span><span>) </span><span style="font-weight:bold;color:#795da3;">Renderable</span><span>(_ context.</span><span style="font-weight:bold;color:#a71d5d;">Context</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>View{Tpl: htmlTpl, Slots: Slots{</span><span style="color:#183691;">&quot;body&quot;</span><span>: v.Body}}, </span><span style="color:#0086b3;">nil
+</span><span>}
+</span></code></pre>
+<p>Having each <code>RequestRenderable</code> be aware of which wrapper view is needed might be
+annoying, and ends up making our functions less re-usable across different contexts.</p>
+<p><em>But,</em> we can re-use the interface (similar to the middleware pattern).</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">HTML</span><span>(renderable </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable</span><span>) </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>RequestRenderableFunc(</span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>        v, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>renderable.RequestRenderable(r)
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">return </span><span style="color:#0086b3;">nil</span><span>, err
+</span><span>        }
+</span><span>
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>html{Body: v}, </span><span style="color:#0086b3;">nil
+</span><span>    })
+</span><span>}
+</span></code></pre>
+<p>Or more clearly:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">HTML</span><span>(renderable </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable</span><span>) http.</span><span style="font-weight:bold;color:#a71d5d;">Handler </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>RequestHandlerFunc( </span><span style="font-style:italic;color:#969896;">/* ... */ </span><span>)
+</span><span>}
+</span></code></pre>
+<p>So we can:</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span>mux.handle(</span><span style="color:#183691;">&quot;/html/empty&quot;</span><span>, HTML(empty))
+</span></code></pre>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      Adding tests for HTML()
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;74eeff3c00dda3cb5e92278cb3e1b0a76af560a7">(source: 74eeff3c)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/http_request_test.go b/http_request_test.go
+</span><span>index 8298521..7df31ba 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_test.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_test.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -2,23 +2,55 @@ package veun_test
+</span><span> 
+</span><span> import (
+</span><span> 	&quot;context&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;fmt&quot;
+</span><span> 	&quot;io/ioutil&quot;
+</span><span> 	&quot;net/http&quot;
+</span><span> 	&quot;net/http/httptest&quot;
+</span><span> 	&quot;testing&quot;
+</span><span> 
+</span><span> 	&quot;github.com/alecthomas/assert/v2&quot;
+</span><span style="background-color:#ffecec;color:#323232;">-	&quot;github.com/stanistan/veun&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	. &quot;github.com/stanistan/veun&quot;
+</span><span> )
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-func TestRequestBasicHandler(t *testing.T) {
+</span><span style="background-color:#ffecec;color:#323232;">-	var handler = veun.RequestHandlerFunc(func(r *http.Request) (veun.AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">var htmlTpl = MustParseTemplate(&quot;html&quot;, `&lt;html&gt;&lt;body&gt;{{ slot &quot;body&quot; }}&lt;/body&gt;&lt;/html&gt;`)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type html struct {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	Body AsRenderable
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (v html) Renderable(_ context.Context) (Renderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return View{Tpl: htmlTpl, Slots: Slots{&quot;body&quot;: v.Body}}, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func HTML(renderable RequestRenderable) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return RequestHandlerFunc(func(r *http.Request) (AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		v, err := renderable.RequestRenderable(r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return html{Body: v}, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func TestRequestRequestHandler(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	var empty = RequestRenderableFunc(func(r *http.Request) (AsRenderable, error) {
+</span><span> 		return nil, nil
+</span><span> 	})
+</span><span> 
+</span><span> 	mux := http.NewServeMux()
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-	mux.Handle(&quot;/empty&quot;, handler)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/empty&quot;, RequestHandlerFunc(empty))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/html/empty&quot;, HTML(empty))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/person&quot;, RequestHandlerFunc(func(r *http.Request) (AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		name := r.URL.Query().Get(&quot;name&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		if name == &quot;&quot; {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, fmt.Errorf(&quot;missing name&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return PersonView(Person{Name: name}), nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}))
+</span><span> 
+</span><span> 	server := httptest.NewServer(mux)
+</span><span> 	defer server.Close()
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -52,4 +84,22 @@ func TestRequestBasicHandler(t *testing.T) {
+</span><span> 		assert.Equal(t, &quot;&quot;, body)
+</span><span> 		assert.Equal(t, 200, code)
+</span><span> 	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;person renders (name=Stan)&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		body, code, _ := sendRequest(t, &quot;/person?name=Stan&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;&lt;div&gt;Hi, Stan.&lt;/div&gt;&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 200, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;person renders (name=someone)&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		body, code, _ := sendRequest(t, &quot;/person?name=someone&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;&lt;div&gt;Hi, someone.&lt;/div&gt;&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 200, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;/html/empty&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		body, code, _ := sendRequest(t, &quot;/html/empty&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;&lt;html&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 200, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span> }
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<h2 id="fixing-the-abstraction">Fixing the abstraction</h2>
+<p>While this is <em>nice</em>, we've lost some functionality, and no longer have answers
+to the questions:</p>
+<ul>
+<li>How will we redirect?</li>
+<li>What if we want to 404?</li>
+<li>What if we want to send back http response headers?</li>
+<li>What is our error handling strategy?</li>
+</ul>
+<p>And real applications <em>need answers</em> to these questions.</p>
+<p>The current implementation will either fail (with panics, for now), or render a <code>200</code>.</p>
+<p>I've played around with having this return an <code>Response</code> struct or something
+like that, which would create different levels of composition with usage that
+is something like this:</p>
+<p><strong>Standard response, <code>200</code> with rendered view:</strong></p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">return </span><span>Response(view), </span><span style="color:#0086b3;">nil
+</span></code></pre>
+<p><strong>Rendered view with custom status code:</strong></p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">return </span><span>Response(view, StatusCode(</span><span style="color:#0086b3;">404</span><span>)), </span><span style="color:#0086b3;">nil
+</span></code></pre>
+<p><strong>An empty 404</strong></p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">return </span><span>NotFoundResponse()
+</span></code></pre>
+<p><strong>Redirects</strong></p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">return </span><span>RedirectResponse(</span><span style="color:#0086b3;">301</span><span>, toLocation)
+</span></code></pre>
+<p>Looking at this, and remembering we want to be compatible with
+the standard library, what we're really doing here is building
+things that implememnt <code>http.Handler</code>. This is really powerful.</p>
+<p>The problem with the above approach is we lose library composability,
+as soon as we are dealing with <code>http.Handler</code> we can longer extract
+view information.</p>
+<h3 id="http-handler">http.Handler</h3>
+<p>But we can do both! Go obviously has multiple return values, so
+let's add <em>one more</em> to our <code>RequestRenderable</code>.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">type </span><span>RequestRenderable </span><span style="font-weight:bold;color:#a71d5d;">interface </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#795da3;">RequestRenderable</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, http.</span><span style="font-weight:bold;color:#a71d5d;">Handler</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>)
+</span><span>}
+</span></code></pre>
+<p>To go back through our examples above usage would be:</p>
+<p><strong>Standard response, <code>200</code> with rendered view:</strong></p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">return </span><span>view, </span><span style="color:#0086b3;">nil</span><span>, </span><span style="color:#0086b3;">nil
+</span></code></pre>
+<p><strong>Rendered view with custom status code:</strong></p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">return </span><span>view, StatusCode(</span><span style="color:#0086b3;">404</span><span>), </span><span style="color:#0086b3;">nil
+</span></code></pre>
+<p><strong>An empty 404:</strong></p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">return </span><span style="color:#0086b3;">nil</span><span>, http.NotFoundHandler(), </span><span style="color:#0086b3;">nil
+</span></code></pre>
+<p><strong>Redirects:</strong></p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">return </span><span style="color:#0086b3;">nil</span><span>, http.RedirectHandler(toLocation, </span><span style="color:#0086b3;">301</span><span>), </span><span style="color:#0086b3;">nil
+</span></code></pre>
+<p><strong>Custom Response Headers:</strong></p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">return </span><span>view, ResponseHeader(</span><span style="font-weight:bold;color:#a71d5d;">...</span><span>), </span><span style="color:#0086b3;">nil
+</span></code></pre>
+<p>This means we have the optionality of adding http handlers to our response
+but <em>also</em> have the types and flexibility to do view composition
+in our request handers.</p>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      Adding http.Handler as a return parameter to RequestRenderable
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;db0d1a58bc9e0aa7c68c258bc11c587f830a6901">(source: db0d1a58)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/http_request_renderable.go b/http_request_renderable.go
+</span><span>index 9a0c7c5..1ff20bc 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_renderable.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -7,16 +7,16 @@ import (
+</span><span> // RequestRenderable represents a method that
+</span><span> // can create a view out of an http.Request.
+</span><span> type RequestRenderable interface {
+</span><span style="background-color:#ffecec;color:#323232;">-	RequestRenderable(r *http.Request) (AsRenderable, error)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	RequestRenderable(r *http.Request) (AsRenderable, http.Handler, error)
+</span><span> }
+</span><span> 
+</span><span> // RequestRenderableFunc is the function representation of a
+</span><span> // RequestRenderable.
+</span><span style="background-color:#ffecec;color:#323232;">-type RequestRenderableFunc func(*http.Request) (AsRenderable, error)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type RequestRenderableFunc func(*http.Request) (AsRenderable, http.Handler, error)
+</span><span> 
+</span><span> // RequestRenderable conforms RequestRenderableFunc to
+</span><span> // RequestRenderable interface.
+</span><span style="background-color:#ffecec;color:#323232;">-func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span> 	return f(r)
+</span><span> }
+</span><span> 
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -35,7 +35,7 @@ type HTTPHandler struct {
+</span><span> 
+</span><span> // ServeHTTP implements http.Handler.
+</span><span> func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span style="background-color:#ffecec;color:#323232;">-	renderable, err := h.Renderable.RequestRenderable(r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	renderable, _, err := h.Renderable.RequestRenderable(r)
+</span><span> 	if err != nil {
+</span><span> 		panic(err)
+</span><span> 	}
+</span><span>diff --git a/http_request_test.go b/http_request_test.go
+</span><span>index 7df31ba..23051c5 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_test.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_test.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -23,33 +23,33 @@ func (v html) Renderable(_ context.Context) (Renderable, error) {
+</span><span> }
+</span><span> 
+</span><span> func HTML(renderable RequestRenderable) http.Handler {
+</span><span style="background-color:#ffecec;color:#323232;">-	return RequestHandlerFunc(func(r *http.Request) (AsRenderable, error) {
+</span><span style="background-color:#ffecec;color:#323232;">-		v, err := renderable.RequestRenderable(r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return RequestHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		v, next, err := renderable.RequestRenderable(r)
+</span><span> 		if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-			return nil, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, next, err
+</span><span> 		}
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-		return html{Body: v}, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return html{Body: v}, next, nil
+</span><span> 	})
+</span><span> }
+</span><span> 
+</span><span> func TestRequestRequestHandler(t *testing.T) {
+</span><span style="background-color:#ffecec;color:#323232;">-	var empty = RequestRenderableFunc(func(r *http.Request) (AsRenderable, error) {
+</span><span style="background-color:#ffecec;color:#323232;">-		return nil, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	var empty = RequestRenderableFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return nil, nil, nil
+</span><span> 	})
+</span><span> 
+</span><span> 	mux := http.NewServeMux()
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-	mux.Handle(&quot;/empty&quot;, RequestHandlerFunc(empty))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/empty&quot;, RequestHandler(empty))
+</span><span> 	mux.Handle(&quot;/html/empty&quot;, HTML(empty))
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-	mux.Handle(&quot;/person&quot;, RequestHandlerFunc(func(r *http.Request) (AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/person&quot;, RequestHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span> 		name := r.URL.Query().Get(&quot;name&quot;)
+</span><span> 		if name == &quot;&quot; {
+</span><span style="background-color:#ffecec;color:#323232;">-			return nil, fmt.Errorf(&quot;missing name&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, nil, fmt.Errorf(&quot;missing name&quot;)
+</span><span> 		}
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-		return PersonView(Person{Name: name}), nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return PersonView(Person{Name: name}), nil, nil
+</span><span> 	}))
+</span><span> 
+</span><span> 	server := httptest.NewServer(mux)
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      one-liner implementation for our HTTPHandler
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;2b9f6914a5b601be10aa63954e68a50229ee7cc6">(source: 2b9f6914)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/http_request_renderable.go b/http_request_renderable.go
+</span><span>index 1ff20bc..5d6bf82 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_renderable.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -35,7 +35,7 @@ type HTTPHandler struct {
+</span><span> 
+</span><span> // ServeHTTP implements http.Handler.
+</span><span> func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span style="background-color:#ffecec;color:#323232;">-	renderable, _, err := h.Renderable.RequestRenderable(r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	renderable, next, err := h.Renderable.RequestRenderable(r)
+</span><span> 	if err != nil {
+</span><span> 		panic(err)
+</span><span> 	}
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -45,8 +45,13 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span> 		panic(err)
+</span><span> 	}
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if next != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		next.ServeHTTP(w, r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> 	_, err = w.Write([]byte(html))
+</span><span> 	if err != nil {
+</span><span> 		panic(err)
+</span><span> 	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> }
+</span><span>diff --git a/http_request_test.go b/http_request_test.go
+</span><span>index 23051c5..237f111 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_test.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_test.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -34,8 +34,21 @@ func HTML(renderable RequestRenderable) http.Handler {
+</span><span> }
+</span><span> 
+</span><span> func TestRequestRequestHandler(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	var statusCode = func(code int) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			w.WriteHeader(code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> 	var empty = RequestRenderableFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span style="background-color:#ffecec;color:#323232;">-		return nil, nil, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		switch r.URL.Query().Get(&quot;not_found&quot;) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		case &quot;default&quot;:
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, http.NotFoundHandler(), nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		case &quot;nil_404&quot;:
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, statusCode(http.StatusNotFound), nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		default:
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, nil, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		}
+</span><span> 	})
+</span><span> 
+</span><span> 	mux := http.NewServeMux()
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -85,6 +98,18 @@ func TestRequestRequestHandler(t *testing.T) {
+</span><span> 		assert.Equal(t, 200, code)
+</span><span> 	})
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;empty handler can 404&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		body, code, _ := sendRequest(t, &quot;/empty?not_found=default&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;404 page not found\n&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 404, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;empty handler can 404 and nil&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		body, code, _ := sendRequest(t, &quot;/empty?not_found=nil_404&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 404, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> 	t.Run(&quot;person renders (name=Stan)&quot;, func(t *testing.T) {
+</span><span> 		body, code, _ := sendRequest(t, &quot;/person?name=Stan&quot;)
+</span><span> 		assert.Equal(t, &quot;&lt;div&gt;Hi, Stan.&lt;/div&gt;&quot;, body)
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<p>This is pretty neat, and allows the person writing their application
+to only use what they need and when they need it.</p>
+<h3 id="error-handling">Error Handling</h3>
+<p>Going back to error handling, we always come back to error handling,
+our implementation currently has three places where we <code>panic</code>.</p>
+<ol>
+<li><code>RequestRenderable()</code> returns an error</li>
+<li><code>Render()</code> returns an error</li>
+<li><code>Write</code> fails</li>
+</ol>
+<p>Our library already has hooks two of these to fail...</p>
+<ul>
+<li>RequestRenderable composition can fully handle (1) and (2).</li>
+<li>For (3), we can't really do anything else here-- maybe the connection went away,
+and we let it fail.</li>
+</ul>
+<p>Let's make a really silly error view...</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">var </span><span>errorViewTpl </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>MustParseTemplate(</span><span style="color:#183691;">&quot;errorView&quot;</span><span>, </span><span style="color:#183691;">`Error: </span><span>{{ . }}</span><span style="color:#183691;">`</span><span>)
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">type </span><span>errorView </span><span style="font-weight:bold;color:#a71d5d;">struct </span><span>{
+</span><span>    Error </span><span style="font-weight:bold;color:#0086b3;">error
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span>(v </span><span style="font-weight:bold;color:#a71d5d;">errorView</span><span>) </span><span style="font-weight:bold;color:#795da3;">Renderable</span><span>(_ context.</span><span style="font-weight:bold;color:#a71d5d;">Context</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">Renderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>View{Tpl: errorViewTpl, Data: v.Error}, </span><span style="color:#0086b3;">nil
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">newErrorView</span><span>(_ context.</span><span style="font-weight:bold;color:#a71d5d;">Context</span><span>, err </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>errorView{Error: err}, </span><span style="color:#0086b3;">nil
+</span><span>}
+</span></code></pre>
+<p>And leverage our <code>ErrorRenderable</code> interface to do some composition.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">WithErrorHandler</span><span>(eh </span><span style="font-weight:bold;color:#a71d5d;">ErrorRenderable</span><span>) </span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(</span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable</span><span>) </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable </span><span>{
+</span><span>    </span><span style="font-weight:bold;color:#a71d5d;">return func</span><span>(renderable </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable</span><span>) </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable </span><span>{
+</span><span>        </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>RequestRenderableFunc(</span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, http.</span><span style="font-weight:bold;color:#a71d5d;">Handler</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>            v, next, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>renderable.RequestRenderable(r)
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>                v, err </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>eh.ErrorRenderable(r.Context(), err)
+</span><span>                </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>v, </span><span style="color:#0086b3;">nil</span><span>, err
+</span><span>            }
+</span><span>
+</span><span>            html, err </span><span style="font-weight:bold;color:#a71d5d;">:= </span><span>Render(r.Context(), v)
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>err </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>                v, err </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>eh.ErrorRenderable(r.Context(), err)
+</span><span>                </span><span style="font-weight:bold;color:#a71d5d;">return </span><span>v, </span><span style="color:#0086b3;">nil</span><span>, err
+</span><span>            }
+</span><span>
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">if </span><span style="color:#62a35c;">len</span><span>(html) </span><span style="font-weight:bold;color:#a71d5d;">== </span><span style="color:#0086b3;">0 </span><span>{
+</span><span>                </span><span style="font-weight:bold;color:#a71d5d;">return </span><span style="color:#0086b3;">nil</span><span>, next, </span><span style="color:#0086b3;">nil
+</span><span>            }
+</span><span>
+</span><span>            </span><span style="font-weight:bold;color:#a71d5d;">return </span><span style="color:#0086b3;">nil</span><span>, http.HandlerFunc(</span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(w http.</span><span style="font-weight:bold;color:#a71d5d;">ResponseWriter</span><span>, r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) {
+</span><span>                </span><span style="font-weight:bold;color:#a71d5d;">if </span><span>next </span><span style="font-weight:bold;color:#a71d5d;">!= </span><span style="color:#0086b3;">nil </span><span>{
+</span><span>                    next.ServeHTTP(w, r)
+</span><span>                }
+</span><span>
+</span><span>                _, _ </span><span style="font-weight:bold;color:#a71d5d;">= </span><span>w.Write([]</span><span style="font-weight:bold;color:#0086b3;">byte</span><span>(html))
+</span><span>            }), </span><span style="color:#0086b3;">nil
+</span><span>        })
+</span><span>    }
+</span><span>}
+</span></code></pre>
+<p>I don't like it...</p>
+<ol>
+<li>
+<p>It illustrates how given the public types and functions in
+our library, we can pretty quickly build out a solution without breaking our
+abstraction.</p>
+</li>
+<li>
+<p>It's <em>basically</em> the same thing as our <code>HTTPHandler</code>, but with an
+ErrorRenderable provided (which maybe isn't the right abstraction).</p>
+</li>
+</ol>
+<p>We can  put this responsibility in our handler implementation and add some sane defaults,
+mainly <code>500 Internal Server Error</code>.</p>
+<p>First, let's make <code>HTTPHandler</code> a function instead of a struct, this eliminates the
+need for <code>RequestHandlerFunc</code>.</p>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      HTTPHandler is a function, and renaming RequestHandler
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;8020b8ca9584eba0e6b6369428a98fe8248f1c15">(source: 8020b8ca)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/http_request_renderable.go b/http_request_renderable.go
+</span><span>index 5d6bf82..d62379d 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_renderable.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -20,21 +20,21 @@ func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable,
+</span><span> 	return f(r)
+</span><span> }
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-func RequestHandlerFunc(r RequestRenderableFunc) http.Handler {
+</span><span style="background-color:#ffecec;color:#323232;">-	return HTTPHandler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func HTTPHandlerFunc(r RequestRenderableFunc) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return handler{Renderable: r}
+</span><span> }
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-func RequestHandler(r RequestRenderable) http.Handler {
+</span><span style="background-color:#ffecec;color:#323232;">-	return HTTPHandler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func HTTPHandler(r RequestRenderable) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return handler{Renderable: r}
+</span><span> }
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-// HTTPHandler implements http.Handler for a RequestRenderable.
+</span><span style="background-color:#ffecec;color:#323232;">-type HTTPHandler struct {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// handler implements http.Handler for a RequestRenderable.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type handler struct {
+</span><span> 	Renderable RequestRenderable
+</span><span> }
+</span><span> 
+</span><span> // ServeHTTP implements http.Handler.
+</span><span style="background-color:#ffecec;color:#323232;">-func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span> 	renderable, next, err := h.Renderable.RequestRenderable(r)
+</span><span> 	if err != nil {
+</span><span> 		panic(err)
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -53,5 +53,4 @@ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span> 	if err != nil {
+</span><span> 		panic(err)
+</span><span> 	}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span> }
+</span><span>diff --git a/http_request_test.go b/http_request_test.go
+</span><span>index 237f111..2940f4d 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_test.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_test.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -23,7 +23,7 @@ func (v html) Renderable(_ context.Context) (Renderable, error) {
+</span><span> }
+</span><span> 
+</span><span> func HTML(renderable RequestRenderable) http.Handler {
+</span><span style="background-color:#ffecec;color:#323232;">-	return RequestHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return HTTPHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span> 		v, next, err := renderable.RequestRenderable(r)
+</span><span> 		if err != nil {
+</span><span> 			return nil, next, err
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -53,10 +53,10 @@ func TestRequestRequestHandler(t *testing.T) {
+</span><span> 
+</span><span> 	mux := http.NewServeMux()
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-	mux.Handle(&quot;/empty&quot;, RequestHandler(empty))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/empty&quot;, HTTPHandler(empty))
+</span><span> 	mux.Handle(&quot;/html/empty&quot;, HTML(empty))
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-	mux.Handle(&quot;/person&quot;, RequestHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/person&quot;, HTTPHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span> 		name := r.URL.Query().Get(&quot;name&quot;)
+</span><span> 		if name == &quot;&quot; {
+</span><span> 			return nil, nil, fmt.Errorf(&quot;missing name&quot;)
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<h3 id="adding-the-error-delegate-option">Adding the error delegate option</h3>
+<p>Now that our handler is private, we can add options! And our options should be
+optional. If we end up adding more things to our handler, we can do so with
+these optional arguments.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">type </span><span>HandlerOption </span><span style="font-weight:bold;color:#a71d5d;">func</span><span>(h </span><span style="font-weight:bold;color:#a71d5d;">*handler</span><span>)
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">HTTPHandler</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable</span><span>, opts </span><span style="font-weight:bold;color:#a71d5d;">...HandlerOption</span><span>) http.</span><span style="font-weight:bold;color:#a71d5d;">Handler </span><span>{ </span><span style="font-style:italic;color:#969896;">/* ... */ </span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">type </span><span>handler </span><span style="font-weight:bold;color:#a71d5d;">struct </span><span>{
+</span><span>    Renderable   </span><span style="font-weight:bold;color:#a71d5d;">RequestRenderable
+</span><span>    ErrorHandler </span><span style="font-weight:bold;color:#a71d5d;">ErrorRenderable    </span><span style="font-style:italic;color:#969896;">// &lt;- this is new
+</span><span>}
+</span></code></pre>
+<p>Replace the <code>panic</code> calls with <code>handleError(ctx, err, ResponseWriter)</code>
+which will either do error degation-- using our <code>handleRenderError</code>, or
+write out at <code>500 Internal Server Error</code>, and we're basically done!</p>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      handler with error handler
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;5ae41f095fbc0cbe8392010ff6f0c5a11a4bf9f8">(source: 5ae41f09)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/error_renderable.go b/error_renderable.go
+</span><span>index 0dcab6c..87f539b 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/error_renderable.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/error_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -17,6 +17,12 @@ type ErrorRenderable interface {
+</span><span> 	ErrorRenderable(ctx context.Context, err error) (AsRenderable, error)
+</span><span> }
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type ErrorRenderableFunc func(context.Context, error) (AsRenderable, error)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (f ErrorRenderableFunc) ErrorRenderable(ctx context.Context, err error) (AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return f(ctx, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> func handleRenderError(ctx context.Context, err error, with any) (template.HTML, error) {
+</span><span> 	var empty template.HTML
+</span><span> 
+</span><span>diff --git a/http_request_renderable.go b/http_request_renderable.go
+</span><span>index d62379d..8ef40b5 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_renderable.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -1,6 +1,8 @@
+</span><span> package veun
+</span><span> 
+</span><span> import (
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;context&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;log/slog&quot;
+</span><span> 	&quot;net/http&quot;
+</span><span> )
+</span><span> 
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -20,29 +22,54 @@ func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable,
+</span><span> 	return f(r)
+</span><span> }
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-func HTTPHandlerFunc(r RequestRenderableFunc) http.Handler {
+</span><span style="background-color:#ffecec;color:#323232;">-	return handler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func HTTPHandlerFunc(r RequestRenderableFunc, opts ...HandlerOption) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	h := handler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	for _, opt := range opts {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		opt(&amp;h)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return h
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func HTTPHandler(r RequestRenderable, opts ...HandlerOption) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	h := handler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	for _, opt := range opts {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		opt(&amp;h)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return h
+</span><span> }
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-func HTTPHandler(r RequestRenderable) http.Handler {
+</span><span style="background-color:#ffecec;color:#323232;">-	return handler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type HandlerOption func(h *handler)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func WithErrorHandler(eh ErrorRenderable) HandlerOption {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return func(h *handler) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		h.ErrorHandler = eh
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func WithErrorHandlerFunc(eh ErrorRenderableFunc) HandlerOption {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return func(h *handler) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		h.ErrorHandler = eh
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span> }
+</span><span> 
+</span><span> // handler implements http.Handler for a RequestRenderable.
+</span><span> type handler struct {
+</span><span style="background-color:#ffecec;color:#323232;">-	Renderable RequestRenderable
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	Renderable   RequestRenderable
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	ErrorHandler ErrorRenderable
+</span><span> }
+</span><span> 
+</span><span> // ServeHTTP implements http.Handler.
+</span><span> func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span> 	renderable, next, err := h.Renderable.RequestRenderable(r)
+</span><span> 	if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		panic(err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		h.handleError(r.Context(), w, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return
+</span><span> 	}
+</span><span> 
+</span><span> 	html, err := Render(r.Context(), renderable)
+</span><span> 	if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		panic(err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		h.handleError(r.Context(), w, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return
+</span><span> 	}
+</span><span> 
+</span><span> 	if next != nil {
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -54,3 +81,17 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span> 		panic(err)
+</span><span> 	}
+</span><span> }
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (h handler) handleError(ctx context.Context, w http.ResponseWriter, err error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	html, rErr := handleRenderError(ctx, err, h.ErrorHandler)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if rErr == nil &amp;&amp; len(html) &gt; 0 {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		w.WriteHeader(http.StatusInternalServerError)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		_, _ = w.Write([]byte(html))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// TODO: grab the logger from the context
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	slog.Error(&quot;handler failed&quot;, &quot;err&quot;, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	code := http.StatusInternalServerError
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	http.Error(w, http.StatusText(code), code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span>diff --git a/http_request_test.go b/http_request_test.go
+</span><span>index 2940f4d..fa0f800 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_test.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_test.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -26,14 +26,31 @@ func HTML(renderable RequestRenderable) http.Handler {
+</span><span> 	return HTTPHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span> 		v, next, err := renderable.RequestRenderable(r)
+</span><span> 		if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-			return nil, next, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, nil, err
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		} else if v == nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">			return nil, next, nil
+</span><span> 		}
+</span><span> 
+</span><span> 		return html{Body: v}, next, nil
+</span><span> 	})
+</span><span> }
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">var errorViewTpl = MustParseTemplate(&quot;errorView&quot;, `Error: {{ . }}`)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type errorView struct {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	Error error
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (v errorView) Renderable(_ context.Context) (Renderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return View{Tpl: errorViewTpl, Data: v.Error}, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func newErrorView(_ context.Context, err error) (AsRenderable, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return errorView{Error: err}, nil
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> func TestRequestRequestHandler(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> 	var statusCode = func(code int) http.Handler {
+</span><span> 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+</span><span> 			w.WriteHeader(code)
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -51,19 +68,22 @@ func TestRequestRequestHandler(t *testing.T) {
+</span><span> 		}
+</span><span> 	})
+</span><span> 
+</span><span style="background-color:#ffecec;color:#323232;">-	mux := http.NewServeMux()
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-	mux.Handle(&quot;/empty&quot;, HTTPHandler(empty))
+</span><span style="background-color:#ffecec;color:#323232;">-	mux.Handle(&quot;/html/empty&quot;, HTML(empty))
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-	mux.Handle(&quot;/person&quot;, HTTPHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	var person = RequestRenderableFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span> 		name := r.URL.Query().Get(&quot;name&quot;)
+</span><span> 		if name == &quot;&quot; {
+</span><span> 			return nil, nil, fmt.Errorf(&quot;missing name&quot;)
+</span><span> 		}
+</span><span> 
+</span><span> 		return PersonView(Person{Name: name}), nil, nil
+</span><span style="background-color:#ffecec;color:#323232;">-	}))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux := http.NewServeMux()
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/empty&quot;, HTTPHandler(empty))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/html/empty&quot;, HTML(empty))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/person&quot;, HTTPHandler(person, WithErrorHandlerFunc(newErrorView)))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	mux.Handle(&quot;/html/person&quot;, HTML(person))
+</span><span> 
+</span><span> 	server := httptest.NewServer(mux)
+</span><span> 	defer server.Close()
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -116,6 +136,12 @@ func TestRequestRequestHandler(t *testing.T) {
+</span><span> 		assert.Equal(t, 200, code)
+</span><span> 	})
+</span><span> 
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;person (name=)&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		body, code, _ := sendRequest(t, &quot;/person?name=&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 500, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;Error: missing name&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span> 	t.Run(&quot;person renders (name=someone)&quot;, func(t *testing.T) {
+</span><span> 		body, code, _ := sendRequest(t, &quot;/person?name=someone&quot;)
+</span><span> 		assert.Equal(t, &quot;&lt;div&gt;Hi, someone.&lt;/div&gt;&quot;, body)
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -124,7 +150,19 @@ func TestRequestRequestHandler(t *testing.T) {
+</span><span> 
+</span><span> 	t.Run(&quot;/html/empty&quot;, func(t *testing.T) {
+</span><span> 		body, code, _ := sendRequest(t, &quot;/html/empty&quot;)
+</span><span style="background-color:#ffecec;color:#323232;">-		assert.Equal(t, &quot;&lt;html&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;&quot;, body)
+</span><span> 		assert.Equal(t, 200, code)
+</span><span> 	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;/html/person (name=Stan)&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		body, code, _ := sendRequest(t, &quot;/html/person?name=Stan&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;&lt;html&gt;&lt;body&gt;&lt;div&gt;Hi, Stan.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 200, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	t.Run(&quot;/html/person (name=)&quot;, func(t *testing.T) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		body, code, _ := sendRequest(t, &quot;/html/person?name=&quot;)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, &quot;Internal Server Error\n&quot;, body)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		assert.Equal(t, 500, code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	})
+</span><span> }
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+<h2 id="putting-it-together">Putting it together</h2>
+<p>From the tests in the patches, we can see that making a handler is now pretty
+simple, by building up the few pieces we've put together, we have a pretty
+robust little library.</p>
+<pre data-lang="go" style="background-color:#ffffff;color:#323232;" class="language-go "><code class="language-go" data-lang="go"><span style="font-weight:bold;color:#a71d5d;">import </span><span>(
+</span><span>    </span><span style="color:#183691;">&quot;net/http&quot;
+</span><span>
+</span><span>    . </span><span style="color:#183691;">&quot;github.com/stanistan/veun&quot;
+</span><span>)
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">type </span><span>myServer </span><span style="font-weight:bold;color:#a71d5d;">struct </span><span>{
+</span><span>    </span><span style="font-style:italic;color:#969896;">// some db contections and contexts
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span>(s </span><span style="font-weight:bold;color:#a71d5d;">*myServer</span><span>) </span><span style="font-weight:bold;color:#795da3;">SomePageHandler</span><span>(r </span><span style="font-weight:bold;color:#a71d5d;">*</span><span>http.</span><span style="font-weight:bold;color:#a71d5d;">Request</span><span>) (</span><span style="font-weight:bold;color:#a71d5d;">AsRenderable</span><span>, http.</span><span style="font-weight:bold;color:#a71d5d;">Handler</span><span>, </span><span style="font-weight:bold;color:#0086b3;">error</span><span>) {
+</span><span>    </span><span style="font-style:italic;color:#969896;">// Stuff...
+</span><span>}
+</span><span>
+</span><span style="font-weight:bold;color:#a71d5d;">func </span><span style="font-weight:bold;color:#795da3;">main</span><span>() {
+</span><span>    http.Handle(</span><span style="color:#183691;">&quot;/some-page&quot;</span><span>, HTML(s.SomePageHandler))
+</span><span>}
+</span></code></pre>
+<p>This is compatible with middleware, any router that works with <code>http.Handler</code>
+functions, and can do response headers, redirects, custom error pages,
+and cancellation/deadlines, and really any kind of way that someone would
+want to structure their HTTP server.</p>
+
+
+
+
+
+
+
+
+
+
+<div>
+  <details>
+    <summary class="small">
+      moving HTTPHandler to http_handler
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;9e99612419b441ee13cae48174fa504306127e39">(source: 9e996124)</a>
+    </summary>
+
+<pre data-lang="patch" style="background-color:#ffffff;color:#323232;" class="language-patch "><code class="language-patch" data-lang="patch"><span>diff --git a/http_handler.go b/http_handler.go
+</span><span>new file mode 100644
+</span><span>index 0000000..dd725ff
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> /dev/null
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_handler.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -0,0 +1,87 @@
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">package veun
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">import (
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;context&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;log/slog&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	&quot;net/http&quot;
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// HTTPHandler constructs an http.HTTPHandler given the RequestRenderable.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func HTTPHandler(r RequestRenderable, opts ...HandlerOption) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	h := handler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	for _, opt := range opts {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		opt(&amp;h)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return h
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// HTTPHandler constructs an http.HTTPHandler given the RequestRenderableFunc.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func HTTPHandlerFunc(r RequestRenderableFunc, opts ...HandlerOption) http.Handler {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	h := handler{Renderable: r}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	for _, opt := range opts {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		opt(&amp;h)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return h
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// HandlerOption is an option that can be provided to the handler.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type HandlerOption func(h *handler)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// WithErrorHandler creates a HandlerOption that can be provided to HTTPHandler
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// or HTTPHandlerFunc.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">//
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// This can change the default error handling behavior of the handler.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func WithErrorHandler(eh ErrorRenderable) HandlerOption {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return func(h *handler) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		h.ErrorHandler = eh
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// WithErrorHandlerFunc is the same as WithErrorHandler.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func WithErrorHandlerFunc(eh ErrorRenderableFunc) HandlerOption {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	return WithErrorHandler(eh)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// handler implements http.Handler for a RequestRenderable.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">type handler struct {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	Renderable   RequestRenderable
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	ErrorHandler ErrorRenderable
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">// ServeHTTP implements http.Handler.
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	renderable, next, err := h.Renderable.RequestRenderable(r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		h.handleError(r.Context(), w, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	html, err := Render(r.Context(), renderable)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		h.handleError(r.Context(), w, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if next != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		next.ServeHTTP(w, r)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	_, err = w.Write([]byte(html))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if err != nil {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		panic(err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">func (h handler) handleError(ctx context.Context, w http.ResponseWriter, err error) {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	html, rErr := handleRenderError(ctx, err, h.ErrorHandler)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	if rErr == nil &amp;&amp; len(html) &gt; 0 {
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		w.WriteHeader(http.StatusInternalServerError)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		_, _ = w.Write([]byte(html))
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">		return
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	}
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	// TODO: grab the logger from the context
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	slog.Error(&quot;handler failed&quot;, &quot;err&quot;, err)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	code := http.StatusInternalServerError
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">	http.Error(w, http.StatusText(code), code)
+</span><span style="background-color:#eaffea;font-weight:bold;color:#55a532;">+</span><span style="background-color:#eaffea;color:#323232;">}
+</span><span>diff --git a/http_request_renderable.go b/http_request_renderable.go
+</span><span>index 8ef40b5..267a293 100644
+</span><span style="background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;">---</span><span style="font-style:italic;color:#969896;"> a/http_request_renderable.go
+</span><span style="background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;">+++</span><span style="font-style:italic;color:#969896;"> b/http_request_renderable.go
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -1,8 +1,6 @@
+</span><span> package veun
+</span><span> 
+</span><span> import (
+</span><span style="background-color:#ffecec;color:#323232;">-	&quot;context&quot;
+</span><span style="background-color:#ffecec;color:#323232;">-	&quot;log/slog&quot;
+</span><span> 	&quot;net/http&quot;
+</span><span> )
+</span><span> 
+</span><span style="font-weight:bold;font-style:italic;color:#969896;">@@ -21,77 +19,3 @@ type RequestRenderableFunc func(*http.Request) (AsRenderable, http.Handler, erro
+</span><span> func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable, http.Handler, error) {
+</span><span> 	return f(r)
+</span><span> }
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-func HTTPHandlerFunc(r RequestRenderableFunc, opts ...HandlerOption) http.Handler {
+</span><span style="background-color:#ffecec;color:#323232;">-	h := handler{Renderable: r}
+</span><span style="background-color:#ffecec;color:#323232;">-	for _, opt := range opts {
+</span><span style="background-color:#ffecec;color:#323232;">-		opt(&amp;h)
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#ffecec;color:#323232;">-	return h
+</span><span style="background-color:#ffecec;color:#323232;">-}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-func HTTPHandler(r RequestRenderable, opts ...HandlerOption) http.Handler {
+</span><span style="background-color:#ffecec;color:#323232;">-	h := handler{Renderable: r}
+</span><span style="background-color:#ffecec;color:#323232;">-	for _, opt := range opts {
+</span><span style="background-color:#ffecec;color:#323232;">-		opt(&amp;h)
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#ffecec;color:#323232;">-	return h
+</span><span style="background-color:#ffecec;color:#323232;">-}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-type HandlerOption func(h *handler)
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-func WithErrorHandler(eh ErrorRenderable) HandlerOption {
+</span><span style="background-color:#ffecec;color:#323232;">-	return func(h *handler) {
+</span><span style="background-color:#ffecec;color:#323232;">-		h.ErrorHandler = eh
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#ffecec;color:#323232;">-}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-func WithErrorHandlerFunc(eh ErrorRenderableFunc) HandlerOption {
+</span><span style="background-color:#ffecec;color:#323232;">-	return func(h *handler) {
+</span><span style="background-color:#ffecec;color:#323232;">-		h.ErrorHandler = eh
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#ffecec;color:#323232;">-}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-// handler implements http.Handler for a RequestRenderable.
+</span><span style="background-color:#ffecec;color:#323232;">-type handler struct {
+</span><span style="background-color:#ffecec;color:#323232;">-	Renderable   RequestRenderable
+</span><span style="background-color:#ffecec;color:#323232;">-	ErrorHandler ErrorRenderable
+</span><span style="background-color:#ffecec;color:#323232;">-}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-// ServeHTTP implements http.Handler.
+</span><span style="background-color:#ffecec;color:#323232;">-func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+</span><span style="background-color:#ffecec;color:#323232;">-	renderable, next, err := h.Renderable.RequestRenderable(r)
+</span><span style="background-color:#ffecec;color:#323232;">-	if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		h.handleError(r.Context(), w, err)
+</span><span style="background-color:#ffecec;color:#323232;">-		return
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-	html, err := Render(r.Context(), renderable)
+</span><span style="background-color:#ffecec;color:#323232;">-	if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		h.handleError(r.Context(), w, err)
+</span><span style="background-color:#ffecec;color:#323232;">-		return
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-	if next != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		next.ServeHTTP(w, r)
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-	_, err = w.Write([]byte(html))
+</span><span style="background-color:#ffecec;color:#323232;">-	if err != nil {
+</span><span style="background-color:#ffecec;color:#323232;">-		panic(err)
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#ffecec;color:#323232;">-}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-func (h handler) handleError(ctx context.Context, w http.ResponseWriter, err error) {
+</span><span style="background-color:#ffecec;color:#323232;">-	html, rErr := handleRenderError(ctx, err, h.ErrorHandler)
+</span><span style="background-color:#ffecec;color:#323232;">-	if rErr == nil &amp;&amp; len(html) &gt; 0 {
+</span><span style="background-color:#ffecec;color:#323232;">-		w.WriteHeader(http.StatusInternalServerError)
+</span><span style="background-color:#ffecec;color:#323232;">-		_, _ = w.Write([]byte(html))
+</span><span style="background-color:#ffecec;color:#323232;">-		return
+</span><span style="background-color:#ffecec;color:#323232;">-	}
+</span><span style="background-color:#ffecec;color:#323232;">-
+</span><span style="background-color:#ffecec;color:#323232;">-	// TODO: grab the logger from the context
+</span><span style="background-color:#ffecec;color:#323232;">-	slog.Error(&quot;handler failed&quot;, &quot;err&quot;, err)
+</span><span style="background-color:#ffecec;color:#323232;">-	code := http.StatusInternalServerError
+</span><span style="background-color:#ffecec;color:#323232;">-	http.Error(w, http.StatusText(code), code)
+</span><span style="background-color:#ffecec;color:#323232;">-}
+</span><span>
+</span></code></pre>
+
+
+  </details>
+</div>
+
+        </section>
+
+        
+
+    </article>
+
+            
+        </div>
+    </body>
+</html>
