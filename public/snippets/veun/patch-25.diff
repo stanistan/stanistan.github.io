@@ -1,0 +1,82 @@
+db0d1a58bc9e0aa7c68c258bc11c587f830a6901 Adding http.Handler as a return parameter to RequestRenderable
+diff --git a/http_request_renderable.go b/http_request_renderable.go
+index 9a0c7c5..1ff20bc 100644
+--- a/http_request_renderable.go
++++ b/http_request_renderable.go
+@@ -7,16 +7,16 @@ import (
+ // RequestRenderable represents a method that
+ // can create a view out of an http.Request.
+ type RequestRenderable interface {
+-	RequestRenderable(r *http.Request) (AsRenderable, error)
++	RequestRenderable(r *http.Request) (AsRenderable, http.Handler, error)
+ }
+ 
+ // RequestRenderableFunc is the function representation of a
+ // RequestRenderable.
+-type RequestRenderableFunc func(*http.Request) (AsRenderable, error)
++type RequestRenderableFunc func(*http.Request) (AsRenderable, http.Handler, error)
+ 
+ // RequestRenderable conforms RequestRenderableFunc to
+ // RequestRenderable interface.
+-func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable, error) {
++func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable, http.Handler, error) {
+ 	return f(r)
+ }
+ 
+@@ -35,7 +35,7 @@ type HTTPHandler struct {
+ 
+ // ServeHTTP implements http.Handler.
+ func (h HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+-	renderable, err := h.Renderable.RequestRenderable(r)
++	renderable, _, err := h.Renderable.RequestRenderable(r)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+diff --git a/http_request_test.go b/http_request_test.go
+index 7df31ba..23051c5 100644
+--- a/http_request_test.go
++++ b/http_request_test.go
+@@ -23,33 +23,33 @@ func (v html) Renderable(_ context.Context) (Renderable, error) {
+ }
+ 
+ func HTML(renderable RequestRenderable) http.Handler {
+-	return RequestHandlerFunc(func(r *http.Request) (AsRenderable, error) {
+-		v, err := renderable.RequestRenderable(r)
++	return RequestHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
++		v, next, err := renderable.RequestRenderable(r)
+ 		if err != nil {
+-			return nil, err
++			return nil, next, err
+ 		}
+ 
+-		return html{Body: v}, nil
++		return html{Body: v}, next, nil
+ 	})
+ }
+ 
+ func TestRequestRequestHandler(t *testing.T) {
+-	var empty = RequestRenderableFunc(func(r *http.Request) (AsRenderable, error) {
+-		return nil, nil
++	var empty = RequestRenderableFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
++		return nil, nil, nil
+ 	})
+ 
+ 	mux := http.NewServeMux()
+ 
+-	mux.Handle("/empty", RequestHandlerFunc(empty))
++	mux.Handle("/empty", RequestHandler(empty))
+ 	mux.Handle("/html/empty", HTML(empty))
+ 
+-	mux.Handle("/person", RequestHandlerFunc(func(r *http.Request) (AsRenderable, error) {
++	mux.Handle("/person", RequestHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+ 		name := r.URL.Query().Get("name")
+ 		if name == "" {
+-			return nil, fmt.Errorf("missing name")
++			return nil, nil, fmt.Errorf("missing name")
+ 		}
+ 
+-		return PersonView(Person{Name: name}), nil
++		return PersonView(Person{Name: name}), nil, nil
+ 	}))
+ 
+ 	server := httptest.NewServer(mux)

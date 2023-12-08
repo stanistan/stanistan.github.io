@@ -1,0 +1,212 @@
+5ae41f095fbc0cbe8392010ff6f0c5a11a4bf9f8 handler with error handler
+diff --git a/error_renderable.go b/error_renderable.go
+index 0dcab6c..87f539b 100644
+--- a/error_renderable.go
++++ b/error_renderable.go
+@@ -17,6 +17,12 @@ type ErrorRenderable interface {
+ 	ErrorRenderable(ctx context.Context, err error) (AsRenderable, error)
+ }
+ 
++type ErrorRenderableFunc func(context.Context, error) (AsRenderable, error)
++
++func (f ErrorRenderableFunc) ErrorRenderable(ctx context.Context, err error) (AsRenderable, error) {
++	return f(ctx, err)
++}
++
+ func handleRenderError(ctx context.Context, err error, with any) (template.HTML, error) {
+ 	var empty template.HTML
+ 
+diff --git a/http_request_renderable.go b/http_request_renderable.go
+index d62379d..8ef40b5 100644
+--- a/http_request_renderable.go
++++ b/http_request_renderable.go
+@@ -1,6 +1,8 @@
+ package veun
+ 
+ import (
++	"context"
++	"log/slog"
+ 	"net/http"
+ )
+ 
+@@ -20,29 +22,54 @@ func (f RequestRenderableFunc) RequestRenderable(r *http.Request) (AsRenderable,
+ 	return f(r)
+ }
+ 
+-func HTTPHandlerFunc(r RequestRenderableFunc) http.Handler {
+-	return handler{Renderable: r}
++func HTTPHandlerFunc(r RequestRenderableFunc, opts ...HandlerOption) http.Handler {
++	h := handler{Renderable: r}
++	for _, opt := range opts {
++		opt(&h)
++	}
++	return h
++}
++
++func HTTPHandler(r RequestRenderable, opts ...HandlerOption) http.Handler {
++	h := handler{Renderable: r}
++	for _, opt := range opts {
++		opt(&h)
++	}
++	return h
+ }
+ 
+-func HTTPHandler(r RequestRenderable) http.Handler {
+-	return handler{Renderable: r}
++type HandlerOption func(h *handler)
++
++func WithErrorHandler(eh ErrorRenderable) HandlerOption {
++	return func(h *handler) {
++		h.ErrorHandler = eh
++	}
++}
++
++func WithErrorHandlerFunc(eh ErrorRenderableFunc) HandlerOption {
++	return func(h *handler) {
++		h.ErrorHandler = eh
++	}
+ }
+ 
+ // handler implements http.Handler for a RequestRenderable.
+ type handler struct {
+-	Renderable RequestRenderable
++	Renderable   RequestRenderable
++	ErrorHandler ErrorRenderable
+ }
+ 
+ // ServeHTTP implements http.Handler.
+ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+ 	renderable, next, err := h.Renderable.RequestRenderable(r)
+ 	if err != nil {
+-		panic(err)
++		h.handleError(r.Context(), w, err)
++		return
+ 	}
+ 
+ 	html, err := Render(r.Context(), renderable)
+ 	if err != nil {
+-		panic(err)
++		h.handleError(r.Context(), w, err)
++		return
+ 	}
+ 
+ 	if next != nil {
+@@ -54,3 +81,17 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+ 		panic(err)
+ 	}
+ }
++
++func (h handler) handleError(ctx context.Context, w http.ResponseWriter, err error) {
++	html, rErr := handleRenderError(ctx, err, h.ErrorHandler)
++	if rErr == nil && len(html) > 0 {
++		w.WriteHeader(http.StatusInternalServerError)
++		_, _ = w.Write([]byte(html))
++		return
++	}
++
++	// TODO: grab the logger from the context
++	slog.Error("handler failed", "err", err)
++	code := http.StatusInternalServerError
++	http.Error(w, http.StatusText(code), code)
++}
+diff --git a/http_request_test.go b/http_request_test.go
+index 2940f4d..fa0f800 100644
+--- a/http_request_test.go
++++ b/http_request_test.go
+@@ -26,14 +26,31 @@ func HTML(renderable RequestRenderable) http.Handler {
+ 	return HTTPHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+ 		v, next, err := renderable.RequestRenderable(r)
+ 		if err != nil {
+-			return nil, next, err
++			return nil, nil, err
++		} else if v == nil {
++			return nil, next, nil
+ 		}
+ 
+ 		return html{Body: v}, next, nil
+ 	})
+ }
+ 
++var errorViewTpl = MustParseTemplate("errorView", `Error: {{ . }}`)
++
++type errorView struct {
++	Error error
++}
++
++func (v errorView) Renderable(_ context.Context) (Renderable, error) {
++	return View{Tpl: errorViewTpl, Data: v.Error}, nil
++}
++
++func newErrorView(_ context.Context, err error) (AsRenderable, error) {
++	return errorView{Error: err}, nil
++}
++
+ func TestRequestRequestHandler(t *testing.T) {
++
+ 	var statusCode = func(code int) http.Handler {
+ 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ 			w.WriteHeader(code)
+@@ -51,19 +68,22 @@ func TestRequestRequestHandler(t *testing.T) {
+ 		}
+ 	})
+ 
+-	mux := http.NewServeMux()
+-
+-	mux.Handle("/empty", HTTPHandler(empty))
+-	mux.Handle("/html/empty", HTML(empty))
+-
+-	mux.Handle("/person", HTTPHandlerFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
++	var person = RequestRenderableFunc(func(r *http.Request) (AsRenderable, http.Handler, error) {
+ 		name := r.URL.Query().Get("name")
+ 		if name == "" {
+ 			return nil, nil, fmt.Errorf("missing name")
+ 		}
+ 
+ 		return PersonView(Person{Name: name}), nil, nil
+-	}))
++	})
++
++	mux := http.NewServeMux()
++
++	mux.Handle("/empty", HTTPHandler(empty))
++	mux.Handle("/html/empty", HTML(empty))
++
++	mux.Handle("/person", HTTPHandler(person, WithErrorHandlerFunc(newErrorView)))
++	mux.Handle("/html/person", HTML(person))
+ 
+ 	server := httptest.NewServer(mux)
+ 	defer server.Close()
+@@ -116,6 +136,12 @@ func TestRequestRequestHandler(t *testing.T) {
+ 		assert.Equal(t, 200, code)
+ 	})
+ 
++	t.Run("person (name=)", func(t *testing.T) {
++		body, code, _ := sendRequest(t, "/person?name=")
++		assert.Equal(t, 500, code)
++		assert.Equal(t, "Error: missing name", body)
++	})
++
+ 	t.Run("person renders (name=someone)", func(t *testing.T) {
+ 		body, code, _ := sendRequest(t, "/person?name=someone")
+ 		assert.Equal(t, "<div>Hi, someone.</div>", body)
+@@ -124,7 +150,19 @@ func TestRequestRequestHandler(t *testing.T) {
+ 
+ 	t.Run("/html/empty", func(t *testing.T) {
+ 		body, code, _ := sendRequest(t, "/html/empty")
+-		assert.Equal(t, "<html><body></body></html>", body)
++		assert.Equal(t, "", body)
+ 		assert.Equal(t, 200, code)
+ 	})
++
++	t.Run("/html/person (name=Stan)", func(t *testing.T) {
++		body, code, _ := sendRequest(t, "/html/person?name=Stan")
++		assert.Equal(t, "<html><body><div>Hi, Stan.</div></body></html>", body)
++		assert.Equal(t, 200, code)
++	})
++
++	t.Run("/html/person (name=)", func(t *testing.T) {
++		body, code, _ := sendRequest(t, "/html/person?name=")
++		assert.Equal(t, "Internal Server Error\n", body)
++		assert.Equal(t, 500, code)
++	})
+ }
