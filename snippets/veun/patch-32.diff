@@ -1,0 +1,117 @@
+ef34bc30ac2946fb83c143f84c80816d5a36a3e0 w/ common_views (Raw & Views)
+diff --git a/common_views.go b/common_views.go
+new file mode 100644
+index 0000000..dd96434
+--- /dev/null
++++ b/common_views.go
+@@ -0,0 +1,61 @@
++package veun
++
++import (
++	"context"
++	"html/template"
++)
++
++type Raw string
++
++func (r Raw) Renderable(_ context.Context) (Renderable, error) { return r, nil }
++
++func (r Raw) RenderToHTML(_ context.Context) (template.HTML, error) {
++	return template.HTML(r), nil
++}
++
++type Views []AsRenderable
++
++func (vs Views) Renderable(ctx context.Context) (Renderable, error) {
++	return vs, nil
++}
++
++func (vs Views) RenderToHTML(ctx context.Context) (template.HTML, error) {
++	var out template.HTML
++
++	for _, v := range vs {
++		r, err := v.Renderable(ctx)
++		if err != nil {
++			return template.HTML(""), err
++		}
++
++		html, err := r.RenderToHTML(ctx)
++		if err != nil {
++			return template.HTML(""), err
++		}
++
++		out += html
++	}
++
++	return out, nil
++}
++
++type RViews []Renderable
++
++func (vs RViews) Renderable(_ context.Context) (Renderable, error) {
++	return vs, nil
++}
++
++func (vs RViews) RenderToHTML(ctx context.Context) (template.HTML, error) {
++	var out template.HTML
++
++	for _, r := range vs {
++		html, err := r.RenderToHTML(ctx)
++		if err != nil {
++			return template.HTML(""), err
++		}
++
++		out += html
++	}
++
++	return out, nil
++}
+diff --git a/common_views_test.go b/common_views_test.go
+new file mode 100644
+index 0000000..ef724f4
+--- /dev/null
++++ b/common_views_test.go
+@@ -0,0 +1,29 @@
++package veun_test
++
++import (
++	"context"
++	"html/template"
++	"testing"
++
++	"github.com/alecthomas/assert/v2"
++
++	. "github.com/stanistan/veun"
++)
++
++func Div(contents AsRenderable) AsRenderable {
++	return Views{
++		Raw("<div>"), contents, Raw("</div>"),
++	}
++}
++
++func TestCommonViews(t *testing.T) {
++	html, err := Render(context.Background(), Div(ChildView1{}))
++	assert.NoError(t, err)
++	assert.Equal(t, template.HTML("<div>HEADING</div>"), html)
++}
++
++func BenchmarkCommonViews(b *testing.B) {
++	for i := 0; i < b.N; i++ {
++		_, _ = Render(context.Background(), Div(ChildView1{}))
++	}
++}
+diff --git a/slots.go b/slots.go
+index 8a04e81..bb69032 100644
+--- a/slots.go
++++ b/slots.go
+@@ -20,5 +20,9 @@ func (s Slots) renderSlot(ctx context.Context) func(string) (template.HTML, erro
+ }
+ 
+ func (s Slots) addToTemplate(ctx context.Context, t *template.Template) *template.Template {
++	if t == nil {
++		return nil
++	}
++
+ 	return t.Funcs(template.FuncMap{"slot": s.renderSlot(ctx)})
+ }

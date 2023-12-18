@@ -7,7 +7,534 @@
       <generator>Zola</generator>
       <language>en</language>
       <atom:link href="https://www.stanistan.com/rss.xml" rel="self" type="application/rss+xml"/>
-      <lastBuildDate>Fri, 08 Dec 2023 00:00:00 +0000</lastBuildDate>
+      <lastBuildDate>Wed, 13 Dec 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Building view-trees: Updating the base interface [Part 6]</title>
+          <pubDate>Wed, 13 Dec 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-6/</link>
+          <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-6/</guid>
+          <description>&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;error handling&lt;&#x2F;a&gt;,
+&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;async data fetching&lt;&#x2F;a&gt;, and &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;We have a thing that kind of works and in building out our interfaces and types
+we end up with something that is just a bit more complicated than we need, and
+a bit too specific, or not specific enough.&lt;&#x2F;p&gt;
+&lt;p&gt;Our concepts &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;pkg.go.dev&#x2F;github.com&#x2F;stanistan&#x2F;veun@v0.0.0-20231208164029-003211b1d092#Renderable&quot;&gt;include&lt;&#x2F;a&gt;: Renderables, AsRenderables, Views, ErrorRenderables,
+RequestRenderables, RequestHandlers. To be fair this isn&#x27;t a ton, but it has a smell,
+and it&#x27;s a lot to type.&lt;&#x2F;p&gt;
+&lt;p&gt;I have questions like:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Why do we have both an &lt;code&gt;AsRenderable&lt;&#x2F;code&gt; and &lt;code&gt;Renderable&lt;&#x2F;code&gt;?&lt;&#x2F;li&gt;
+&lt;li&gt;Why do most of our &lt;code&gt;Renderable&lt;&#x2F;code&gt; functions return &lt;code&gt;View&lt;&#x2F;code&gt;?&lt;&#x2F;li&gt;
+&lt;li&gt;Are these the same?&lt;&#x2F;li&gt;
+&lt;li&gt;Why do we &lt;em&gt;always&lt;&#x2F;em&gt; need a &lt;code&gt;template&lt;&#x2F;code&gt; in order to render something?&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Do we need both interfaces and interface factories (which is what we have and that
+feels bad)?&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;renderable-but-like-to-html&quot;&gt;Renderable, but like, to HTML&lt;&#x2F;h2&gt;
+&lt;p&gt;The &lt;code&gt;Renderable&lt;&#x2F;code&gt; interface should probably only be, this gives us the ability
+to render strings, or have some async calls that just return html, or something
+else.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Renderable &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;interface &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;RenderToHTML&lt;&#x2F;span&gt;&lt;span&gt;(ctx context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;RenderableFunc &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      RenderToHML()
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;7130ec0402ce80a862bd9ea71529c92ebb1df024&quot;&gt;(source: 7130ec04)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;render_container_test.go b&#x2F;render_container_test.go
+&lt;&#x2F;span&gt;&lt;span&gt;index aef4e68..1876b12 100644
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;render_container_test.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;render_container_test.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -32,15 +32,15 @@ func tplWithRealSlotFunc(ctx context.Context, tpl *template.Template, slots map[
+&lt;&#x2F;span&gt;&lt;span&gt; 	})
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-func (v ContainerView) Template(ctx context.Context) (*template.Template, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	return tplWithRealSlotFunc(ctx, containerViewTpl, map[string]AsRenderable{
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		&amp;quot;heading&amp;quot;: v.Heading,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		&amp;quot;body&amp;quot;:    v.Body,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	}), nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-func (v ContainerView) TemplateData(_ context.Context) (any, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	return nil, nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (v ContainerView) RenderToHTML(ctx context.Context) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return RenderToHTML(tplWithRealSlotFunc(
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		ctx,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		containerViewTpl,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		map[string]AsRenderable{
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;			&amp;quot;heading&amp;quot;: v.Heading,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;			&amp;quot;body&amp;quot;:    v.Body,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		},
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	), nil)
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; func (v ContainerView) Renderable(_ context.Context) (Renderable, error) {
+&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;renderable.go b&#x2F;renderable.go
+&lt;&#x2F;span&gt;&lt;span&gt;index 27759f6..aa0bc86 100644
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;renderable.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;renderable.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -5,14 +5,10 @@ import (
+&lt;&#x2F;span&gt;&lt;span&gt; 	&amp;quot;html&#x2F;template&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt; )
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-&#x2F;&#x2F; Renderable represents any struct that can be rendered
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-&#x2F;&#x2F; in the Render function.
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;&#x2F;&#x2F; Renderable represents anything that can be rendered
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;&#x2F;&#x2F; to HTML.
+&lt;&#x2F;span&gt;&lt;span&gt; type Renderable interface {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	&#x2F;&#x2F; Template provides the template object &#x2F; parsed and compiled,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	&#x2F;&#x2F; that Render will execute given a context.
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	Template(ctx context.Context) (*template.Template, error)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	&#x2F;&#x2F; TemplateData provides the data to the template given a context.
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	TemplateData(ctx context.Context) (any, error)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	RenderToHTML(ctx context.Context) (template.HTML, error)
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; type AsRenderable interface {
+&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;renderer.go b&#x2F;renderer.go
+&lt;&#x2F;span&gt;&lt;span&gt;index 1ff48e3..e3a5204 100644
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;renderer.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;renderer.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -17,7 +17,7 @@ func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span&gt; 		return handleRenderError(ctx, err, r)
+&lt;&#x2F;span&gt;&lt;span&gt; 	}
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	out, err := render(ctx, renderable)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	out, err := renderable.RenderToHTML(ctx)
+&lt;&#x2F;span&gt;&lt;span&gt; 	if err != nil {
+&lt;&#x2F;span&gt;&lt;span&gt; 		return handleRenderError(ctx, err, r)
+&lt;&#x2F;span&gt;&lt;span&gt; 	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -25,23 +25,13 @@ func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span&gt; 	return out, nil
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-func render(ctx context.Context, r Renderable) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func RenderToHTML(tpl *template.Template, data any) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span&gt; 	var empty template.HTML
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	tpl, err := r.Template(ctx)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	if err != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		return empty, fmt.Errorf(&amp;quot;Template(): %w&amp;quot;, err)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-
+&lt;&#x2F;span&gt;&lt;span&gt; 	if tpl == nil {
+&lt;&#x2F;span&gt;&lt;span&gt; 		return empty, fmt.Errorf(&amp;quot;missing template&amp;quot;)
+&lt;&#x2F;span&gt;&lt;span&gt; 	}
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	data, err := r.TemplateData(ctx)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	if err != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		return empty, fmt.Errorf(&amp;quot;TemplateData(): %w&amp;quot;, err)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-
+&lt;&#x2F;span&gt;&lt;span&gt; 	var bs bytes.Buffer
+&lt;&#x2F;span&gt;&lt;span&gt; 	if err := tpl.Execute(&amp;amp;bs, data); err != nil {
+&lt;&#x2F;span&gt;&lt;span&gt; 		return empty, fmt.Errorf(&amp;quot;tpl.Execute(): %w&amp;quot;, err)
+&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;view.go b&#x2F;view.go
+&lt;&#x2F;span&gt;&lt;span&gt;index 99578bf..b39ef50 100644
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;view.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;view.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -2,7 +2,6 @@ package veun
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; import (
+&lt;&#x2F;span&gt;&lt;span&gt; 	&amp;quot;context&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	&amp;quot;fmt&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt; 	&amp;quot;html&#x2F;template&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt; 	&amp;quot;io&#x2F;fs&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt; )
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -13,16 +12,13 @@ type View struct {
+&lt;&#x2F;span&gt;&lt;span&gt; 	Data  any
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-func (v View) Template(ctx context.Context) (*template.Template, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	if v.Tpl == nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		return nil, fmt.Errorf(&amp;quot;template missing&amp;quot;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (v View) RenderToHTML(ctx context.Context) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	tpl := v.Tpl
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	if v.Tpl != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		tpl = v.Slots.addToTemplate(ctx, v.Tpl)
+&lt;&#x2F;span&gt;&lt;span&gt; 	}
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	return v.Slots.addToTemplate(ctx, v.Tpl), nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-func (v View) TemplateData(_ context.Context) (any, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	return v.Data, nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return RenderToHTML(tpl, v.Data)
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; func (v View) Renderable(_ context.Context) (Renderable, error) {
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+
+
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
+&lt;p&gt;Leaving the template bits to be an implementation detail of the
+specific &lt;em&gt;kind&lt;&#x2F;em&gt; of Renderable.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;TemplateRenderable &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    Template &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Template
+&lt;&#x2F;span&gt;&lt;span&gt;    Data     &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;any
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(t &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;TemplateRenderable&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;RenderToHTML&lt;&#x2F;span&gt;&lt;span&gt;(ctx context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; the content of our `render` function
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Where a &lt;code&gt;View&lt;&#x2F;code&gt; can defer to be &lt;code&gt;TemplateRenderable&lt;&#x2F;code&gt; but with &lt;code&gt;Slots&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;lists&quot;&gt;Lists&lt;&#x2F;h3&gt;
+&lt;p&gt;Removing the need for a template also gives us the ability to concatenate, and
+potentially make some views cheaper to construct.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Views []&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(vs &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Views&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;(_ context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) { &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;vs, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil &lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(vs &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Views&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;RenderToHTML&lt;&#x2F;span&gt;&lt;span&gt;( &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;*........
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;div&quot;&gt;&amp;lt;div &#x2F;&amp;gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Or maybe you wanted to do something like:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Div&lt;&#x2F;span&gt;&lt;span&gt;(contents &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;RenderableFunc(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(ctx context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;        inner, out &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;:= &lt;&#x2F;span&gt;&lt;span&gt;Render(ctx, r)
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;inner, err
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;template.HTML(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;lt;div&amp;gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span&gt;inner &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span&gt;template.HTML(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;lt;&#x2F;div&amp;gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;    })
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But this doesn&#x27;t really seem that great at all, and feels like we&#x27;re
+leaking our implementation. We have the flexibility to do this, but
+we&#x27;re losing our delcarative composability.&lt;&#x2F;p&gt;
+&lt;p&gt;We can:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;make a &lt;code&gt;Raw&lt;&#x2F;code&gt; type that is a string wrapper, and&lt;&#x2F;li&gt;
+&lt;li&gt;reuse &lt;code&gt;Views&lt;&#x2F;code&gt; to elide the inner call to &lt;code&gt;Render&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Raw &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(r &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Raw&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;RenderToHTML&lt;&#x2F;span&gt;&lt;span&gt;(_ context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (template.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;HTML&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;template.HTML(r), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Div&lt;&#x2F;span&gt;&lt;span&gt;(contents &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;RenderableFunc(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(_ context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Renderable &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;Views{
+&lt;&#x2F;span&gt;&lt;span&gt;            Raw(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;lt;div&amp;gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;), contents, Raw(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;lt;&#x2F;div&amp;gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;),
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;    })
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      w&amp;#x2F; common_views (Raw &amp;amp; Views)
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;ef34bc30ac2946fb83c143f84c80816d5a36a3e0&quot;&gt;(source: ef34bc30)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;common_views.go b&#x2F;common_views.go
+&lt;&#x2F;span&gt;&lt;span&gt;new file mode 100644
+&lt;&#x2F;span&gt;&lt;span&gt;index 0000000..dd96434
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; &#x2F;dev&#x2F;null
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;common_views.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -0,0 +1,61 @@
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;package veun
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;import (
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	&amp;quot;context&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	&amp;quot;html&#x2F;template&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;type Raw string
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (r Raw) Renderable(_ context.Context) (Renderable, error) { return r, nil }
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (r Raw) RenderToHTML(_ context.Context) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return template.HTML(r), nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;type Views []AsRenderable
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (vs Views) Renderable(ctx context.Context) (Renderable, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return vs, nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (vs Views) RenderToHTML(ctx context.Context) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	var out template.HTML
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	for _, v := range vs {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		r, err := v.Renderable(ctx)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		if err != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;			return template.HTML(&amp;quot;&amp;quot;), err
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		html, err := r.RenderToHTML(ctx)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		if err != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;			return template.HTML(&amp;quot;&amp;quot;), err
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		out += html
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return out, nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;type RViews []Renderable
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (vs RViews) Renderable(_ context.Context) (Renderable, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return vs, nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (vs RViews) RenderToHTML(ctx context.Context) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	var out template.HTML
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	for _, r := range vs {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		html, err := r.RenderToHTML(ctx)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		if err != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;			return template.HTML(&amp;quot;&amp;quot;), err
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		out += html
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return out, nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;common_views_test.go b&#x2F;common_views_test.go
+&lt;&#x2F;span&gt;&lt;span&gt;new file mode 100644
+&lt;&#x2F;span&gt;&lt;span&gt;index 0000000..ef724f4
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; &#x2F;dev&#x2F;null
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;common_views_test.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -0,0 +1,29 @@
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;package veun_test
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;import (
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	&amp;quot;context&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	&amp;quot;html&#x2F;template&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	&amp;quot;testing&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	&amp;quot;github.com&#x2F;alecthomas&#x2F;assert&#x2F;v2&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	. &amp;quot;github.com&#x2F;stanistan&#x2F;veun&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func Div(contents AsRenderable) AsRenderable {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return Views{
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		Raw(&amp;quot;&amp;lt;div&amp;gt;&amp;quot;), contents, Raw(&amp;quot;&amp;lt;&#x2F;div&amp;gt;&amp;quot;),
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func TestCommonViews(t *testing.T) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	html, err := Render(context.Background(), Div(ChildView1{}))
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	assert.NoError(t, err)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	assert.Equal(t, template.HTML(&amp;quot;&amp;lt;div&amp;gt;HEADING&amp;lt;&#x2F;div&amp;gt;&amp;quot;), html)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func BenchmarkCommonViews(b *testing.B) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	for i := 0; i &amp;lt; b.N; i++ {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		_, _ = Render(context.Background(), Div(ChildView1{}))
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;slots.go b&#x2F;slots.go
+&lt;&#x2F;span&gt;&lt;span&gt;index 8a04e81..bb69032 100644
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;slots.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;slots.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -20,5 +20,9 @@ func (s Slots) renderSlot(ctx context.Context) func(string) (template.HTML, erro
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; func (s Slots) addToTemplate(ctx context.Context, t *template.Template) *template.Template {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	if t == nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		return nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span&gt; 	return t.Funcs(template.FuncMap{&amp;quot;slot&amp;quot;: s.renderSlot(ctx)})
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+
+
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
+&lt;p&gt;And now since we&#x27;re no longer doing any render call, we
+can make it even clearer:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Div&lt;&#x2F;span&gt;&lt;span&gt;(contents &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;Views{
+&lt;&#x2F;span&gt;&lt;span&gt;        Raw(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;lt;div&amp;gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;), contents, Raw(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&amp;lt;&#x2F;div&amp;gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;), &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; NICE :boom:
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;div&gt;
+  &lt;details&gt;
+    &lt;summary class=&quot;small&quot;&gt;
+      w&amp;#x2F; TemplateRenderable
+      &lt;a href=&quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;stanistan&amp;#x2F;veun&amp;#x2F;commit&amp;#x2F;f427fa0ee981019b9e48a2e99d2a016f035b4af4&quot;&gt;(source: f427fa0e)&lt;&#x2F;a&gt;
+    &lt;&#x2F;summary&gt;
+
+&lt;pre data-lang=&quot;patch&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-patch &quot;&gt;&lt;code class=&quot;language-patch&quot; data-lang=&quot;patch&quot;&gt;&lt;span&gt;diff --git a&#x2F;render_container_test.go b&#x2F;render_container_test.go
+&lt;&#x2F;span&gt;&lt;span&gt;index 1876b12..6be78c3 100644
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;render_container_test.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;render_container_test.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -33,14 +33,12 @@ func tplWithRealSlotFunc(ctx context.Context, tpl *template.Template, slots map[
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; func (v ContainerView) RenderToHTML(ctx context.Context) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	return RenderToHTML(tplWithRealSlotFunc(
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		ctx,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		containerViewTpl,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		map[string]AsRenderable{
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return TemplateRenderable{
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		Tpl: tplWithRealSlotFunc(ctx, containerViewTpl, map[string]AsRenderable{
+&lt;&#x2F;span&gt;&lt;span&gt; 			&amp;quot;heading&amp;quot;: v.Heading,
+&lt;&#x2F;span&gt;&lt;span&gt; 			&amp;quot;body&amp;quot;:    v.Body,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		},
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	), nil)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		}),
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	}.RenderToHTML(ctx)
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; func (v ContainerView) Renderable(_ context.Context) (Renderable, error) {
+&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;renderer.go b&#x2F;renderer.go
+&lt;&#x2F;span&gt;&lt;span&gt;index e3a5204..4fab94b 100644
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;renderer.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;renderer.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -7,33 +7,55 @@ import (
+&lt;&#x2F;span&gt;&lt;span&gt; 	&amp;quot;html&#x2F;template&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt; )
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func RenderToHTML(ctx context.Context, r Renderable, errHandler any) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	var empty template.HTML
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span&gt; 	if r == nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		return template.HTML(&amp;quot;&amp;quot;), nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		return empty, nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	out, err := r.RenderToHTML(ctx)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	if err != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		return handleRenderError(ctx, err, errHandler)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return out, nil
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func Render(ctx context.Context, v AsRenderable) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	var empty template.HTML
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	if v == nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		return empty, nil
+&lt;&#x2F;span&gt;&lt;span&gt; 	}
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	renderable, err := r.Renderable(ctx)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	r, err := v.Renderable(ctx)
+&lt;&#x2F;span&gt;&lt;span&gt; 	if err != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		return handleRenderError(ctx, err, r)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		return handleRenderError(ctx, err, v)
+&lt;&#x2F;span&gt;&lt;span&gt; 	}
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	out, err := renderable.RenderToHTML(ctx)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	out, err := RenderToHTML(ctx, r, v)
+&lt;&#x2F;span&gt;&lt;span&gt; 	if err != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		return handleRenderError(ctx, err, r)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		return empty, err
+&lt;&#x2F;span&gt;&lt;span&gt; 	}
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; 	return out, nil
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-func RenderToHTML(tpl *template.Template, data any) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;type TemplateRenderable struct {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	Tpl  *template.Template
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	Data any
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (v TemplateRenderable) RenderToHTML(_ context.Context) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span&gt; 	var empty template.HTML
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	if tpl == nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	if v.Tpl == nil {
+&lt;&#x2F;span&gt;&lt;span&gt; 		return empty, fmt.Errorf(&amp;quot;missing template&amp;quot;)
+&lt;&#x2F;span&gt;&lt;span&gt; 	}
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; 	var bs bytes.Buffer
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	if err := tpl.Execute(&amp;amp;bs, data); err != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	if err := v.Tpl.Execute(&amp;amp;bs, v.Data); err != nil {
+&lt;&#x2F;span&gt;&lt;span&gt; 		return empty, fmt.Errorf(&amp;quot;tpl.Execute(): %w&amp;quot;, err)
+&lt;&#x2F;span&gt;&lt;span&gt; 	}
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt;diff --git a&#x2F;view.go b&#x2F;view.go
+&lt;&#x2F;span&gt;&lt;span&gt;index b39ef50..241cd29 100644
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;font-weight:bold;font-style:italic;color:#bd2c00;&quot;&gt;---&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; a&#x2F;view.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;font-style:italic;color:#55a532;&quot;&gt;+++&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt; b&#x2F;view.go
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;font-style:italic;color:#969896;&quot;&gt;@@ -13,15 +13,13 @@ type View struct {
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt; func (v View) RenderToHTML(ctx context.Context) (template.HTML, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	tpl := v.Tpl
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	if v.Tpl != nil {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-		tpl = v.Slots.addToTemplate(ctx, v.Tpl)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	}
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-	return RenderToHTML(tpl, v.Data)
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	return TemplateRenderable{
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		Tpl:  v.Slots.addToTemplate(ctx, v.Tpl),
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;		Data: v.Data,
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;	}.RenderToHTML(ctx)
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ffecec;color:#323232;&quot;&gt;-func (v View) Renderable(_ context.Context) (Renderable, error) {
+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;font-weight:bold;color:#55a532;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#eaffea;color:#323232;&quot;&gt;func (v View) Renderable(ctx context.Context) (Renderable, error) {
+&lt;&#x2F;span&gt;&lt;span&gt; 	return v, nil
+&lt;&#x2F;span&gt;&lt;span&gt; }
+&lt;&#x2F;span&gt;&lt;span&gt; 
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+
+
+  &lt;&#x2F;details&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;errors&quot;&gt;Errors&lt;&#x2F;h2&gt;
+&lt;p&gt;I&#x27;m not going to get to revisiting errors here just yet.&lt;&#x2F;p&gt;
+</description>
+      </item>
       <item>
           <title>Building view-trees: http.Handler [Part 5]</title>
           <pubDate>Fri, 08 Dec 2023 00:00:00 +0000</pubDate>
@@ -1712,6 +2239,11 @@ want to structure their HTTP server.&lt;&#x2F;p&gt;
 
   &lt;&#x2F;details&gt;
 &lt;&#x2F;div&gt;
+&lt;hr &#x2F;&gt;
+&lt;h3 id=&quot;next&quot;&gt;Next:&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
 </description>
       </item>
       <item>
@@ -2648,6 +3180,12 @@ simpler to reason about.&lt;&#x2F;p&gt;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;Except for writing &lt;code&gt;AsRenderable&lt;&#x2F;code&gt; over and over and over again, that&#x27;s not so bad,
 and the usage is nice.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;h3 id=&quot;next&quot;&gt;Next:&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
 </description>
       </item>
       <item>
@@ -2974,6 +3512,8 @@ to doing &lt;em&gt;real things&lt;&#x2F;em&gt; like data access.&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;next&quot;&gt;Next:&lt;&#x2F;h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;Async data fetching&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 </description>
       </item>
@@ -3976,6 +4516,8 @@ change, but it unlocks something, too. A simpler way to build views:&lt;&#x2F;p&
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;Error handling&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;Async data fetching&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 </description>
       </item>
@@ -4050,6 +4592,8 @@ etc... so we can do things like components :)&lt;&#x2F;p&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;The basics&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;Error handling&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;Async data fetching&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 </description>
       </item>
