@@ -1,0 +1,118 @@
+f427fa0ee981019b9e48a2e99d2a016f035b4af4 w/ TemplateRenderable
+diff --git a/render_container_test.go b/render_container_test.go
+index 1876b12..6be78c3 100644
+--- a/render_container_test.go
++++ b/render_container_test.go
+@@ -33,14 +33,12 @@ func tplWithRealSlotFunc(ctx context.Context, tpl *template.Template, slots map[
+ }
+ 
+ func (v ContainerView) RenderToHTML(ctx context.Context) (template.HTML, error) {
+-	return RenderToHTML(tplWithRealSlotFunc(
+-		ctx,
+-		containerViewTpl,
+-		map[string]AsRenderable{
++	return TemplateRenderable{
++		Tpl: tplWithRealSlotFunc(ctx, containerViewTpl, map[string]AsRenderable{
+ 			"heading": v.Heading,
+ 			"body":    v.Body,
+-		},
+-	), nil)
++		}),
++	}.RenderToHTML(ctx)
+ }
+ 
+ func (v ContainerView) Renderable(_ context.Context) (Renderable, error) {
+diff --git a/renderer.go b/renderer.go
+index e3a5204..4fab94b 100644
+--- a/renderer.go
++++ b/renderer.go
+@@ -7,33 +7,55 @@ import (
+ 	"html/template"
+ )
+ 
+-func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
++func RenderToHTML(ctx context.Context, r Renderable, errHandler any) (template.HTML, error) {
++	var empty template.HTML
++
+ 	if r == nil {
+-		return template.HTML(""), nil
++		return empty, nil
++	}
++
++	out, err := r.RenderToHTML(ctx)
++	if err != nil {
++		return handleRenderError(ctx, err, errHandler)
++	}
++
++	return out, nil
++}
++
++func Render(ctx context.Context, v AsRenderable) (template.HTML, error) {
++	var empty template.HTML
++
++	if v == nil {
++		return empty, nil
+ 	}
+ 
+-	renderable, err := r.Renderable(ctx)
++	r, err := v.Renderable(ctx)
+ 	if err != nil {
+-		return handleRenderError(ctx, err, r)
++		return handleRenderError(ctx, err, v)
+ 	}
+ 
+-	out, err := renderable.RenderToHTML(ctx)
++	out, err := RenderToHTML(ctx, r, v)
+ 	if err != nil {
+-		return handleRenderError(ctx, err, r)
++		return empty, err
+ 	}
+ 
+ 	return out, nil
+ }
+ 
+-func RenderToHTML(tpl *template.Template, data any) (template.HTML, error) {
++type TemplateRenderable struct {
++	Tpl  *template.Template
++	Data any
++}
++
++func (v TemplateRenderable) RenderToHTML(_ context.Context) (template.HTML, error) {
+ 	var empty template.HTML
+ 
+-	if tpl == nil {
++	if v.Tpl == nil {
+ 		return empty, fmt.Errorf("missing template")
+ 	}
+ 
+ 	var bs bytes.Buffer
+-	if err := tpl.Execute(&bs, data); err != nil {
++	if err := v.Tpl.Execute(&bs, v.Data); err != nil {
+ 		return empty, fmt.Errorf("tpl.Execute(): %w", err)
+ 	}
+ 
+diff --git a/view.go b/view.go
+index b39ef50..241cd29 100644
+--- a/view.go
++++ b/view.go
+@@ -13,15 +13,13 @@ type View struct {
+ }
+ 
+ func (v View) RenderToHTML(ctx context.Context) (template.HTML, error) {
+-	tpl := v.Tpl
+-	if v.Tpl != nil {
+-		tpl = v.Slots.addToTemplate(ctx, v.Tpl)
+-	}
+-
+-	return RenderToHTML(tpl, v.Data)
++	return TemplateRenderable{
++		Tpl:  v.Slots.addToTemplate(ctx, v.Tpl),
++		Data: v.Data,
++	}.RenderToHTML(ctx)
+ }
+ 
+-func (v View) Renderable(_ context.Context) (Renderable, error) {
++func (v View) Renderable(ctx context.Context) (Renderable, error) {
+ 	return v, nil
+ }
+ 
