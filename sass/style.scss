@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Colors
 $background: #fcfcfc;
 $text: #333;
@@ -21,9 +23,10 @@ body {
   color: $text;
   font-family: Cochin, Times, serif;
   font-size: 1.3em;
-  line-height: 1.55em;
+  line-height: 1.42;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .content {
@@ -104,6 +107,7 @@ a,
   }
 }
 
+
 ol,
 ul {
   list-style-position: outside;
@@ -125,6 +129,23 @@ ul,
 ol {
   &.outside {
     margin-left: -0.1em;
+  }
+}
+
+.posts-list {
+
+  li {
+    margin-bottom: 0.2em;
+  }
+
+  .date-written {
+    margin-top: 4px;
+  }
+
+  a {
+    text-underline-offset: 2px;
+    text-decoration-color: color.adjust($link-color, $lightness: 10%);
+    text-decoration-thickness: 0.5px;
   }
 }
 

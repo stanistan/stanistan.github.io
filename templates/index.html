@@ -6,25 +6,27 @@
     {{ section.content | safe }}
 
     <p class="outside mono small faded">
-    <span>##</span>
-    <span>TODO: add content</span> |
-    <a href="{{ get_url(path="@/CHANGELOG.md") | safe }}" class="faded">CHANGELOG.md</a>
+      <span>##</span>
+      <span>TODO: add content</span> |
+      <a href="{{ get_url(path="@/CHANGELOG.md") | safe }}" class="faded">CHANGELOG.md</a>
     </p>
 
     {% set writes = get_section(path="writes/_index.md") %}
     {% if writes.pages | length > 0 %}
-    <ul class="outside">
-        {% for page in writes.pages %}
-        <li class="smaller">
-            <a href="{{page.permalink | safe}}">{{page.title}}</a>
-            {% if page.date %}
-            <div class="faded smaller">
-                ({{ page.date | date(format="%B, %d, %Y") }})
-            </div >
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ul>
+    <div class="posts-list">
+      <ul class="outside">
+          {% for page in writes.pages %}
+          <li class="smaller">
+              <a href="{{page.permalink | safe}}">{{page.title}}</a>
+              {% if page.date %}
+              <div class="faded smaller date-written">
+                  ({{ page.date | date(format="%B, %d, %Y") }})
+              </div>
+              {% endif %}
+          </li>
+          {% endfor %}
+      </ul>
+    </div>
     {% endif %}
 </main>
 
