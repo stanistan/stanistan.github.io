@@ -1,0 +1,124 @@
+7130ec0402ce80a862bd9ea71529c92ebb1df024 RenderToHML()
+diff --git a/render_container_test.go b/render_container_test.go
+index aef4e68..1876b12 100644
+--- a/render_container_test.go
++++ b/render_container_test.go
+@@ -32,15 +32,15 @@ func tplWithRealSlotFunc(ctx context.Context, tpl *template.Template, slots map[
+ 	})
+ }
+ 
+-func (v ContainerView) Template(ctx context.Context) (*template.Template, error) {
+-	return tplWithRealSlotFunc(ctx, containerViewTpl, map[string]AsRenderable{
+-		"heading": v.Heading,
+-		"body":    v.Body,
+-	}), nil
+-}
+-
+-func (v ContainerView) TemplateData(_ context.Context) (any, error) {
+-	return nil, nil
++func (v ContainerView) RenderToHTML(ctx context.Context) (template.HTML, error) {
++	return RenderToHTML(tplWithRealSlotFunc(
++		ctx,
++		containerViewTpl,
++		map[string]AsRenderable{
++			"heading": v.Heading,
++			"body":    v.Body,
++		},
++	), nil)
+ }
+ 
+ func (v ContainerView) Renderable(_ context.Context) (Renderable, error) {
+diff --git a/renderable.go b/renderable.go
+index 27759f6..aa0bc86 100644
+--- a/renderable.go
++++ b/renderable.go
+@@ -5,14 +5,10 @@ import (
+ 	"html/template"
+ )
+ 
+-// Renderable represents any struct that can be rendered
+-// in the Render function.
++// Renderable represents anything that can be rendered
++// to HTML.
+ type Renderable interface {
+-	// Template provides the template object / parsed and compiled,
+-	// that Render will execute given a context.
+-	Template(ctx context.Context) (*template.Template, error)
+-	// TemplateData provides the data to the template given a context.
+-	TemplateData(ctx context.Context) (any, error)
++	RenderToHTML(ctx context.Context) (template.HTML, error)
+ }
+ 
+ type AsRenderable interface {
+diff --git a/renderer.go b/renderer.go
+index 1ff48e3..e3a5204 100644
+--- a/renderer.go
++++ b/renderer.go
+@@ -17,7 +17,7 @@ func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
+ 		return handleRenderError(ctx, err, r)
+ 	}
+ 
+-	out, err := render(ctx, renderable)
++	out, err := renderable.RenderToHTML(ctx)
+ 	if err != nil {
+ 		return handleRenderError(ctx, err, r)
+ 	}
+@@ -25,23 +25,13 @@ func Render(ctx context.Context, r AsRenderable) (template.HTML, error) {
+ 	return out, nil
+ }
+ 
+-func render(ctx context.Context, r Renderable) (template.HTML, error) {
++func RenderToHTML(tpl *template.Template, data any) (template.HTML, error) {
+ 	var empty template.HTML
+ 
+-	tpl, err := r.Template(ctx)
+-	if err != nil {
+-		return empty, fmt.Errorf("Template(): %w", err)
+-	}
+-
+ 	if tpl == nil {
+ 		return empty, fmt.Errorf("missing template")
+ 	}
+ 
+-	data, err := r.TemplateData(ctx)
+-	if err != nil {
+-		return empty, fmt.Errorf("TemplateData(): %w", err)
+-	}
+-
+ 	var bs bytes.Buffer
+ 	if err := tpl.Execute(&bs, data); err != nil {
+ 		return empty, fmt.Errorf("tpl.Execute(): %w", err)
+diff --git a/view.go b/view.go
+index 99578bf..b39ef50 100644
+--- a/view.go
++++ b/view.go
+@@ -2,7 +2,6 @@ package veun
+ 
+ import (
+ 	"context"
+-	"fmt"
+ 	"html/template"
+ 	"io/fs"
+ )
+@@ -13,16 +12,13 @@ type View struct {
+ 	Data  any
+ }
+ 
+-func (v View) Template(ctx context.Context) (*template.Template, error) {
+-	if v.Tpl == nil {
+-		return nil, fmt.Errorf("template missing")
++func (v View) RenderToHTML(ctx context.Context) (template.HTML, error) {
++	tpl := v.Tpl
++	if v.Tpl != nil {
++		tpl = v.Slots.addToTemplate(ctx, v.Tpl)
+ 	}
+ 
+-	return v.Slots.addToTemplate(ctx, v.Tpl), nil
+-}
+-
+-func (v View) TemplateData(_ context.Context) (any, error) {
+-	return v.Data, nil
++	return RenderToHTML(tpl, v.Data)
+ }
+ 
+ func (v View) Renderable(_ context.Context) (Renderable, error) {

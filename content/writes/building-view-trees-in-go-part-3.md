@@ -147,8 +147,12 @@ to doing _real things_ like data access.
 ### Next:
 
 - [Async data fetching][part-4]
+- [http.Handler][part-5]
+- [Updating the base interface][part-6]
 
 
 [part-1]: /writes/building-view-trees-in-go-part-1
 [part-2]: /writes/building-view-trees-in-go-part-2
 [part-4]: /writes/building-view-trees-in-go-part-4
+[part-5]: /writes/building-view-trees-in-go-part-5
+[part-6]: /writes/building-view-trees-in-go-part-6

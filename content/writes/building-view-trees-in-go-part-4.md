@@ -246,7 +246,16 @@ html, err := Render(ctx, r)
 Except for writing `AsRenderable` over and over and over again, that's not so bad,
 and the usage is nice.
 
+---
+
+### Next:
+
+- [http.Handler][part-5]
+- [Updating the base interface][part-6]
+
 [part-1]: /writes/building-view-trees-in-go-part-1
 [part-2]: /writes/building-view-trees-in-go-part-2
 [part-3]: /writes/building-view-trees-in-go-part-3
+[part-5]: /writes/building-view-trees-in-go-part-5
+[part-6]: /writes/building-view-trees-in-go-part-6
 [context-docs]: https://pkg.go.dev/context
