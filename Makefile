@@ -2,27 +2,30 @@
 # This Makefile serves as a proxy for `zola` commands
 #
 # yay.
-#
 
-SERVE_DIR := public-dev 
+
+ZOLA ?= zola # allows for overriding zola location in case of debugging
+
+SERVE_DIR := $(PWD)/public-dev
 SERVE_FLAGS = --output-dir $(SERVE_DIR) --interface 0.0.0.0
 
-DIST_DIR := public
+DIST_DIR := $(PWD)/public
 DEV_CONFIG := config.dev.toml
 PROD_CONFIG := config.toml
 NOW := $(shell date)
 
 .PHONY: serve-prod
 serve-prod:
-	zola --config $(PROD_CONFIG) serve $(SERVE_FLAGS)
+	$(ZOLA)
+	$(ZOLA) --config $(PROD_CONFIG) serve $(SERVE_FLAGS) --force
 
 .PHONY: serve-dev
 serve-dev:
-	zola --config $(DEV_CONFIG) serve --drafts $(SERVE_FLAGS)
+	$(ZOLA) --config $(DEV_CONFIG) serve --drafts $(SERVE_FLAGS) --force
 
 .PHONY: build
 build:
-	zola --config $(PROD_CONFIG) build --output-dir $(DIST_DIR) --force
+	$(ZOLA) --config $(PROD_CONFIG) build --output-dir $(DIST_DIR) --force
 
 .PHONY: check-unchanged
 check-unchanged:
@@ -30,7 +33,7 @@ check-unchanged:
 
 .PHONY: check
 check:
-	zola check
+	$(ZOLA) check
 
 .PHONY: deploy
 deploy: check check-unchanged build

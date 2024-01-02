@@ -10,7 +10,7 @@ darwin {
   source = "https://github.com/getzola/zola/releases/download/v${version}/zola-v${version}-x86_64-apple-darwin.tar.gz"
 }
 
-version "0.17.2" "0.16.1" "0.15.2" {
+version "0.18.0" "0.17.2" "0.16.1" "0.15.2" {
   auto-version {
     github-release = "getzola/zola"
   }

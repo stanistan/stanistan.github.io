@@ -1,18 +1,19 @@
-base_url = "https://www.stanistan.com"
+base_url = "/"
 title = "stanistan"
 
-compile_sass = true
 build_search_index = false
-generate_feed = true
+compile_sass = true
 feed_filename = "rss.xml"
+generate_feed = true
+render_emoji = true
 taxonomies = []
 
 [markdown]
-highlight_code = true
-highlight_theme = "inspired-github"
 external_links_no_follow = true
 external_links_no_referrer = true
 extra_syntaxes_and_themes = [ "./themes" ]
+highlight_code = true
+highlight_theme = "inspired-github"
 
 [extra]
 repo_content_path = "stanistan/stanistan.github.io/the-details/content"
