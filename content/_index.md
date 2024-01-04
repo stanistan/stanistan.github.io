@@ -4,9 +4,8 @@
 
 Hi, I'm Stan, sometimes referred to as stanistan.
 
-Currently Lead the Traffic Team at [Cash App].
-
-Formerly at [Etsy], where I worked on lots of things as a
+I used to lead the Traffic Team at [Cash App].
+Also at [Etsy], where I worked on lots of things as a
 Software Engineer & Product Infrastructure Architect; an
 alumn of the [Recurse Center]; and a perpetual work in progress.
 
@@ -14,8 +13,8 @@ You can find some of my work on [github].
 
 ---
 
-If you want to get in touch, I'm on 
-<a href="https://hackyderm.io/@stanistan" rel="me" target="_blank">hachyderm</a>, 
+If you want to get in touch, I'm
+<a href="https://hachyderm.io/@stanistan" rel="me" target="_blank">@stanistan@hachyderm.io</a>,
 and used to be on twitter, or you can email me at: <span class="link-like">
     <strong>stan</strong> at <strong>stanistan</strong> .com
 </span>
