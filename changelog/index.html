@@ -42,13 +42,27 @@
 or anything, but I felt like it would be fun (besides just git history)
 to keep a log of how the site has changed over time.</p>
 <p>This should be in reverse chronological order.</p>
+<h3 id="2024-01-02">2024-01-02</h3>
+<h4 id="changed">Changed</h4>
+<ul>
+<li><code>zola</code> updated to <code>0.18.0</code>.</li>
+<li><code>Makefile</code> updated to reflect changes in zola since the last version.
+<ul>
+<li>Specifically, serve broke <a rel="nofollow noreferrer" href="https://github.com/getzola/zola/pull/2258">here</a>,
+and we needed to debug zola (adding a <code>ZOLA</code> ENV var to make sure we can
+use the same <code>Makefile</code> and point it to a different binary.</li>
+<li>And updated output-dirs to use absolute paths as a workaround for that same issue.</li>
+<li>Opened a <a rel="nofollow noreferrer" href="https://github.com/getzola/zola/pull/2398">PR</a> to fix this.</li>
+</ul>
+</li>
+</ul>
 <h3 id="2023-01-08">2023-01-08</h3>
 <h4 id="new">New</h4>
 <ul>
 <li><code>hermit</code> manages <code>make</code> as well.</li>
 <li>have some minimal support for a table of contents.</li>
 </ul>
-<h4 id="changed">Changed</h4>
+<h4 id="changed-1">Changed</h4>
 <ul>
 <li>No longer doing date based permalinks, that was annyoing for how little I was writing.</li>
 </ul>

@@ -13,6 +13,18 @@ to keep a log of how the site has changed over time.
 
 This should be in reverse chronological order.
 
+### 2024-01-02
+
+#### Changed
+
+- `zola` updated to `0.18.0`.
+- `Makefile` updated to reflect changes in zola since the last version.
+  - Specifically, serve broke [here](https://github.com/getzola/zola/pull/2258),
+  and we needed to debug zola (adding a `ZOLA` ENV var to make sure we can
+  use the same `Makefile` and point it to a different binary.
+  - And updated output-dirs to use absolute paths as a workaround for that same issue.
+  - Opened a [PR](https://github.com/getzola/zola/pull/2398) to fix this.
+
 ### 2023-01-08
 
 #### New
