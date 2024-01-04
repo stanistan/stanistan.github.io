@@ -143,4 +143,4 @@ I'm not going to get to revisiting errors here just yet.
 [part-4]: /writes/building-view-trees-in-go-part-4
 [part-5]: /writes/building-view-trees-in-go-part-5
 [part-7]: /writes/building-view-trees-in-go-part-7
-[pkg-dev-1]: https://pkg.go.dev/github.com/stanistan/veun@v0.0.0-20231208164029-003211b1d092#Renderable
+[pkg-dev-1]: https://pkg.go.dev/github.com/stanistan/veun@v0.0.0-20231218164211-f427fa0ee981
