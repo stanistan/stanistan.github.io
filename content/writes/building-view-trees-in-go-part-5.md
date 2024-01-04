@@ -541,10 +541,12 @@ want to structure their HTTP server.
 ### Next:
 
 - [Updating the base interface][part-6]
+- [What's up with Renderables][part-7]
 
 [part-1]: /writes/building-view-trees-in-go-part-1
 [part-2]: /writes/building-view-trees-in-go-part-2
 [part-3]: /writes/building-view-trees-in-go-part-3
 [part-4]: /writes/building-view-trees-in-go-part-4
 [part-6]: /writes/building-view-trees-in-go-part-6
+[part-7]: /writes/building-view-trees-in-go-part-7
 [http-handler]: https://pkg.go.dev/net/http#Handler

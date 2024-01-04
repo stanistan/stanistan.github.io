@@ -131,9 +131,16 @@ func Div(contents AsRenderable) AsRenderable {
 
 I'm not going to get to revisiting errors here just yet.
 
+---
+
+## Next:
+
+- [What's up with Renderables][part-7]
+
 [part-1]: /writes/building-view-trees-in-go-part-1
 [part-2]: /writes/building-view-trees-in-go-part-2
 [part-3]: /writes/building-view-trees-in-go-part-3
 [part-4]: /writes/building-view-trees-in-go-part-4
 [part-5]: /writes/building-view-trees-in-go-part-5
+[part-7]: /writes/building-view-trees-in-go-part-7
 [pkg-dev-1]: https://pkg.go.dev/github.com/stanistan/veun@v0.0.0-20231208164029-003211b1d092#Renderable

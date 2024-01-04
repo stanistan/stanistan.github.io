@@ -252,10 +252,13 @@ and the usage is nice.
 
 - [http.Handler][part-5]
 - [Updating the base interface][part-6]
+- [What's up with Renderables][part-7]
 
 [part-1]: /writes/building-view-trees-in-go-part-1
 [part-2]: /writes/building-view-trees-in-go-part-2
 [part-3]: /writes/building-view-trees-in-go-part-3
 [part-5]: /writes/building-view-trees-in-go-part-5
 [part-6]: /writes/building-view-trees-in-go-part-6
+[part-7]: /writes/building-view-trees-in-go-part-7
+
 [context-docs]: https://pkg.go.dev/context
