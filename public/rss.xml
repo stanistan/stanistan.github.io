@@ -7,20 +7,223 @@
       <generator>Zola</generator>
       <language>en</language>
       <atom:link href="https://www.stanistan.com/rss.xml" rel="self" type="application/rss+xml"/>
-      <lastBuildDate>Wed, 13 Dec 2023 00:00:00 +0000</lastBuildDate>
+      <lastBuildDate>Thu, 04 Jan 2024 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Building view-trees: What&#x27;s up with Renderables [Part-7]</title>
+          <pubDate>Thu, 04 Jan 2024 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-7/</link>
+          <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-7/</guid>
+          <description xml:base="https://www.stanistan.com/writes/building-view-trees-in-go-part-7/">&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;error handling&lt;&#x2F;a&gt;,
+&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;async data fetching&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;, and &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;more&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;h2 id=&quot;hmmm&quot;&gt;&lt;em&gt;hmmm&lt;&#x2F;em&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;Ok, so I&#x27;m starting here not knowing exactly where I want to go,
+and then using this to move forward. Going forward can mean staying
+where we are with our design.&lt;&#x2F;p&gt;
+&lt;p&gt;Following up on the &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;last post&lt;&#x2F;a&gt;, there still is something that
+doesn&#x27;t feel right with the design of the library.&lt;&#x2F;p&gt;
+&lt;p&gt;Mainly, the difference between the following interface functions:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Renderable(context.Context) (Renderable, error)&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;RequestRenderable(*http.Request) (AsRenderable, error)&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;ErrorRenderable(context.Context, error) (AsRenderable, error)&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;For the first one, we covered that it&#x27;s useful for us to have something
+that is representalbe this way– &lt;em&gt;fine&lt;&#x2F;em&gt;. For the second and third however,
+we have two things that seem different but are closely related.&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;We don&#x27;t need to pass a context for &lt;code&gt;RequestRenderable&lt;&#x2F;code&gt; becuase a &lt;code&gt;Request&lt;&#x2F;code&gt;
+has a context, otherwise I&#x27;d be passing &lt;code&gt;func(ctx, r)&lt;&#x2F;code&gt;.&lt;&#x2F;li&gt;
+&lt;li&gt;We &lt;em&gt;might&lt;&#x2F;em&gt; not need to pass an &lt;code&gt;err&lt;&#x2F;code&gt; to &lt;code&gt;ErrorRenderable&lt;&#x2F;code&gt; since
+a context can have a &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;pkg.go.dev&#x2F;context#CancelCauseFunc&quot;&gt;&lt;code&gt;CancelCause&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;, but either way
+we come from a place of &lt;code&gt;context&lt;&#x2F;code&gt; and &lt;code&gt;value&lt;&#x2F;code&gt;.&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;It brings up the question, and one of the reasons I punted on errors
+after solving errors: Should they be unified?&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Should the library follow the principle: everything only gets a
+&lt;code&gt;context.Context&lt;&#x2F;code&gt;, implying the existence of a &lt;code&gt;*veun.Error&lt;&#x2F;code&gt; which
+has a &lt;code&gt;Context&lt;&#x2F;code&gt; interface similar to that of &lt;code&gt;*http.Request&lt;&#x2F;code&gt;?&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Should the library follow the principle: only pass a context and
+you use that to determine your current state to know what kind of
+renderable you are producing ala &lt;code&gt;ctx.Err()&lt;&#x2F;code&gt; and &lt;code&gt;ctx.Cause()&lt;&#x2F;code&gt;? One
+can attach arbitrary values to &lt;code&gt;Context&lt;&#x2F;code&gt; and&#x2F;or create different
+ones for different use cases.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;exploration&quot;&gt;Exploration&lt;&#x2F;h2&gt;
+&lt;p&gt;Writing our own &lt;code&gt;context.Context&lt;&#x2F;code&gt; wrapper would mean that the interface
+implementor would have to dispatch on some kind of switch statement...&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(ctx veun.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;switch &lt;&#x2F;span&gt;&lt;span&gt;ctx.Type() {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;case &lt;&#x2F;span&gt;&lt;span&gt;veun.Request:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; ... extract the request
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The above feels like code that would be fairly error prone. There&#x27;s
+another way to represent a similar thing, and it&#x27;s really not bad
+at all.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(ctx veun.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (veun.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;ctx.Renderable(veun.R{
+&lt;&#x2F;span&gt;&lt;span&gt;        Request: &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(r &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;http.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Request&lt;&#x2F;span&gt;&lt;span&gt;) (veun.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable&lt;&#x2F;span&gt;&lt;span&gt;, http.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Handler&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; ctx, and r are available here
+&lt;&#x2F;span&gt;&lt;span&gt;        },
+&lt;&#x2F;span&gt;&lt;span&gt;        Error: &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(err &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) (veun.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsRenderable&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; ctx and err are available here
+&lt;&#x2F;span&gt;&lt;span&gt;        },
+&lt;&#x2F;span&gt;&lt;span&gt;    })
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I&#x27;d need to explore the &lt;em&gt;calling&lt;&#x2F;em&gt; code and how rendering and composition
+would work in practice actually. Another thing to keep in mind is is if
+&lt;code&gt;veun.R&lt;&#x2F;code&gt; (for renderable) is also an &lt;code&gt;AsRenderable&lt;&#x2F;code&gt;?&lt;&#x2F;p&gt;
+&lt;p&gt;A thing that&#x27;s nice is if we add &lt;em&gt;more&lt;&#x2F;em&gt; factory types then it&#x27;s easy to
+extend the struct. A thing that isn&#x27;t so nice is that it encodes the kinds
+of things you need to do in the library and doesn&#x27;t give more flexibility
+to try other ways of executing it.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;veun-error-tho&quot;&gt;&lt;code&gt;veun.Error&lt;&#x2F;code&gt; tho&lt;&#x2F;h3&gt;
+&lt;p&gt;Let&#x27;s try out a hypothetical &lt;code&gt;*veun.Error&lt;&#x2F;code&gt; that&#x27;s similar in structure
+and interface to &lt;code&gt;*http.Request&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Error { Err error &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;* ... *&#x2F; &lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(e &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*Error&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;() context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context &lt;&#x2F;span&gt;&lt;span&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;* ... *&#x2F; &lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(e &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*Error&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;WithContext&lt;&#x2F;span&gt;&lt;span&gt;(ctx context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*Error &lt;&#x2F;span&gt;&lt;span&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;* ... *&#x2F; &lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(e &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*Error&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Error&lt;&#x2F;span&gt;&lt;span&gt;() &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;string &lt;&#x2F;span&gt;&lt;span&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;e.Err.Error() }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(e &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*Error&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;Unwrap&lt;&#x2F;span&gt;&lt;span&gt;() &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error &lt;&#x2F;span&gt;&lt;span&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;errors.Unwrap(e.Err) }
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I&#x27;m not really sure we&#x27;d need the &lt;code&gt;WithContext&lt;&#x2F;code&gt; here, but why not, let&#x27;s
+keep it consistent.&lt;&#x2F;p&gt;
+&lt;p&gt;Also we are fulfilling the &lt;code&gt;Error&lt;&#x2F;code&gt; and &lt;code&gt;Unwrap&lt;&#x2F;code&gt; interfaces for errors.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;thinking-does-any-of-this-actually-help&quot;&gt;🤔 Does any of this actually help?&lt;&#x2F;h2&gt;
+&lt;p&gt;While looking at errors, in my implmentations and tests, I kept coming back
+to a couple of things. Renaming &lt;code&gt;RequestRenderable&lt;&#x2F;code&gt;, &lt;code&gt;ErrorRenderable&lt;&#x2F;code&gt;, &lt;code&gt;Renderable&lt;&#x2F;code&gt;,
+&lt;code&gt;View&lt;&#x2F;code&gt;, etc.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;re-view-a-pivot&quot;&gt;Re-View, a pivot&lt;&#x2F;h1&gt;
+&lt;p&gt;At first when starting to write this post, I wanted to explore errors and contexts.
+A couple of different things I tried were interesting but &lt;em&gt;not good enough&lt;&#x2F;em&gt; or not
+useful enough, or not intuitive enough. And just repeating &lt;code&gt;Renderable&lt;&#x2F;code&gt; really was the
+thing to &lt;em&gt;fix&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;There&#x27;s an adage in go that is something like: return structs and accept
+interfaces, and in our prior situation we were just throwing around interfaces,
+this meant for concrete implementations, there was always wrapping and unwrapping.&lt;&#x2F;p&gt;
+&lt;p&gt;In the search for the &lt;em&gt;right&lt;&#x2F;em&gt; ergnomic and naming I&#x27;ve moved around
+the and renamed the library code &lt;em&gt;a whole bunch&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;template&quot;&gt;Template&lt;&#x2F;h3&gt;
+&lt;p&gt;In our original implementation, we were returning a &lt;code&gt;View&lt;&#x2F;code&gt; struct which was
+&lt;code&gt;Renderable&lt;&#x2F;code&gt;. And in a lot of the writing, I was referring to &lt;code&gt;View&lt;&#x2F;code&gt; and &lt;code&gt;Renderable&lt;&#x2F;code&gt;
+as interchangeable concepts.&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;ve since separated that out for things to be renderable to HTML &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;blob&#x2F;64f2cc1aee66ff6d0317c751db1abd683ca3b37e&#x2F;veun.go#L12-L15&quot;&gt;here&lt;&#x2F;a&gt;,
+and there&#x27;s also the &lt;code&gt;Div&lt;&#x2F;code&gt; functions we can construct using &lt;code&gt;veun.Raw&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Concepts:&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;View&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;ViewForError&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;ViewForRequest&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;These are the interface functions we&#x27;re building, &lt;code&gt;Template&lt;&#x2F;code&gt; is an implmentation detail
+of directly using a &lt;code&gt;html&#x2F;template&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;views&quot;&gt;Views&lt;&#x2F;h2&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;MyView &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;* fields elided *&#x2F; &lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(v &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;MyView&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;View&lt;&#x2F;span&gt;&lt;span&gt;(ctx context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;veun.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;View&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;veun.V(veun.Template{
+&lt;&#x2F;span&gt;&lt;span&gt;        Tpl:   someTpl,
+&lt;&#x2F;span&gt;&lt;span&gt;        Data:  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;        Slots: veun.Slots{ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;* ... *&#x2F; &lt;&#x2F;span&gt;&lt;span&gt;},
+&lt;&#x2F;span&gt;&lt;span&gt;    }).WithErrorHandler(someErrorHandler), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;A few things jump out from the new implementation of the (now called)
+&lt;code&gt;AsView&lt;&#x2F;code&gt; interface: &lt;code&gt;veun.V&lt;&#x2F;code&gt;, &lt;code&gt;veun.Template&lt;&#x2F;code&gt;, and &lt;code&gt;*veun.View&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;*veun.View&lt;&#x2F;code&gt; is an opaque type, and can only be constructed (in a useful way),
+by &lt;code&gt;veun.V&lt;&#x2F;code&gt;. This &lt;em&gt;constructor&lt;&#x2F;em&gt; combines &lt;code&gt;HTMLRenderable&lt;&#x2F;code&gt; and &lt;code&gt;ErrorHandler&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;We&#x27;re not doing duck-typing by whether or not the error handler interface
+is attached to &lt;code&gt;MyView&lt;&#x2F;code&gt;, we&#x27;re doing it based on wether or not an error
+handler was explicitly attached to the &lt;code&gt;*View&lt;&#x2F;code&gt; constructed.&lt;&#x2F;p&gt;
+&lt;p&gt;This allows us to conitnue to return &lt;code&gt;nil&lt;&#x2F;code&gt; (also ergonomic for construction).&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;Aside:&lt;&#x2F;em&gt; We &lt;em&gt;are&lt;&#x2F;em&gt; doing duck-typing inside of &lt;code&gt;V&lt;&#x2F;code&gt; but afterwards we get a
+concrete implementation.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;view-constructors&quot;&gt;View constructors&lt;&#x2F;h3&gt;
+&lt;p&gt;Other types, like &lt;code&gt;ViewForRequest&lt;&#x2F;code&gt;, and &lt;code&gt;ViewForError&lt;&#x2F;code&gt; return an &lt;code&gt;AsView&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;rendering&quot;&gt;Rendering&lt;&#x2F;h3&gt;
+&lt;p&gt;I made an explicit decition to change &lt;code&gt;Render&lt;&#x2F;code&gt; to a function that accepts an &lt;code&gt;AsView&lt;&#x2F;code&gt;,
+and the rendering to be opaque behind and &lt;code&gt;HTMLRenderable&lt;&#x2F;code&gt; encapsulated by
+a &lt;code&gt;View&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;In the prior version it was actually a bit confusing on what you can call render
+on and what you can&#x27;t, where you&#x27;d get error handling and where you wouldn&#x27;t. I
+wanted to remove that kind of ambiguity and make it simpler to do more.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;veun-vhttp&quot;&gt;&amp;quot;veun&#x2F;vhttp&amp;quot;&lt;&#x2F;h1&gt;
+&lt;p&gt;I moved all of the http related types and functions to the &lt;code&gt;vhttp&lt;&#x2F;code&gt; package. It&#x27;s
+called &lt;code&gt;vhttp&lt;&#x2F;code&gt; since you&#x27;re using it in conjunction with the &lt;code&gt;net&#x2F;http&lt;&#x2F;code&gt; standard
+library and otherwise you&#x27;d be import&#x2F;aliasing it.&lt;&#x2F;p&gt;
+&lt;p&gt;We&#x27;ve got &lt;code&gt;vhttp.Handler&lt;&#x2F;code&gt;, &lt;code&gt;request.Handler&lt;&#x2F;code&gt;, and a package of middleware that
+can be useful for use with standard &lt;code&gt;mux&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;what-it-looks-like&quot;&gt;What it looks like&lt;&#x2F;h2&gt;
+&lt;p&gt;Given a &lt;code&gt;MyView&lt;&#x2F;code&gt; like we wrote above that renders something, we can have it be
+created by an HTTP request.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span&gt;(
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;context&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;net&#x2F;http&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;github.com&#x2F;stanistan&#x2F;veun&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;github.com&#x2F;stanistan&#x2F;veun&#x2F;vhttp&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;github.com&#x2F;stanistan&#x2F;veun&#x2F;vhttp&#x2F;request&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span&gt;(v &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;MyView&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;View&lt;&#x2F;span&gt;&lt;span&gt;(_ context.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Context&lt;&#x2F;span&gt;&lt;span&gt;) (&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;veun.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;View&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;veun.View(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;*...*&#x2F;&lt;&#x2F;span&gt;&lt;span&gt;), &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;MyViewRequestHandler&lt;&#x2F;span&gt;&lt;span&gt;() request.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Handler &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;request.HandlerFunc(&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func&lt;&#x2F;span&gt;&lt;span&gt;(r &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;http.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Request&lt;&#x2F;span&gt;&lt;span&gt;) (veun.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;AsView&lt;&#x2F;span&gt;&lt;span&gt;, http.&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;Handler&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#0086b3;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; - We can extract data from the request.
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; - We can push up an error
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; - or we can do something with the response, like a 404, or anything.
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;MyView{}, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#0086b3;&quot;&gt;nil
+&lt;&#x2F;span&gt;&lt;span&gt;    })
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;func &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#795da3;&quot;&gt;main&lt;&#x2F;span&gt;&lt;span&gt;() {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; ...
+&lt;&#x2F;span&gt;&lt;span&gt;    mux.Handle(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;&#x2F;some&#x2F;path&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;, vhttp.Handler(MyViewRequestHandler()))
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#969896;&quot;&gt;&#x2F;&#x2F; ...
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;demo&quot;&gt;Demo&lt;&#x2F;h2&gt;
+&lt;p&gt;I&#x27;m working on a demo webserver where there are examples of different ways
+of doing composition, routing, redirects, errors, etc, and the kinds
+of patterns that become possible and useful when you have all of this
+in one place.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;website: &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;veun-http-demo.stanistan.com&quot;&gt;veun-http-demo.stanistan.com&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;source: &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun-http-demo&quot;&gt;github&#x2F;veun-http-demo&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;In the future, I&#x27;d like to actually build (or rebuild) something using the
+library as well as better document the different components that are part
+of the demo server.&lt;&#x2F;p&gt;
+</description>
+      </item>
       <item>
           <title>Building view-trees: Updating the base interface [Part 6]</title>
           <pubDate>Wed, 13 Dec 2023 00:00:00 +0000</pubDate>
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-6/</link>
           <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-6/</guid>
-          <description>&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;error handling&lt;&#x2F;a&gt;,
+          <description xml:base="https://www.stanistan.com/writes/building-view-trees-in-go-part-6/">&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;error handling&lt;&#x2F;a&gt;,
 &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;async data fetching&lt;&#x2F;a&gt;, and &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
 &lt;hr &#x2F;&gt;
 &lt;p&gt;We have a thing that kind of works and in building out our interfaces and types
 we end up with something that is just a bit more complicated than we need, and
 a bit too specific, or not specific enough.&lt;&#x2F;p&gt;
-&lt;p&gt;Our concepts &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;pkg.go.dev&#x2F;github.com&#x2F;stanistan&#x2F;veun@v0.0.0-20231208164029-003211b1d092#Renderable&quot;&gt;include&lt;&#x2F;a&gt;: Renderables, AsRenderables, Views, ErrorRenderables,
+&lt;p&gt;Our concepts &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;pkg.go.dev&#x2F;github.com&#x2F;stanistan&#x2F;veun@v0.0.0-20231218164211-f427fa0ee981&quot;&gt;include&lt;&#x2F;a&gt;: Renderables, AsRenderables, Views, ErrorRenderables,
 RequestRenderables, RequestHandlers. To be fair this isn&#x27;t a ton, but it has a smell,
 and it&#x27;s a lot to type.&lt;&#x2F;p&gt;
 &lt;p&gt;I have questions like:&lt;&#x2F;p&gt;
@@ -533,6 +736,11 @@ can make it even clearer:&lt;&#x2F;p&gt;
 &lt;&#x2F;div&gt;
 &lt;h2 id=&quot;errors&quot;&gt;Errors&lt;&#x2F;h2&gt;
 &lt;p&gt;I&#x27;m not going to get to revisiting errors here just yet.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;h2 id=&quot;next&quot;&gt;Next:&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-7&quot;&gt;What&#x27;s up with Renderables&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
 </description>
       </item>
       <item>
@@ -541,7 +749,7 @@ can make it even clearer:&lt;&#x2F;p&gt;
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-5/</link>
           <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-5/</guid>
-          <description>&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;error handling&lt;&#x2F;a&gt;,
+          <description xml:base="https://www.stanistan.com/writes/building-view-trees-in-go-part-5/">&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;error handling&lt;&#x2F;a&gt;,
 and &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;async data fetching&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
 &lt;hr &#x2F;&gt;
 &lt;h2 id=&quot;an-aside-small-improvements&quot;&gt;An Aside: Small Improvements&lt;&#x2F;h2&gt;
@@ -2243,6 +2451,7 @@ want to structure their HTTP server.&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;next&quot;&gt;Next:&lt;&#x2F;h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-7&quot;&gt;What&#x27;s up with Renderables&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 </description>
       </item>
@@ -2252,7 +2461,7 @@ want to structure their HTTP server.&lt;&#x2F;p&gt;
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-4/</link>
           <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-4/</guid>
-          <description>&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;, and &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;error handling&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+          <description xml:base="https://www.stanistan.com/writes/building-view-trees-in-go-part-4/">&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;, and &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-3&quot;&gt;error handling&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
 &lt;hr &#x2F;&gt;
 &lt;p&gt;There are cases where we&#x27;ll fetch data for something up front, and pass
 it down the view tree, meaning the views are basically &amp;quot;pure functions&amp;quot;,
@@ -3185,6 +3394,7 @@ and the usage is nice.&lt;&#x2F;p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-7&quot;&gt;What&#x27;s up with Renderables&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 </description>
       </item>
@@ -3194,7 +3404,7 @@ and the usage is nice.&lt;&#x2F;p&gt;
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-3/</link>
           <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-3/</guid>
-          <description>&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, and &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+          <description xml:base="https://www.stanistan.com/writes/building-view-trees-in-go-part-3/">&lt;p&gt;Previously: &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;intro&lt;&#x2F;a&gt;, and &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-2&quot;&gt;the basics&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
 &lt;hr &#x2F;&gt;
 &lt;p&gt;We have a bunch of assumptions about what things can fail
 and which ones cannot.&lt;&#x2F;p&gt;
@@ -3514,6 +3724,7 @@ to doing &lt;em&gt;real things&lt;&#x2F;em&gt; like data access.&lt;&#x2F;p&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;Async data fetching&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-7&quot;&gt;What&#x27;s up with Renderables&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 </description>
       </item>
@@ -3523,7 +3734,7 @@ to doing &lt;em&gt;real things&lt;&#x2F;em&gt; like data access.&lt;&#x2F;p&gt;
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-2/</link>
           <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-2/</guid>
-          <description>&lt;p&gt;We laid our goals in the &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;part 1&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+          <description xml:base="https://www.stanistan.com/writes/building-view-trees-in-go-part-2/">&lt;p&gt;We laid our goals in the &lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-1&quot;&gt;part 1&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
 &lt;hr &#x2F;&gt;
 &lt;h1 id=&quot;let-s-make-something-renderable&quot;&gt;Let&#x27;s make something renderable&lt;&#x2F;h1&gt;
 &lt;pre data-lang=&quot;go&quot; style=&quot;background-color:#ffffff;color:#323232;&quot; class=&quot;language-go &quot;&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a71d5d;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span style=&quot;color:#183691;&quot;&gt;&amp;quot;html&#x2F;template&amp;quot;
@@ -4518,6 +4729,7 @@ change, but it unlocks something, too. A simpler way to build views:&lt;&#x2F;p&
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;Async data fetching&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-7&quot;&gt;What&#x27;s up with Renderables&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 </description>
       </item>
@@ -4527,7 +4739,7 @@ change, but it unlocks something, too. A simpler way to build views:&lt;&#x2F;p&
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/building-view-trees-in-go-part-1/</link>
           <guid>https://www.stanistan.com/writes/building-view-trees-in-go-part-1/</guid>
-          <description>&lt;p&gt;When I was at Etsy, we built a server-side component library called
+          <description xml:base="https://www.stanistan.com/writes/building-view-trees-in-go-part-1/">&lt;p&gt;When I was at Etsy, we built a server-side component library called
 View Trees, but also called &lt;code&gt;neu&lt;&#x2F;code&gt; (because this was quicker to type).&lt;&#x2F;p&gt;
 &lt;p&gt;This is referenced in this &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;www.etsy.com&#x2F;codeascraft&#x2F;mobius-adopting-jsx-while-prioritizing-user-experience&quot;&gt;Code As Craft&lt;&#x2F;a&gt; blog post, which is about
 extending&#x2F;updating the framework to output server-rendered JSX components.&lt;&#x2F;p&gt;
@@ -4594,6 +4806,7 @@ etc... so we can do things like components :)&lt;&#x2F;p&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-4&quot;&gt;Async data fetching&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-5&quot;&gt;http.Handler&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-6&quot;&gt;Updating the base interface&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;&#x2F;writes&#x2F;building-view-trees-in-go-part-7&quot;&gt;What&#x27;s up with Renderables&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 </description>
       </item>
@@ -4603,7 +4816,7 @@ etc... so we can do things like components :)&lt;&#x2F;p&gt;
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/reverse-engineering-github-diffs/</link>
           <guid>https://www.stanistan.com/writes/reverse-engineering-github-diffs/</guid>
-          <description>&lt;p&gt;Getting the right diff lines to show up in &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;present-me&lt;&#x2F;a&gt; was 
+          <description xml:base="https://www.stanistan.com/writes/reverse-engineering-github-diffs/">&lt;p&gt;Getting the right diff lines to show up in &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;present-me&lt;&#x2F;a&gt; was 
 &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;present-me&#x2F;issues&#x2F;46&quot;&gt;actually very confusing&lt;&#x2F;a&gt;, and very interesting. &lt;&#x2F;p&gt;
 &lt;p&gt;I&#x27;m still not exactly sure I have it working correctly 100% of the time, but it&#x27;s 
 much better than it used to be, and I have somewhat of an understanding of how it works.&lt;&#x2F;p&gt;
@@ -4807,7 +5020,7 @@ accumulating changes once we&#x27;ve gotten to the first non-useful chunk. &lt;&
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/present-me-part-2/</link>
           <guid>https://www.stanistan.com/writes/present-me-part-2/</guid>
-          <description>&lt;p&gt;Earlier this year I started working on a new version of &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;present-me&lt;&#x2F;a&gt;. &lt;&#x2F;p&gt;
+          <description xml:base="https://www.stanistan.com/writes/present-me-part-2/">&lt;p&gt;Earlier this year I started working on a new version of &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;present-me&lt;&#x2F;a&gt;. &lt;&#x2F;p&gt;
 &lt;p&gt;After shipping the &lt;a href=&quot;&#x2F;writes&#x2F;present-me&quot;&gt;first version&lt;&#x2F;a&gt;, it was time to test it out. I convinced 
 some very patient folks on my team to give it a shot for some large PRs and we hit
 some roadblocks... quickly.&lt;&#x2F;p&gt;
@@ -4863,7 +5076,7 @@ it needs to exist at all.&lt;&#x2F;p&gt;
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/present-me/</link>
           <guid>https://www.stanistan.com/writes/present-me/</guid>
-          <description>&lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;(pr)esent-me&lt;&#x2F;a&gt; &lt;strong&gt;is an experiment&lt;&#x2F;strong&gt; to try to give the author of a Pull Request
+          <description xml:base="https://www.stanistan.com/writes/present-me/">&lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;prme.stanistan.com&quot;&gt;(pr)esent-me&lt;&#x2F;a&gt; &lt;strong&gt;is an experiment&lt;&#x2F;strong&gt; to try to give the author of a Pull Request
 a better way to convey why a changeset looks the way that it does, and how the
 folks reading and reviewing it should approach it.&lt;&#x2F;p&gt;
 
@@ -4924,7 +5137,7 @@ written by the author of the PR.
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/coming-back-to-color-transit/</link>
           <guid>https://www.stanistan.com/writes/coming-back-to-color-transit/</guid>
-          <description>&lt;p&gt;&lt;em&gt;Note:&lt;&#x2F;em&gt; I&#x27;m writing this as an experiment in coming back to a side-project
+          <description xml:base="https://www.stanistan.com/writes/coming-back-to-color-transit/">&lt;p&gt;&lt;em&gt;Note:&lt;&#x2F;em&gt; I&#x27;m writing this as an experiment in coming back to a side-project
 that has long been sitting around, and quitetly.&lt;&#x2F;p&gt;
 &lt;p&gt;Looking at it with old eyes and high level questions (of myself) like:&lt;&#x2F;p&gt;
 &lt;ul&gt;
@@ -5854,7 +6067,7 @@ write up of the process.&lt;&#x2F;p&gt;
           <author>Unknown</author>
           <link>https://www.stanistan.com/writes/how-this-blog-works/</link>
           <guid>https://www.stanistan.com/writes/how-this-blog-works/</guid>
-          <description>&lt;p&gt;Like lots of folk on the internet, I have a website that&#x27;s powered by
+          <description xml:base="https://www.stanistan.com/writes/how-this-blog-works/">&lt;p&gt;Like lots of folk on the internet, I have a website that&#x27;s powered by
 a static site generator and hosted somewhere on the GitHub.&lt;&#x2F;p&gt;
 &lt;p&gt;This post serves two functions:&lt;&#x2F;p&gt;
 &lt;ol&gt;
