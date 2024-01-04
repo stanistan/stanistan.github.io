@@ -16,7 +16,6 @@ NOW := $(shell date)
 
 .PHONY: serve-prod
 serve-prod:
-	$(ZOLA)
 	$(ZOLA) --config $(PROD_CONFIG) serve $(SERVE_FLAGS) --force
 
 .PHONY: serve-dev
