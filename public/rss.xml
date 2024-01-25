@@ -7,7 +7,84 @@
       <generator>Zola</generator>
       <language>en</language>
       <atom:link href="https://www.stanistan.com/rss.xml" rel="self" type="application/rss+xml"/>
-      <lastBuildDate>Thu, 04 Jan 2024 00:00:00 +0000</lastBuildDate>
+      <lastBuildDate>Thu, 25 Jan 2024 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>veun: two months (or so) in</title>
+          <pubDate>Thu, 25 Jan 2024 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.stanistan.com/writes/two-months-of-veun/</link>
+          <guid>https://www.stanistan.com/writes/two-months-of-veun/</guid>
+          <description xml:base="https://www.stanistan.com/writes/two-months-of-veun/">&lt;p&gt;I&#x27;ve been working on a &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;veun-http-demo.stanistan.com&quot;&gt;demo-server&lt;&#x2F;a&gt; for the &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&quot;&gt;veun&lt;&#x2F;a&gt; library,
+and this has been interesting. The goal of the demo is to have some real-world
+facsimile of something that one would build and I wanted to figure out some of
+the warts and patterns of using the library for this use case.&lt;&#x2F;p&gt;
+
+&lt;div class=&quot;img-container&quot;&gt;
+    &lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;www.stanistan.com&amp;#x2F;processed_images&amp;#x2F;veun-http-demo-screenshot.16fa0ecbb775bf84.png&quot; &#x2F;&gt;
+&lt;&#x2F;div&gt;
+&lt;h2 id=&quot;a-list-of-things-in-no-particular-order&quot;&gt;A list of things in no particular order&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;I&#x27;ve stopped actively updating the series on &lt;em&gt;how I&#x27;m building view-trees&lt;&#x2F;em&gt;.
+It&#x27;s its own thing now.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;The demo-server is a practice in literate programming. I don&#x27;t know
+why exactly, as this is a ton more work to get things to be ok, but having
+demo components with no real explanation didn&#x27;t feel right. I knew what was possible,
+but wanted the server to be fully self-documenting as a demo.&lt;&#x2F;p&gt;
+&lt;p&gt;This is basically the only part of the demo repo that &lt;em&gt;isn&#x27;t&lt;&#x2F;em&gt; shown in the UI, but
+you can &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun-http-demo&#x2F;blob&#x2F;main&#x2F;cmd&#x2F;lit-gen&#x2F;main.go&quot;&gt;read the &lt;code&gt;lit-gen&lt;&#x2F;code&gt; command source&lt;&#x2F;a&gt;. I may move this out to its
+own package.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;There&#x27;s a &lt;code&gt;veun&#x2F;el&lt;&#x2F;code&gt; package. Originally, the library was built only using templates.
+I wanted functional composition, and for testing and really small &lt;em&gt;renderable&lt;&#x2F;em&gt; pieces,
+using &lt;code&gt;veun.Raw&lt;&#x2F;code&gt; was sufficient, but it felt &lt;em&gt;wrong&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;The first version of the package was a function that looked like &lt;code&gt;el.El(&amp;quot;h1&amp;quot;)&lt;&#x2F;code&gt;, but eventually
+I added codegen so that you could do &lt;code&gt;el.H1()&lt;&#x2F;code&gt;. There is actually &lt;em&gt;no way&lt;&#x2F;em&gt; to directly
+instantiate an HTML element that isn&#x27;t already defined as a function. There&#x27;s also
+support for void elements, and you can&#x27;t add child nodes to them (because the type doesn&#x27;t
+implement the functionality).&lt;&#x2F;p&gt;
+&lt;p&gt;The package also does HTML encoding for attributes (&lt;code&gt;el.Attrs&lt;&#x2F;code&gt;) and the text primitive &lt;code&gt;el.Text&lt;&#x2F;code&gt;,
+which &lt;code&gt;veun.Raw&lt;&#x2F;code&gt; does not.&lt;&#x2F;p&gt;
+&lt;p&gt;An added benefit of this is that it should be more performant to generate views using
+this package than going through template invocation in pathological cases: recursive
+tree views (which the demo nav is an example of). Going through recursive dynamic slot
+function dispatch in &lt;code&gt;text&#x2F;template&lt;&#x2F;code&gt; is &lt;em&gt;slower&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Also added &lt;code&gt;veun&#x2F;template&lt;&#x2F;code&gt;. The functions and types in this package were all originally
+in &lt;code&gt;veun&lt;&#x2F;code&gt;. After introducing &lt;code&gt;veun&#x2F;el&lt;&#x2F;code&gt;, which I started using a lot more than expected,
+it felt like the right API decision to have both of these packages be separate.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Built-in handlers.
+Something I think is elegant: &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;blob&#x2F;3dc2a4257076026ef008cebb78686717064d5c75&#x2F;vhttp&#x2F;handler&#x2F;checked.go#L7-L19&quot;&gt;&lt;code&gt;handler.Checked&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;,
+and its &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun-http-demo&#x2F;blob&#x2F;main&#x2F;docs&#x2F;cmd&#x2F;demo-server&#x2F;routes.go.md#closing-out-the-server&quot;&gt;usage&lt;&#x2F;a&gt;. Basically, &lt;code&gt;Checked&lt;&#x2F;code&gt; goes through a cascade of
+handlers and if any of them are 404s will go to the next one. This allows for a fall
+through of dynamic pages, static urls, and custom 404s while still being able to use
+built-ins like &lt;code&gt;http.HandlerNotFound()&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;There are a couple of other ones, like &lt;code&gt;handler.OnlyRoot&lt;&#x2F;code&gt;, that are great for
+the &lt;code&gt;&#x2F;&lt;&#x2F;code&gt; base case when using the standard libary&#x27;s &lt;code&gt;http.ServeMux&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;When adding the &lt;code&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;&#x2F;code&gt; to my server, I learned that my implementation of
+handler checked didn&#x27;t write headers in the write order and this ended up serving
+all static files as &lt;code&gt;text&#x2F;plain&lt;&#x2F;code&gt;, which was a fun bug to track down and &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;commit&#x2F;3dc2a4257076026ef008cebb78686717064d5c75&quot;&gt;fix&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;When adding the &lt;code&gt;notFoundHandler&lt;&#x2F;code&gt; to the demo server, I realized that if the server
+was being crawled, rendering a 404 would be kind of expensive.&lt;&#x2F;p&gt;
+&lt;p&gt;I wanted this handler to be much closer to static and be doing as little compute as
+possible. This view isn&#x27;t going to change for &lt;em&gt;every single not found request&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;stanistan&#x2F;veun&#x2F;blob&#x2F;main&#x2F;memo.go&quot;&gt;Adding &lt;code&gt;MustMemo&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; was really useful here. The fact that &lt;code&gt;veun.Raw&lt;&#x2F;code&gt; is just a string that
+directly becomes &lt;code&gt;template.HTML&lt;&#x2F;code&gt; made it trivial to keep all of the interfaces working
+transparently.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</description>
+      </item>
       <item>
           <title>Building view-trees: What&#x27;s up with Renderables [Part-7]</title>
           <pubDate>Thu, 04 Jan 2024 00:00:00 +0000</pubDate>
