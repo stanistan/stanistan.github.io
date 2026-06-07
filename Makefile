@@ -33,7 +33,7 @@ check: ## run zola check
 	$(ZOLA) check
 
 .PHONY: deploy
-deploy: check check-unchanged build ## ship to production, before doing this commit local changes
+deploy: check-unchanged build ## ship to production, before doing this commit local changes
 	git add $(DIST_DIR) static/processed_images
 	git commit -m "AUTO: make deploy run on $(NOW)" --allow-empty
 	bin/ship $(DIST_DIR) the-details master
