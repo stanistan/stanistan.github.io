@@ -4,6 +4,8 @@
 
 Hi, I'm Stan, sometimes referred to as **stanistan**.
 
+I work at [Datadog][dd] on APM.
+
 I used to lead the Traffic Team at [CashApp][cash], and was an
 Engineer and the Product Engineering Architect at [Etsy][etsy].
 I'm also a 2x alumn of the [Recurse Center][rc]; and perpetual work in progress.
@@ -19,6 +21,7 @@ and used to be on twitter, or you can email me at: <span class="link-like">
 
 ---
 
+[dd]: https://www.datadoghq.com/
 [cash]: https://cash.app
 [etsy]: https://www.etsy.com
 [rc]: https://recurse.com
