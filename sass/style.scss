@@ -1,7 +1,7 @@
 @use 'sass:color';
 
 // Colors
-$background: #fcfcfc;
+$background: #fafafa;
 $text: #333;
 $text-lighter: lighten($text, 40%);
 
@@ -31,7 +31,7 @@ body {
 
 .content {
   margin: 8em auto 0;
-  max-width: 33em;
+  max-width: 35em;
   padding: 2em;
   position: relative;
 }
@@ -158,8 +158,8 @@ code {
 
 pre,
 blockquote {
-  background: white;
-  line-height: 1.45em;
+  background: #fcfcfc;
+  line-height: 1.35em;
   margin-left: -2em;
   margin-right: -2em;
 }
@@ -178,11 +178,24 @@ pre {
   }
 }
 
+aside {
+  float: right;
+  width: 40%;
+  font-size: 0.85em;
+  margin-right: -55%;
+  background: #fff;
+  padding: 0.5em 1em;
+  border-top: 0.3em solid #ccc;
+  box-shadow: 0px 1px 3px $highlight;
+}
+
 blockquote {
-  font-size: 0.9em;
+  font-size: 1em;
   font-style: italic;
-  padding: 0.5em 2em;
-  border-left: 1px dotted $highlight;
+  padding: 0.1em 2em;
+  line-height: 1.1em;
+  background: lighten($highlight, 7%);
+  border-left: 2em solid white;
 }
 
 .tag {
@@ -240,6 +253,14 @@ article .img-container {
 @media only screen and (max-width: 500px) {
   body {
     font-size: 1.15em;
+  }
+
+  blockquote {
+    float: none;
+    width: auto;
+    margin: 0.5em -2em 0em;
+    padding-left: 2em;
+    border-left: 1em solid white;
   }
 
   .content {
@@ -405,3 +426,12 @@ details {
 
 }
 
+@media only screen and (max-width: 750px) {
+  aside {
+    float: none;
+    font-size: 0.95em;
+    width: auto;
+    margin: 1em -1em;
+    padding: 0.3em 2em;
+  }
+}
